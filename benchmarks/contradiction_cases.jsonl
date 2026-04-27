@@ -1,0 +1,2 @@
+{"id":"contradiction_001","facts":[{"subject":"x","relation":"equals","object":"3"},{"subject":"x","relation":"equals","object":"4"}],"constraints":[],"goal":null,"expected_status":"CONTRADICTORY","expected_answer":null}
+{"id":"contradiction_002","facts":[{"subject":"item","relation":"equals","object":"red"},{"subject":"item","relation":"equals","object":"blue"}],"constraints":[],"goal":null,"expected_status":"CONTRADICTORY","expected_answer":null}

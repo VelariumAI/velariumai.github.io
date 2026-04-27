@@ -1,79 +1,124 @@
 # VCSE
 
-VCSE is a verifier-centered symbolic reasoning engine prototype. It is not a
-smaller LLM and it does not predict final answers directly. It constructs,
-tests, and justifies state transitions inside a structured world model.
+VCSE is an LLM-free verifier-centered symbolic reasoning engine. It does not use
+next-token prediction. It reasons by structured state transitions, bounded
+search, and deterministic verification.
 
-The architecture is deliberately post-LLM:
+VCSE is not a chatbot and not a wrapper around a text model. The parser extracts
+structure, memory stores state, proposers emit candidate transitions, search
+explores bounded paths, verifiers judge, and the renderer explains evaluated
+state.
 
-- The neural model proposes.
-- The memory stores.
-- The search explores.
-- The verifier judges.
-- The renderer explains.
+## Doctrine
 
-Language models can be attached later as optional proposal modules, but they
-are not the source of truth. VCSE is CPU-first and aimed at verifiable domains
-such as logic, math, planning, code, and formal reasoning.
+- Parser extracts structure.
+- Memory stores state.
+- Proposer generates transitions.
+- Search explores.
+- Verifier judges.
+- Renderer explains.
 
-Phase 0 implements the minimal vertical slice: structured world-state memory,
-typed transitive relations, explicit transitions, rule-based proposals,
-verification, bounded beam search, final-state evaluation, rendering, and a CLI
-logic demo.
+No component predicts final text. No final answer is accepted without
+verifier-backed state support and, for verified answers, a proof trace.
 
-Phase 1 hardens world-state memory with canonical qualifier-aware claim
-identity, relation schema persistence, structured constraints, contradiction
-indexing, versioned cloning, dependency paths, and JSON serialization that
-preserves `TruthStatus` enums.
-
-Phase 2 formalizes state transitions. Core paths now use `Transition` objects
-with validation before application, cloned-state execution, structured
-`VerificationResult` failures, and affected element tracking for `AddClaim`,
-`AddConstraint`, `UpdateTruthStatus`, `BindSymbol`, `AddGoal`, `AddEvidence`,
-and `RecordContradiction`.
-
-Phase 3 completes the deterministic verifier stack with claim validation,
-numeric constraint checking, equality and numeric contradiction detection, goal
-satisfaction checks, and final-state classification into `VERIFIED`,
-`INCONCLUSIVE`, `CONTRADICTORY`, or `UNSATISFIABLE`.
-
-Phase 4 stabilizes bounded search with a shared `SearchNode`, `SearchConfig`,
-structured `SearchResult`, verifier-integrated Beam Search, hard enforcement
-of depth, beam width, and node expansion limits, early stop on `VERIFIED`, and
-pruning for `CONTRADICTORY` / `UNSATISFIABLE` branches.
-
-Phase 5 completes the symbolic proposer package with rule-based closure and
-contradiction candidates, domain-specific arithmetic and symbolic-logic
-proposal rules, and an optional solver-backed proposer that skips cleanly when
-the external solver package is not installed.
-
-Phase 6 hardens the renderer as a deterministic template system for final
-evaluations and search results. Output now consistently includes status,
-answer, proof trace, assumptions, contradictions, verifier reasons, and search
-statistics.
-
-Phase 7 completes the CPU-only CLI demo surface with `vcse demo logic`,
-`vcse demo arithmetic`, `vcse demo contradiction`, `vcse run <file.json>`, and
-`vcse benchmark <file.jsonl>`. JSON input is parsed into structured memory
-before search and verification.
-
-Current data flow:
+## Architecture
 
 ```text
 Input
-  -> RuleBasedProposer
+  -> Parser / CLI JSON loader
   -> WorldStateMemory
-  -> State Transition Search
+  -> Symbolic proposers
+  -> Bounded state-transition search
   -> VerifierStack
   -> FinalStateEvaluator
-  -> ExplanationRenderer
+  -> Deterministic renderer
 ```
 
-Run:
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Install
+
+```bash
+python -m pip install -e .
+```
+
+## CLI
+
+```bash
+vcse demo logic
+vcse demo arithmetic
+vcse demo contradiction
+vcse run examples/file.json
+vcse benchmark benchmarks/simple_logic_cases.jsonl
+vcse benchmark benchmarks/mixed_cases.jsonl --json
+```
+
+Example JSON input:
+
+```json
+{
+  "facts": [
+    {"subject": "Socrates", "relation": "is_a", "object": "Man"},
+    {"subject": "Man", "relation": "is_a", "object": "Mortal"}
+  ],
+  "constraints": [],
+  "goal": {"subject": "Socrates", "relation": "is_a", "object": "Mortal"}
+}
+```
+
+## Benchmarks
+
+Benchmark files are JSONL. Each case may include `expected_status` and
+`expected_answer`.
+
+```bash
+vcse benchmark benchmarks/simple_logic_cases.jsonl
+vcse benchmark benchmarks/arithmetic_cases.jsonl
+vcse benchmark benchmarks/contradiction_cases.jsonl
+vcse benchmark benchmarks/mixed_cases.jsonl
+vcse benchmark benchmarks/mixed_cases.jsonl --json
+```
+
+Metrics include status accuracy, answer accuracy, status rates, runtime, nodes
+expanded, search depth, and proof trace length.
+
+## Versioning
+
+Current stabilization target: `0.9.0`.
+
+See [docs/VERSIONING.md](docs/VERSIONING.md).
+
+## Improvement Methodology
+
+VCSE is improved through benchmark-driven iteration, rule expansion, verifier
+expansion, heuristic tuning, and failure analysis. It is not trained on text.
+
+See [docs/TRAINING.md](docs/TRAINING.md).
+
+## Strict Policy
+
+Core implementation is CPU-only and must not add text-model dependencies. See
+[docs/NO_LLM_POLICY.md](docs/NO_LLM_POLICY.md).
+
+## Limitations
+
+- Current parser is a structured JSON loader, not a broad natural-language
+  parser.
+- Current reasoning domains are small: transitive relations, equality conflicts,
+  and simple numeric constraints.
+- Search uses Beam Search; richer strategies are future work.
+- Solver-backed proposals are optional and skipped when the external solver
+  package is unavailable.
+
+## Roadmap To 1.0.0
+
+- Tighten docs and examples.
+- Run the full test and benchmark matrix.
+- Fix only release-blocking failures.
+- Tag `v1.0.0` once the release matrix is clean.
+
+## Development
 
 ```bash
 python -m pytest
-python -m vcse.cli demo logic
-python -m vcse.cli demo arithmetic
-python -m vcse.cli demo contradiction
 ```

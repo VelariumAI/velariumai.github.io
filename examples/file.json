@@ -1,0 +1,8 @@
+{
+  "facts": [
+    {"subject": "Socrates", "relation": "is_a", "object": "Man"},
+    {"subject": "Man", "relation": "is_a", "object": "Mortal"}
+  ],
+  "constraints": [],
+  "goal": {"subject": "Socrates", "relation": "is_a", "object": "Mortal"}
+}

@@ -1,0 +1,2 @@
+{"id":"logic_001","facts":[{"subject":"Socrates","relation":"is_a","object":"Man"},{"subject":"Man","relation":"is_a","object":"Mortal"}],"constraints":[],"goal":{"subject":"Socrates","relation":"is_a","object":"Mortal"},"expected_status":"VERIFIED","expected_answer":"Socrates is_a Mortal"}
+{"id":"logic_002","facts":[{"subject":"A","relation":"is_a","object":"B"},{"subject":"B","relation":"is_a","object":"C"}],"constraints":[],"goal":{"subject":"A","relation":"is_a","object":"C"},"expected_status":"VERIFIED","expected_answer":"A is_a C"}
