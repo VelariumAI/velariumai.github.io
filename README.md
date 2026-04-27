@@ -37,6 +37,11 @@ numeric constraint checking, equality and numeric contradiction detection, goal
 satisfaction checks, and final-state classification into `VERIFIED`,
 `INCONCLUSIVE`, `CONTRADICTORY`, or `UNSATISFIABLE`.
 
+Phase 4 stabilizes bounded search with a shared `SearchNode`, `SearchConfig`,
+structured `SearchResult`, verifier-integrated Beam Search, hard enforcement
+of depth, beam width, and node expansion limits, early stop on `VERIFIED`, and
+pruning for `CONTRADICTORY` / `UNSATISFIABLE` branches.
+
 Current data flow:
 
 ```text
