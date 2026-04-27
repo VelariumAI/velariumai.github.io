@@ -150,8 +150,16 @@ def test_cli_ask_explain_and_debug_preserve_proof_trace() -> None:
 
     assert explain.returncode == 0
     assert "because" in explain.stdout
-    assert "socrates is_a man" in explain.stdout.lower()
+    assert "is_a" not in explain.stdout.lower()
+    assert "socrates is a man" in explain.stdout.lower()
+    assert "man is mortal" in explain.stdout.lower()
+    assert "socrates is mortal" in explain.stdout.lower()
+    assert "→" in explain.stdout
 
     assert debug.returncode == 0
-    assert "proof_trace:" in debug.stdout
+    assert "answer: socrates is_a mortal" in debug.stdout.lower()
+    assert "answer_human: Socrates is mortal" in debug.stdout
+    assert "proof_trace_canonical:" in debug.stdout
+    assert "proof_trace_human:" in debug.stdout
     assert "socrates is_a man" in debug.stdout.lower()
+    assert "socrates is a man" in debug.stdout.lower()

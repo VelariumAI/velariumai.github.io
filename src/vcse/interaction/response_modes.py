@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 from enum import Enum
-
-from vcse.interaction.frames import ClaimFrame, GoalFrame, ConstraintFrame
 from vcse.memory.world_state import TruthStatus, WorldStateMemory
 from vcse.search.result import SearchResult
 from vcse.verifier.final_state import FinalStateEvaluation
@@ -25,6 +23,7 @@ RELATION_DISPLAY_MAP = {
 }
 
 QUESTION_AUXILIARIES = {"can", "could", "would", "should", "does", "do", "did", "is", "are"}
+IS_A_NO_ARTICLE_OBJECTS = {"mortal", "alive", "dead", "eligible", "valid", "done"}
 
 
 def render_response(
@@ -50,7 +49,7 @@ def render_response(
 def _render_simple(evaluation: FinalStateEvaluation) -> str:
     """Simple yes/no style response."""
     status = evaluation.status.value
-    answer = _humanize_simple_answer(evaluation.answer)
+    answer = _humanize_claim(evaluation.answer, include_article_for_is_a=False)
 
     if status == "VERIFIED":
         return f"Yes — {answer or 'verified'}."
@@ -63,7 +62,7 @@ def _render_simple(evaluation: FinalStateEvaluation) -> str:
     return f"Status: {status}"
 
 
-def _humanize_simple_answer(answer: str | None) -> str | None:
+def _humanize_claim(answer: str | None, include_article_for_is_a: bool = False) -> str | None:
     """Render internal canonical triples in a friendlier sentence form."""
     if not answer:
         return answer
@@ -76,7 +75,7 @@ def _humanize_simple_answer(answer: str | None) -> str | None:
     subject = _strip_leading_question_aux(subject)
     subject_display = _display_subject(subject)
     relation_display = RELATION_DISPLAY_MAP.get(relation, relation.replace("_", " "))
-    object_display = _display_object(obj, relation)
+    object_display = _display_object(obj, relation, include_article_for_is_a)
     return f"{subject_display} {relation_display} {object_display}"
 
 
@@ -105,19 +104,34 @@ def _display_subject(subject: str) -> str:
     return " ".join(word.capitalize() for word in words)
 
 
-def _display_object(obj: str, relation: str) -> str:
+def _display_object(obj: str, relation: str, include_article_for_is_a: bool) -> str:
     if relation == "is_a":
-        return obj.lower()
+        lowered = obj.lower()
+        if include_article_for_is_a and _needs_indefinite_article(lowered):
+            article = "an" if lowered[:1] in {"a", "e", "i", "o", "u"} else "a"
+            return f"{article} {lowered}"
+        return lowered
     return obj
+
+
+def _needs_indefinite_article(obj: str) -> bool:
+    if obj in IS_A_NO_ARTICLE_OBJECTS:
+        return False
+    if " " in obj:
+        return False
+    return obj.isalpha()
 
 
 def _render_explain(evaluation: FinalStateEvaluation, state: WorldStateMemory | None) -> str:
     """Explain with reasoning."""
     status = evaluation.status.value
-    answer = evaluation.answer
+    answer = _humanize_claim(evaluation.answer, include_article_for_is_a=False)
 
     if status == "VERIFIED" and evaluation.proof_trace:
-        trace = " → ".join(evaluation.proof_trace[:3])
+        trace = " → ".join(
+            _humanize_claim(step, include_article_for_is_a=True) or step
+            for step in evaluation.proof_trace[:3]
+        )
         return f"Yes — {answer} because {trace}."
     elif status == "CONTRADICTORY":
         reasons = "; ".join(evaluation.reasons[:2])
@@ -140,13 +154,25 @@ def _render_debug(
 
     if evaluation.answer is not None:
         lines.append(f"answer: {evaluation.answer}")
+        lines.append(
+            f"answer_human: {_humanize_claim(evaluation.answer, include_article_for_is_a=False)}"
+        )
     else:
         lines.append("answer: null")
+        lines.append("answer_human: null")
 
-    lines.append("proof_trace:")
+    lines.append("proof_trace_canonical:")
     if evaluation.proof_trace:
         for step in evaluation.proof_trace:
             lines.append(f"  - {step}")
+    else:
+        lines.append("  - null")
+
+    lines.append("proof_trace_human:")
+    if evaluation.proof_trace:
+        for step in evaluation.proof_trace:
+            human_step = _humanize_claim(step, include_article_for_is_a=True) or step
+            lines.append(f"  - {human_step}")
     else:
         lines.append("  - null")
 

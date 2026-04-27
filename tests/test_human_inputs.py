@@ -54,3 +54,13 @@ def test_simple_mode():
 
     # Should not crash
     assert result is None or hasattr(result, "evaluation") or hasattr(result, "user_message")
+
+
+def test_canonical_internal_relation_preserved_for_can_die_query():
+    """Renderer polish must not alter canonical internal relation storage."""
+    session = Session.create()
+    session.ingest("All men are mortal. Socrates is a man. Can Socrates die?")
+    result = session.solve()
+    assert result is not None and hasattr(result, "state")
+    goal = result.state.goals[0]
+    assert goal.relation == "is_a"
