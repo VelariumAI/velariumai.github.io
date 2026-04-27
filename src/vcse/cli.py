@@ -29,9 +29,7 @@ def run_logic_demo() -> str:
         final_state_evaluator=FinalStateEvaluator(),
     )
     node = search.run(build_logic_demo_state())
-    stack_result = VerifierStack.default().evaluate(node.state)
-    evaluation = FinalStateEvaluator().evaluate(node.state, stack_result.score)
-    return ExplanationRenderer().render(evaluation)
+    return ExplanationRenderer().render(node)
 
 
 def main(argv: list[str] | None = None) -> None:

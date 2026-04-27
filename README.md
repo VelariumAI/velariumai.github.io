@@ -47,6 +47,11 @@ contradiction candidates, domain-specific arithmetic and symbolic-logic
 proposal rules, and an optional solver-backed proposer that skips cleanly when
 the external solver package is not installed.
 
+Phase 6 hardens the renderer as a deterministic template system for final
+evaluations and search results. Output now consistently includes status,
+answer, proof trace, assumptions, contradictions, verifier reasons, and search
+statistics.
+
 Current data flow:
 
 ```text
