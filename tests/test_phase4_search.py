@@ -1,5 +1,7 @@
 from vcse.memory.relations import RelationSchema
+from vcse.memory.constraints import Constraint
 from vcse.memory.world_state import TruthStatus, WorldStateMemory
+from vcse.proposer.domain_specific import DomainSpecificProposer
 from vcse.proposer.rule_based import RuleBasedProposer
 from vcse.search.beam import BeamSearch, SearchConfig
 from vcse.search.result import SearchResult
@@ -155,3 +157,20 @@ def test_beam_width_limits_frontier() -> None:
     ).run(state)
 
     assert result.max_frontier_size <= 2
+
+
+def test_ts3_does_not_prune_progressing_arithmetic_path() -> None:
+    state = WorldStateMemory()
+    state.add_claim("x", "equals", "5", TruthStatus.ASSERTED)
+    state.add_constraint(
+        Constraint(kind="numeric", target="x", operator=">", value=0)
+    )
+    state.add_goal("x", "satisfies", "constraints")
+
+    result = make_search(
+        DomainSpecificProposer(),
+        SearchConfig(max_depth=3, beam_width=4, max_nodes_expanded=50, enable_ts3=True),
+    ).run(state)
+
+    assert result.terminal_status == "VERIFIED"
+    assert result.evaluation.answer == "x satisfies constraints"

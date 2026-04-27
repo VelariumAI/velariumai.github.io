@@ -103,3 +103,12 @@ def test_benchmark_command_exits_nonzero_on_failed_benchmark_unless_allowed(tmp_
     assert "status: BENCHMARK_FAILED" in failed.stdout
     assert allowed.returncode == 0
     assert "status: BENCHMARK_FAILED" in allowed.stdout
+
+
+def test_mixed_benchmark_passes_with_ts3_enabled() -> None:
+    path = Path(__file__).resolve().parents[1] / "benchmarks" / "mixed_cases.jsonl"
+
+    summary = run_benchmark(path, enable_ts3=True)
+
+    assert summary["status"] == "BENCHMARK_COMPLETE"
+    assert summary["cases_passed"] == summary["cases_total"]

@@ -28,7 +28,7 @@ class SearchConfig:
     depth_penalty: float = 0.1
     uncertainty_penalty: float = 0.5
     enable_ts3: bool = False
-    ts3_stagnation_penalty: float = 0.2
+    ts3_stagnation_penalty: float = 0.0
 
     def __post_init__(self) -> None:
         if self.max_depth < 0:
@@ -128,7 +128,10 @@ class BeamSearch:
                     child_signature = self._signature_for(new_state)
 
                     if self.config.enable_ts3 and child_signature:
-                        if child_signature in set(node.path_signatures):
+                        if (
+                            child_signature in set(node.path_signatures)
+                            and self._has_no_progress(node.state, new_state)
+                        ):
                             self._observe_ts3_loop(node, child_signature)
                             continue
 
@@ -141,8 +144,12 @@ class BeamSearch:
                             self._observe_ts3_terminal(final.status.value)
                         continue
 
-                    if self.config.enable_ts3 and child_signature:
-                        if child_signature in {n.state_signature for n in next_frontier if n.state_signature}:
+                    if self.config.enable_ts3 and child_signature and self.config.ts3_stagnation_penalty > 0:
+                        if any(
+                            n.state_signature == child_signature and n.state.version == new_state.version
+                            for n in next_frontier
+                            if n.state_signature is not None
+                        ):
                             child_score -= self.config.ts3_stagnation_penalty
 
                     child = SearchNode(
@@ -223,6 +230,10 @@ class BeamSearch:
         if not self.config.enable_ts3:
             return None
         return StateSignature.from_memory(state).value
+
+    def _has_no_progress(self, before: WorldStateMemory, after: WorldStateMemory) -> bool:
+        """No-progress means no material memory update happened."""
+        return after.version == before.version
 
     def _observe_ts3_state(
         self,
