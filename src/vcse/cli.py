@@ -27,6 +27,14 @@ from vcse.generation import GenerationError, VerifiedGenerator, spec_from_dict
 from vcse.index import SymbolicRetriever
 from vcse.engine import CaseValidationError, build_search, state_from_case
 from vcse.ingestion.pipeline import IngestionError, ingest_file
+from vcse.knowledge import (
+    KnowledgePipeline,
+    Source,
+    install_pack,
+    list_installed_packs,
+    pack_stats,
+)
+from vcse.knowledge.errors import KnowledgeError
 from vcse.memory.constraints import Constraint
 from vcse.memory.relations import RelationSchema
 from vcse.memory.world_state import TruthStatus, WorldStateMemory
@@ -604,6 +612,80 @@ def run_index_stats(dsl_path: str | None = None) -> str:
     return "\n".join(lines)
 
 
+def run_knowledge_validate(path: Path) -> str:
+    result = KnowledgePipeline().validate_source(Source.from_path(path))
+    lines = [
+        f"status: {result.status}",
+        f"claims_extracted: {result.metrics.claims_extracted}",
+        f"valid_claims: {result.metrics.valid_claims}",
+        f"invalid_claims_rejected: {result.metrics.invalid_claims_rejected}",
+        f"conflicts_detected: {result.metrics.conflicts_detected}",
+    ]
+    if result.errors:
+        lines.append("errors:")
+        for error in result.errors:
+            lines.append(f"  - {error}")
+    if result.warnings:
+        lines.append("warnings:")
+        for warning in result.warnings:
+            lines.append(f"  - {warning}")
+    return "\n".join(lines)
+
+
+def run_knowledge_build(path: Path, pack_name: str, domain: str = "general") -> str:
+    result = KnowledgePipeline().build(
+        Source.from_path(path),
+        pack_id=pack_name,
+        domain=domain,
+        output_path=pack_name,
+        write=True,
+    )
+    lines = [
+        f"status: BUILT",
+        f"pack: {pack_name}",
+        f"output: {result.output_path}",
+        f"claims: {len(result.pack.claims)}",
+        f"invalid_claims_rejected: {result.metrics.invalid_claims_rejected}",
+        f"conflicts_detected: {result.metrics.conflicts_detected}",
+    ]
+    if result.errors:
+        lines.append("errors:")
+        for error in result.errors:
+            lines.append(f"  - {error}")
+    return "\n".join(lines)
+
+
+def run_knowledge_stats(path: Path) -> str:
+    stats = pack_stats(path)
+    return "\n".join(
+        [
+            "status: PACK_STATS",
+            f"pack: {stats['id']}",
+            f"version: {stats['version']}",
+            f"domain: {stats['domain']}",
+            f"claims: {stats['claim_count']}",
+            f"constraints: {stats['constraint_count']}",
+            f"conflicts: {stats['conflict_count']}",
+        ]
+    )
+
+
+def run_pack_install(path: Path) -> str:
+    destination = install_pack(path)
+    return "\n".join(["status: INSTALLED", f"path: {destination}"])
+
+
+def run_pack_list() -> str:
+    names = list_installed_packs()
+    lines = ["packs:"]
+    if not names:
+        lines.append("  - none")
+    else:
+        for name in names:
+            lines.append(f"  - {name}")
+    return "\n".join(lines)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="vcse")
     parser.add_argument("--config")
@@ -708,6 +790,23 @@ def main(argv: list[str] | None = None) -> None:
     index_build_parser.add_argument("--dsl")
     index_stats_parser = index_subparsers.add_parser("stats")
     index_stats_parser.add_argument("--dsl")
+
+    knowledge_parser = subparsers.add_parser("knowledge")
+    knowledge_subparsers = knowledge_parser.add_subparsers(dest="knowledge_command")
+    knowledge_validate_parser = knowledge_subparsers.add_parser("validate")
+    knowledge_validate_parser.add_argument("source")
+    knowledge_build_parser = knowledge_subparsers.add_parser("build")
+    knowledge_build_parser.add_argument("source")
+    knowledge_build_parser.add_argument("--pack", required=True)
+    knowledge_build_parser.add_argument("--domain", default="general")
+    knowledge_stats_parser = knowledge_subparsers.add_parser("stats")
+    knowledge_stats_parser.add_argument("pack")
+
+    pack_parser = subparsers.add_parser("pack")
+    pack_subparsers = pack_parser.add_subparsers(dest="pack_command")
+    pack_install_parser = pack_subparsers.add_parser("install")
+    pack_install_parser.add_argument("pack_path")
+    pack_subparsers.add_parser("list")
 
     try:
         args = parser.parse_args(argv)
@@ -822,6 +921,23 @@ def main(argv: list[str] | None = None) -> None:
             if args.index_command == "stats":
                 print(run_index_stats(args.dsl))
                 return
+        if args.command == "knowledge":
+            if args.knowledge_command == "validate":
+                print(run_knowledge_validate(Path(args.source)))
+                return
+            if args.knowledge_command == "build":
+                print(run_knowledge_build(Path(args.source), args.pack, domain=args.domain))
+                return
+            if args.knowledge_command == "stats":
+                print(run_knowledge_stats(Path(args.pack)))
+                return
+        if args.command == "pack":
+            if args.pack_command == "install":
+                print(run_pack_install(Path(args.pack_path)))
+                return
+            if args.pack_command == "list":
+                print(run_pack_list())
+                return
         if args.command == "dsl":
             if args.dsl_command == "validate":
                 document = DSLLoader.load(args.path)
@@ -902,6 +1018,7 @@ def main(argv: list[str] | None = None) -> None:
         DSLError,
         GenerationError,
         GauntletError,
+        KnowledgeError,
     ) as exc:
         error_type = getattr(exc, "error_type", None)
         reason = getattr(exc, "reason", None)

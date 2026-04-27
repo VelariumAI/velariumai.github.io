@@ -255,3 +255,16 @@ docker run -p 8000:8000 vcse
 ```
 
 See [docs/CONFIG.md](docs/CONFIG.md) and [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for runtime settings and deployment notes.
+
+## Knowledge Automation
+
+VCSE can build deterministic knowledge packs from local JSON, JSONL, CSV, and structured text sources.
+
+```bash
+vcse knowledge validate examples/ingestion/simple_claims.json
+vcse knowledge build examples/ingestion/simple_claims.json --pack test_pack
+vcse pack install ./test_pack
+vcse pack list
+```
+
+See [docs/KNOWLEDGE.md](docs/KNOWLEDGE.md) for the source, validation, conflict, and pack format.
