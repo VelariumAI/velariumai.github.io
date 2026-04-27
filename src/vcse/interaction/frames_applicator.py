@@ -57,9 +57,7 @@ class FrameApplicator:
         """Apply a ClaimFrame as a new claim in memory."""
         try:
             memory = result.memory
-            # Ensure relation schema exists
-            if memory.get_relation_schema(frame.relation) is None:
-                memory.add_relation_schema(self._create_schema(frame.relation))
+            self._ensure_relation_schema(memory, frame.relation)
             # Add the claim
             memory.add_claim(
                 frame.subject,
@@ -76,14 +74,7 @@ class FrameApplicator:
         """Apply a GoalFrame as a goal in memory."""
         try:
             memory = result.memory
-            # Ensure relation schema exists with transitive for is_a
-            if memory.get_relation_schema(frame.relation) is None:
-                from vcse.memory.relations import RelationSchema
-                # Use transitive=True for is_a for proper inheritance reasoning
-                transitive = (frame.relation == "is_a")
-                memory.add_relation_schema(
-                    RelationSchema(name=frame.relation, transitive=transitive)
-                )
+            self._ensure_relation_schema(memory, frame.relation)
             memory.add_goal(
                 frame.subject,
                 frame.relation,
@@ -119,4 +110,23 @@ class FrameApplicator:
     def _create_schema(self, relation: str) -> "RelationSchema":
         """Create a relation schema for unknown relations."""
         from vcse.memory.relations import RelationSchema
-        return RelationSchema(name=relation, transitive=False)
+        return RelationSchema(name=relation, transitive=(relation == "is_a"))
+
+    def _ensure_relation_schema(self, memory: WorldStateMemory, relation: str) -> None:
+        """Ensure relation schema exists and preserves is_a transitivity."""
+        existing = memory.get_relation_schema(relation)
+        if existing is None:
+            memory.add_relation_schema(self._create_schema(relation))
+            return
+        if relation == "is_a" and not existing.transitive:
+            from vcse.memory.relations import RelationSchema
+            memory.add_relation_schema(
+                RelationSchema(
+                    name=existing.name,
+                    symmetric=existing.symmetric,
+                    transitive=True,
+                    reflexive=existing.reflexive,
+                    functional=existing.functional,
+                    inverse=existing.inverse,
+                )
+            )

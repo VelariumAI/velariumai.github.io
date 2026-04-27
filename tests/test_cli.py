@@ -119,3 +119,39 @@ def test_cli_does_not_require_gpu_or_external_service() -> None:
     combined = f"{result.stdout}\n{result.stderr}".lower()
     assert "gpu" not in combined
     assert "service" not in combined
+
+
+def test_cli_ask_simple_humanizes_is_a_relation_and_strips_modal_subject() -> None:
+    result = run_cli(
+        "ask",
+        "All men are mortal. Socrates is a man. Can Socrates die?",
+        "--mode",
+        "simple",
+    )
+
+    assert result.returncode == 0
+    assert "Yes — Socrates is mortal." in result.stdout
+    assert "can socrates" not in result.stdout.lower()
+
+
+def test_cli_ask_explain_and_debug_preserve_proof_trace() -> None:
+    explain = run_cli(
+        "ask",
+        "All men are mortal. Socrates is a man. Can Socrates die?",
+        "--mode",
+        "explain",
+    )
+    debug = run_cli(
+        "ask",
+        "All men are mortal. Socrates is a man. Can Socrates die?",
+        "--mode",
+        "debug",
+    )
+
+    assert explain.returncode == 0
+    assert "because" in explain.stdout
+    assert "socrates is_a man" in explain.stdout.lower()
+
+    assert debug.returncode == 0
+    assert "proof_trace:" in debug.stdout
+    assert "socrates is_a man" in debug.stdout.lower()

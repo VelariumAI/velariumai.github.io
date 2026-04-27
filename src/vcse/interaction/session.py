@@ -48,7 +48,7 @@ class Session:
         """Ingest user input, normalize and parse."""
         from vcse.interaction.normalizer import SemanticNormalizer
         from vcse.interaction.parser import PatternParser
-        from vcse.interaction.frames import GoalFrame
+        from vcse.interaction.frames import GoalFrame, ClaimFrame
         import re
 
         normalizer = SemanticNormalizer()
@@ -57,8 +57,8 @@ class Session:
         normalized = normalizer.normalize(text)
         frames = parser.parse(normalized.normalized_text)
 
-        # Handle "can X die" pattern - extract X and create goal X is_a mortal
-        can_match = re.match(r"^can\s+(.+?)\s+die\s*\??$", normalized.normalized_text.strip(), re.IGNORECASE)
+        # Handle direct "can X die" pattern before normalization.
+        can_match = re.match(r"^\s*can\s+(.+?)\s+die\s*\??\s*$", text, re.IGNORECASE)
         if can_match:
             subject = can_match.group(1).strip().rstrip("?")
             frames = FrameParseResult()
@@ -71,16 +71,21 @@ class Session:
                 source_text=text,
             )]
         elif normalized.is_question and frames.frames:
-            # If question and got frames, convert last is_a frame to GoalFrame
-            for i, frame in enumerate(reversed(frames.frames)):
-                if hasattr(frame, 'relation') and frame.relation == "is_a":
-                    frames.frames[i] = GoalFrame(
-                        subject=frame.subject,
-                        relation=frame.relation,
-                        object=frame.object,
-                        source_text=frame.source_text,
-                    )
-                    break
+            has_goal = any(isinstance(frame, GoalFrame) for frame in frames.frames)
+            if has_goal:
+                pass
+            else:
+                # If question and parser returned only claims, convert the last is_a claim to a goal.
+                for index in range(len(frames.frames) - 1, -1, -1):
+                    frame = frames.frames[index]
+                    if isinstance(frame, ClaimFrame) and frame.relation == "is_a":
+                        frames.frames[index] = GoalFrame(
+                            subject=frame.subject,
+                            relation=frame.relation,
+                            object=frame.object,
+                            source_text=frame.source_text,
+                        )
+                        break
 
         # Record the turn
         turn = TurnRecord(

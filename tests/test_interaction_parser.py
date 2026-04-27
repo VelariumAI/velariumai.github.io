@@ -61,3 +61,14 @@ def test_parse_empty():
     parser = PatternParser()
     result = parser.parse("")
     assert result.status == FrameStatus.FAILED
+
+
+def test_parse_can_socrates_die_as_goal_without_modal_in_subject():
+    parser = PatternParser()
+    result = parser.parse("can socrates is_a mortal")
+    assert result.status == FrameStatus.PARSED
+    assert len(result.frames) >= 1
+    assert isinstance(result.frames[0], GoalFrame)
+    assert result.frames[0].subject == "socrates"
+    assert result.frames[0].relation == "is_a"
+    assert result.frames[0].object == "mortal"

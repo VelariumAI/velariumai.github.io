@@ -18,6 +18,15 @@ class ResponseMode(Enum):
     STRICT = "strict"
 
 
+RELATION_DISPLAY_MAP = {
+    "is_a": "is",
+    "equals": "equals",
+    "part_of": "is part of",
+}
+
+QUESTION_AUXILIARIES = {"can", "could", "would", "should", "does", "do", "did", "is", "are"}
+
+
 def render_response(
     evaluation: FinalStateEvaluation | SearchResult,
     mode: ResponseMode,
@@ -41,7 +50,7 @@ def render_response(
 def _render_simple(evaluation: FinalStateEvaluation) -> str:
     """Simple yes/no style response."""
     status = evaluation.status.value
-    answer = evaluation.answer
+    answer = _humanize_simple_answer(evaluation.answer)
 
     if status == "VERIFIED":
         return f"Yes — {answer or 'verified'}."
@@ -52,6 +61,54 @@ def _render_simple(evaluation: FinalStateEvaluation) -> str:
     elif status == "INCONCLUSIVE":
         return "Insufficient information."
     return f"Status: {status}"
+
+
+def _humanize_simple_answer(answer: str | None) -> str | None:
+    """Render internal canonical triples in a friendlier sentence form."""
+    if not answer:
+        return answer
+
+    clean = " ".join(answer.strip().split())
+    subject, relation, obj = _split_claim_text(clean)
+    if relation is None:
+        return clean
+
+    subject = _strip_leading_question_aux(subject)
+    subject_display = _display_subject(subject)
+    relation_display = RELATION_DISPLAY_MAP.get(relation, relation.replace("_", " "))
+    object_display = _display_object(obj, relation)
+    return f"{subject_display} {relation_display} {object_display}"
+
+
+def _split_claim_text(answer: str) -> tuple[str, str | None, str]:
+    for relation in RELATION_DISPLAY_MAP:
+        token = f" {relation} "
+        if token in answer:
+            subject, obj = answer.split(token, 1)
+            return subject.strip(), relation, obj.strip()
+    return answer, None, ""
+
+
+def _strip_leading_question_aux(subject: str) -> str:
+    parts = subject.split()
+    if parts and parts[0].lower() in QUESTION_AUXILIARIES:
+        return " ".join(parts[1:]).strip()
+    return subject
+
+
+def _display_subject(subject: str) -> str:
+    if not subject:
+        return subject
+    words = subject.split()
+    if len(words) == 1 and len(words[0]) == 1:
+        return words[0]
+    return " ".join(word.capitalize() for word in words)
+
+
+def _display_object(obj: str, relation: str) -> str:
+    if relation == "is_a":
+        return obj.lower()
+    return obj
 
 
 def _render_explain(evaluation: FinalStateEvaluation, state: WorldStateMemory | None) -> str:

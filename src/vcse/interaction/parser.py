@@ -19,6 +19,7 @@ from vcse.interaction.frames import (
 
 # Comparison operators
 COMPARISON_OPS = {">", "<", ">=", "<=", "=", "equals"}
+QUESTION_AUXILIARIES = {"can", "could", "would", "should", "does", "do", "did", "is", "are"}
 
 
 @dataclass
@@ -98,14 +99,15 @@ class PatternParser:
     def _try_question(self, text: str) -> FrameParseResult:
         """Try to parse as a question."""
         result = FrameParseResult()
-
-        # Must end with "?" to be a question
-        if not text.strip().endswith("?"):
+        clean = text.strip()
+        starts_with_aux, leading_aux = self._leading_question_aux(clean)
+        if not (clean.endswith("?") or starts_with_aux):
             result.status = FrameStatus.UNSUPPORTED
             return result
+        clean = clean.rstrip("?").strip()
 
         # "Is X a Y?" / "Is X Y?"
-        m = re.match(r"^is\s+(.+?)\s+(?:a|an)?\s*(.+?)\??$", text, re.IGNORECASE)
+        m = re.match(r"^is\s+(.+?)\s+(?:a|an)?\s*(.+?)$", clean, re.IGNORECASE)
         if m:
             subject, obj = m.group(1).strip(), m.group(2).strip()
             frame = GoalFrame(
@@ -119,8 +121,29 @@ class PatternParser:
             result.confidence = 0.9
             return result
 
-        # "Can X die?" - normalized form "X is_a mortal"
-        m = re.match(r"^(.+?)\s+is_a\s+(.+?)\??$", text, re.IGNORECASE)
+        # "Can X die?" should always map to X is_a mortal.
+        m = re.match(
+            r"^(?:can|could|would|should|does|do|did|is|are)\s+(.+?)\s+die$",
+            clean,
+            re.IGNORECASE,
+        )
+        if m:
+            subject = m.group(1).strip()
+            frame = GoalFrame(
+                subject=self._canonicalize(subject),
+                relation="is_a",
+                object="mortal",
+                source_text=text,
+            )
+            result.frames.append(frame)
+            result.status = FrameStatus.PARSED
+            result.confidence = 0.9
+            return result
+
+        stripped = self._strip_leading_question_aux(clean)
+
+        # normalized form from normalizer: "can X is_a mortal" -> "X is_a mortal"
+        m = re.match(r"^(.+?)\s+is_a\s+(.+?)$", stripped, re.IGNORECASE)
         if m:
             subject, obj = m.group(1).strip(), m.group(2).strip()
             frame = GoalFrame(
@@ -134,8 +157,27 @@ class PatternParser:
             result.confidence = 0.9
             return result
 
-        # "Can X die?" / "Can X fly?" / "Can X swim?" / etc
-        m = re.match(r"^can\s+(.+?)\s+(die|fly|swim|walk|run|jump|breathe|eat|drink|see|hear|think)\s*\??$", text, re.IGNORECASE)
+        # normalized or raw modal question without explicit is_a: "can X is mortal"
+        m = re.match(r"^(.+?)\s+is\s+(?:a|an)?\s*(.+?)$", stripped, re.IGNORECASE)
+        if m:
+            subject, obj = m.group(1).strip(), m.group(2).strip()
+            frame = GoalFrame(
+                subject=self._canonicalize(subject),
+                relation="is_a",
+                object=obj,
+                source_text=text,
+            )
+            result.frames.append(frame)
+            result.status = FrameStatus.PARSED
+            result.confidence = 0.9
+            return result
+
+        # "Can X fly?" / "Can X swim?" / etc
+        m = re.match(
+            r"^can\s+(.+?)\s+(fly|swim|walk|run|jump|breathe|eat|drink|see|hear|think)$",
+            clean,
+            re.IGNORECASE,
+        )
         if m:
             subject = m.group(1).strip()
             frame = GoalFrame(
@@ -164,7 +206,7 @@ class PatternParser:
             return result
 
         # "Prove X is Y" / "Determine whether X is Y"
-        m = re.match(r"^(?:prove|determine)\s+(?:whether\s+)?(.+?)\s+(?:is|are|equals)\s+(.+?)\??$", text, re.IGNORECASE)
+        m = re.match(r"^(?:prove|determine)\s+(?:whether\s+)?(.+?)\s+(?:is|are|equals)\s+(.+?)$", clean, re.IGNORECASE)
         if m:
             subject, obj = m.group(1).strip(), m.group(2).strip()
             frame = GoalFrame(
@@ -374,3 +416,18 @@ class PatternParser:
         """Canonicalize a term name."""
         # Remove leading/trailing whitespace, lowercase
         return text.strip().lower()
+
+    def _leading_question_aux(self, text: str) -> tuple[bool, str]:
+        """Return whether text starts with a supported question auxiliary."""
+        match = re.match(r"^([a-zA-Z_]+)\b", text.strip())
+        if not match:
+            return False, ""
+        aux = match.group(1).lower()
+        return aux in QUESTION_AUXILIARIES, aux
+
+    def _strip_leading_question_aux(self, text: str) -> str:
+        """Strip leading question auxiliary from a statement."""
+        starts_with_aux, aux = self._leading_question_aux(text)
+        if not starts_with_aux:
+            return text.strip()
+        return re.sub(rf"^\s*{re.escape(aux)}\s+", "", text, count=1, flags=re.IGNORECASE).strip()

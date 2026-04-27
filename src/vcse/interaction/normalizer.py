@@ -161,10 +161,10 @@ class SemanticNormalizer:
         for phrase in sorted_relations:
             canonical = RELATION_MAP[phrase]
             pattern = re.compile(r"\b" + re.escape(phrase) + r"\b", re.IGNORECASE)
-            new_text = pattern.sub(canonical, text)
-            if new_text != text:
+            new_text, count = pattern.subn(canonical, text)
+            if count:
                 replacements.append((phrase, canonical))
-                return new_text
+                text = new_text
         return text
 
     def _apply_synonym_canonicalization(
@@ -173,10 +173,10 @@ class SemanticNormalizer:
         """Replace synonyms with canonical forms."""
         for phrase, canonical in SYNONYM_MAP.items():
             pattern = re.compile(r"\b" + re.escape(phrase) + r"\b", re.IGNORECASE)
-            new_text = pattern.sub(canonical, text)
-            if new_text != text:
+            new_text, count = pattern.subn(canonical, text)
+            if count:
                 replacements.append((phrase, canonical))
-                return new_text
+                text = new_text
         return text
 
     def _compute_confidence(
