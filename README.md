@@ -84,9 +84,7 @@ expanded, search depth, and proof trace length.
 
 ## Versioning
 
-Current stabilization target: `0.9.0`.
-
-See [docs/VERSIONING.md](docs/VERSIONING.md).
+VCSE 1.0.0 is the first stable release. See [docs/VERSIONING.md](docs/VERSIONING.md).
 
 ## Improvement Methodology
 
@@ -112,10 +110,7 @@ Core implementation is CPU-only and must not add text-model dependencies. See
 
 ## Roadmap To 1.0.0
 
-- Tighten docs and examples.
-- Run the full test and benchmark matrix.
-- Fix only release-blocking failures.
-- Tag `v1.0.0` once the release matrix is clean.
+VCSE 1.0.0 is released. Future work tracked in docs/ROADMAP.md.
 
 ## Development
 

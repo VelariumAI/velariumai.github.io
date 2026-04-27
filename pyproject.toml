@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "vcse"
-version = "0.9.0"
+version = "1.0.0"
 description = "Verifier-Centered Symbolic Engine"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -15,7 +15,7 @@ authors = [
 dependencies = []
 keywords = ["symbolic-reasoning", "verification", "search", "constraints"]
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
