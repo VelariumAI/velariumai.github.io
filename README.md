@@ -42,6 +42,11 @@ structured `SearchResult`, verifier-integrated Beam Search, hard enforcement
 of depth, beam width, and node expansion limits, early stop on `VERIFIED`, and
 pruning for `CONTRADICTORY` / `UNSATISFIABLE` branches.
 
+Phase 5 completes the symbolic proposer package with rule-based closure and
+contradiction candidates, domain-specific arithmetic and symbolic-logic
+proposal rules, and an optional solver-backed proposer that skips cleanly when
+the external solver package is not installed.
+
 Current data flow:
 
 ```text
