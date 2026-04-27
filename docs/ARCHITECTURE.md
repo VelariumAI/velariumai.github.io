@@ -29,6 +29,8 @@ Input JSON / CLI demo
   provenance and validation.
 - Generation: deterministic template-based artifact construction and
   verification with bounded repair.
+- Gauntlet: adversarial benchmark runner/evaluator/metrics/reporting for
+  trust validation.
 - Memory: stores claims, constraints, goals, symbol bindings, evidence, and
   contradiction indexes.
 - Proposers: produce `Transition` objects only.

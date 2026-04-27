@@ -1,0 +1,12 @@
+{"category": "ambiguity", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_ambig_001", "input": "Is it valid?", "mode": "ask", "notes": "ambiguity gauntlet"}
+{"category": "ambiguity", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_ambig_002", "input": "Is John eligible?", "mode": "ask", "notes": "ambiguity gauntlet"}
+{"category": "ambiguity", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_ambig_003", "input": "Can they do that?", "mode": "ask", "notes": "ambiguity gauntlet"}
+{"category": "ambiguity", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_ambig_004", "input": "Is it a mammal?", "mode": "ask", "notes": "ambiguity gauntlet"}
+{"category": "ambiguity", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_ambig_005", "input": "Does that work?", "mode": "ask", "notes": "ambiguity gauntlet"}
+{"category": "ambiguity", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_ambig_006", "input": "Is this right?", "mode": "ask", "notes": "ambiguity gauntlet"}
+{"category": "ambiguity", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_ambig_007", "input": "Should we proceed?", "mode": "ask", "notes": "ambiguity gauntlet"}
+{"category": "ambiguity", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_ambig_008", "input": "Is it good?", "mode": "ask", "notes": "ambiguity gauntlet"}
+{"category": "ambiguity", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_ambig_009", "input": "Do the usual thing.", "mode": "ask", "notes": "ambiguity gauntlet"}
+{"category": "ambiguity", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_ambig_010", "input": "Make it work.", "mode": "ask", "notes": "ambiguity gauntlet"}
+{"category": "ambiguity", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_ambig_011", "input": "Is the thing valid?", "mode": "ask", "notes": "ambiguity gauntlet"}
+{"category": "ambiguity", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_ambig_012", "input": "What about the other one?", "mode": "ask", "notes": "ambiguity gauntlet"}

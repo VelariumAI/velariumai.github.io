@@ -60,6 +60,7 @@ vcse ask "Can Socrates perish?" --dsl examples/dsl/mortality.json
 vcse index build --dsl examples/dsl/basic_logic.json
 vcse ask "Can Socrates perish?" --dsl examples/dsl/mortality.json --index
 vcse generate examples/generation/contractor_policy_spec.json
+vcse gauntlet benchmarks/gauntlet/
 ```
 
 Example JSON input:
@@ -137,6 +138,25 @@ vcse generate examples/generation/contractor_policy_spec.json --index
 ```
 
 See [docs/GENERATION.md](docs/GENERATION.md).
+
+## Gauntlet
+
+VCSE 1.8.0 adds the Gauntlet adversarial benchmark suite for trust and
+robustness evaluation across ask/generate/ingest flows.
+
+Critical policy:
+
+- Incorrect `VERIFIED` is a critical failure.
+- `INCONCLUSIVE` is acceptable.
+- No silent case skipping.
+
+```bash
+vcse gauntlet benchmarks/gauntlet/
+vcse gauntlet benchmarks/gauntlet/ --json
+vcse gauntlet benchmarks/gauntlet/ --search mcts --ts3 --index
+```
+
+See [docs/GAUNTLET.md](docs/GAUNTLET.md).
 
 ## Symbolic Indexing
 

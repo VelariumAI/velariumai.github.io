@@ -10,6 +10,16 @@ from pathlib import Path
 from vcse.benchmark import BenchmarkCaseError, format_benchmark_text, run_benchmark
 from vcse.dsl import DSLCompiler, DSLLoader, DSLValidator, GLOBAL_REGISTRY
 from vcse.dsl.errors import DSLError
+from vcse.gauntlet import (
+    GauntletEvaluator,
+    GauntletRunConfig,
+    GauntletRunner,
+    GauntletError,
+    compute_metrics,
+    load_gauntlet_cases,
+    render_gauntlet_json,
+    render_gauntlet_summary,
+)
 from vcse.generation import GenerationError, VerifiedGenerator, spec_from_dict
 from vcse.index import SymbolicRetriever
 from vcse.engine import CaseValidationError, build_search, state_from_case
@@ -421,6 +431,47 @@ def run_generate(
     return "\n".join(lines)
 
 
+def run_gauntlet(
+    target_path: Path,
+    search_backend: str = "beam",
+    enable_ts3: bool = False,
+    enable_index: bool = False,
+    top_k_rules: int = 20,
+    top_k_packs: int = 5,
+    dsl_bundle=None,
+    json_output: bool = False,
+    debug: bool = False,
+) -> tuple[str, int]:
+    cases = load_gauntlet_cases(target_path)
+    results = GauntletRunner().run(
+        cases,
+        GauntletRunConfig(
+            search_backend=search_backend,
+            enable_ts3=enable_ts3,
+            enable_index=enable_index,
+            top_k_rules=top_k_rules,
+            top_k_packs=top_k_packs,
+            dsl_bundle=dsl_bundle,
+            debug=debug,
+        ),
+    )
+    evaluator = GauntletEvaluator()
+    evaluations = [evaluator.evaluate(case, result) for case, result in zip(cases, results)]
+    metrics = compute_metrics(cases, results, evaluations)
+
+    if json_output:
+        text = render_gauntlet_json(metrics, cases, results, evaluations, debug=debug)
+    else:
+        text = render_gauntlet_summary(metrics, cases, results, evaluations)
+
+    exit_code = 0
+    if metrics.critical_failures > 0 or metrics.false_verified_count > 0:
+        exit_code = 2
+    elif metrics.failed > 0:
+        exit_code = 1
+    return text, exit_code
+
+
 def load_dsl_bundle(path: str | Path):
     document = DSLLoader.load(path)
     validation = DSLValidator.validate(document)
@@ -516,6 +567,17 @@ def main(argv: list[str] | None = None) -> None:
     generate_parser.add_argument("--dsl")
     generate_parser.add_argument("--top-k", type=int, default=20, dest="top_k_rules")
     generate_parser.add_argument("--output", type=Path)
+
+    gauntlet_parser = subparsers.add_parser("gauntlet")
+    gauntlet_parser.add_argument("path")
+    gauntlet_parser.add_argument("--json", action="store_true", dest="json_output")
+    gauntlet_parser.add_argument("--debug", action="store_true")
+    gauntlet_parser.add_argument("--search", default="beam")
+    gauntlet_parser.add_argument("--ts3", action="store_true")
+    gauntlet_parser.add_argument("--index", action="store_true")
+    gauntlet_parser.add_argument("--top-k", type=int, default=20, dest="top_k_rules")
+    gauntlet_parser.add_argument("--top-k-packs", type=int, default=5, dest="top_k_packs")
+    gauntlet_parser.add_argument("--dsl")
 
     # New interaction commands
     ask_parser = subparsers.add_parser("ask")
@@ -615,6 +677,24 @@ def main(argv: list[str] | None = None) -> None:
                 )
             )
             return
+        if args.command == "gauntlet":
+            validate_index_args(args.top_k_rules, args.top_k_packs)
+            dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
+            text, exit_code = run_gauntlet(
+                Path(args.path),
+                search_backend=args.search,
+                enable_ts3=args.ts3,
+                enable_index=args.index,
+                top_k_rules=args.top_k_rules,
+                top_k_packs=args.top_k_packs,
+                dsl_bundle=dsl_bundle,
+                json_output=args.json_output,
+                debug=args.debug,
+            )
+            print(text)
+            if exit_code != 0:
+                raise SystemExit(exit_code)
+            return
         if args.command == "ask":
             validate_index_args(args.top_k_rules, args.top_k_packs)
             dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
@@ -707,6 +787,7 @@ def main(argv: list[str] | None = None) -> None:
         IngestionError,
         DSLError,
         GenerationError,
+        GauntletError,
     ) as exc:
         error_type = getattr(exc, "error_type", None)
         reason = getattr(exc, "reason", None)
