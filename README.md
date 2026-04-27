@@ -84,7 +84,7 @@ expanded, search depth, and proof trace length.
 
 ## Versioning
 
-VCSE 1.0.0 is the first stable release. See [docs/VERSIONING.md](docs/VERSIONING.md).
+VCSE 1.1.0 adds the interaction layer. VCSE 1.0.0 was the first stable release. See [docs/VERSIONING.md](docs/VERSIONING.md).
 
 ## Improvement Methodology
 

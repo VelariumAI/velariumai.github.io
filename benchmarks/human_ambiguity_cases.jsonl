@@ -1,0 +1,20 @@
+{"id": "human_ambig_001", "input": "Is it valid?", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "refer to"}
+{"id": "human_ambig_002", "input": "Is John eligible?", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "eligibility criteria"}
+{"id": "human_ambig_003", "input": "Can they do that?", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "they"}
+{"id": "human_ambig_004", "input": "Is it a mammal?", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "what does"}
+{"id": "human_ambig_005", "input": "Does that work?", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "that"}
+{"id": "human_ambig_006", "input": "Is this right?", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "this"}
+{"id": "human_ambig_007", "input": "Should we proceed?", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "what"}
+{"id": "human_ambig_008", "input": "Is it good?", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "what does"}
+{"id": "human_ambig_009", "input": "Do the usual thing.", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "specific"}
+{"id": "human_ambig_010", "input": "Make it work.", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "specific"}
+{"id": "human_ambig_011", "input": "Is the thing valid?", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "thing"}
+{"id": "human_ambig_012", "input": "What about the other one?", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "which"}
+{"id": "human_ambig_013", "input": "Who is eligible for the thing?", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "thing"}
+{"id": "human_ambig_014", "input": "Does it meet the requirements?", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "what does"}
+{"id": "human_ambig_015", "input": "Is there a solution?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_ambig_016", "input": "Is this possible?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_ambig_017", "input": "Can we do it?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_ambig_018", "input": "Just check if it's okay.", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "what does"}
+{"id": "human_ambig_019", "input": "Some mammals lay eggs. Is that a contradiction?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_ambig_020", "input": "The thing is broken.", "expected_status": "NEEDS_CLARIFICATION", "expected_clarification_contains": "specific"}

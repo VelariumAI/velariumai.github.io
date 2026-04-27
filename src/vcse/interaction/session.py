@@ -1,0 +1,169 @@
+"""Session management for multi-turn reasoning."""
+
+from __future__ import annotations
+
+import uuid
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any
+
+from vcse.interaction.clarification import ClarificationRequest
+from vcse.interaction.frames import FrameParseResult, FrameStatus
+from vcse.interaction.normalizer import NormalizedInput
+from vcse.memory.world_state import WorldStateMemory
+from vcse.search.result import SearchResult
+
+
+@dataclass
+class TurnRecord:
+    """A single turn in the conversation."""
+    timestamp: str
+    user_input: str
+    normalized: NormalizedInput | None = None
+    frames: FrameParseResult | None = None
+    transitions_applied: list[str] = field(default_factory=list)
+    result_status: str | None = None
+    search_result: SearchResult | None = None
+
+
+@dataclass
+class Session:
+    """In-memory session for multi-turn reasoning."""
+    id: str
+    memory: WorldStateMemory
+    history: list[TurnRecord] = field(default_factory=list)
+    current_goal: Any = None
+    mode: str = "explain"
+    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+
+    @classmethod
+    def create(cls) -> "Session":
+        """Create a new session."""
+        return cls(
+            id=str(uuid.uuid4())[:8],
+            memory=WorldStateMemory(),
+        )
+
+    def ingest(self, text: str) -> FrameParseResult:
+        """Ingest user input, normalize and parse."""
+        from vcse.interaction.normalizer import SemanticNormalizer
+        from vcse.interaction.parser import PatternParser
+        from vcse.interaction.frames import GoalFrame
+        import re
+
+        normalizer = SemanticNormalizer()
+        parser = PatternParser()
+
+        normalized = normalizer.normalize(text)
+        frames = parser.parse(normalized.normalized_text)
+
+        # Handle "can X die" pattern - extract X and create goal X is_a mortal
+        can_match = re.match(r"^can\s+(.+?)\s+die\s*\??$", normalized.normalized_text.strip(), re.IGNORECASE)
+        if can_match:
+            subject = can_match.group(1).strip().rstrip("?")
+            frames = FrameParseResult()
+            frames.status = FrameStatus.PARSED
+            frames.confidence = 0.9
+            frames.frames = [GoalFrame(
+                subject=subject,
+                relation="is_a",
+                object="mortal",
+                source_text=text,
+            )]
+        elif normalized.is_question and frames.frames:
+            # If question and got frames, convert last is_a frame to GoalFrame
+            for i, frame in enumerate(reversed(frames.frames)):
+                if hasattr(frame, 'relation') and frame.relation == "is_a":
+                    frames.frames[i] = GoalFrame(
+                        subject=frame.subject,
+                        relation=frame.relation,
+                        object=frame.object,
+                        source_text=frame.source_text,
+                    )
+                    break
+
+        # Record the turn
+        turn = TurnRecord(
+            timestamp=datetime.utcnow().isoformat(),
+            user_input=text,
+            normalized=normalized,
+            frames=frames,
+        )
+        self.history.append(turn)
+
+        return frames
+
+    def solve(self) -> SearchResult | ClarificationRequest | None:
+        """Run search on current memory state."""
+        from vcse.engine import build_search
+        from vcse.interaction.frames_applicator import FrameApplicator
+        from vcse.interaction.clarification import ClarificationEngine
+
+        # Apply frames from history
+        applicator = FrameApplicator()
+        for turn in self.history:
+            if turn.frames and turn.frames.frames:
+                result = applicator.apply(turn.frames.frames, self.memory)
+                turn.transitions_applied = result.transitions_applied
+
+        # Check for clarification need
+        clarification = ClarificationEngine().clarify(
+            self.history[-1].frames if self.history else None,
+            self.memory,
+            self.current_goal,
+        )
+        if clarification:
+            return clarification
+
+        # Run search if there's a goal
+        if self.memory.goals:
+            search = build_search()
+            result = search.run(self.memory)
+            if self.history:
+                self.history[-1].search_result = result
+                self.history[-1].result_status = result.evaluation.status.value
+            return result
+
+        return None
+
+    def explain(self) -> str:
+        """Return explanation of last result."""
+        if not self.history:
+            return "No reasoning history yet."
+
+        last = self.history[-1]
+        if last.search_result:
+            from vcse.renderer.explanation import ExplanationRenderer
+            return ExplanationRenderer().render(last.search_result, last.search_result.state)
+        elif last.result_status:
+            return f"status: {last.result_status}"
+        return "No result to explain."
+
+    def reset(self) -> None:
+        """Reset session memory and history."""
+        self.memory = WorldStateMemory()
+        self.history = []
+        self.current_goal = None
+
+    def fork(self) -> "Session":
+        """Create an in-memory copy of this session."""
+        new_session = Session(
+            id=str(uuid.uuid4())[:8],
+            memory=self.memory,  # Shallow copy - same memory reference
+            history=list(self.history),  # Copy history
+            mode=self.mode,
+        )
+        return new_session
+
+    def summary(self) -> str:
+        """Return a summary of the session."""
+        lines = [
+            f"Session {self.id}",
+            f"Created: {self.created_at}",
+            f"Turns: {len(self.history)}",
+            f"Mode: {self.mode}",
+            f"Memory: {len(self.memory.claims)} claims, {len(self.memory.constraints)} constraints",
+        ]
+        if self.memory.goals:
+            lines.append(f"Goals: {len(self.memory.goals)}")
+        return "\n".join(lines)
