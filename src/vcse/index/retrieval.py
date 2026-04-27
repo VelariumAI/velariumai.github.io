@@ -159,6 +159,9 @@ def filter_bundle_by_artifact_ids(
         ingestion_templates=[
             item for item in bundle.ingestion_templates if item.id in selected_artifact_ids
         ],
+        generation_templates=[
+            item for item in bundle.generation_templates if item.id in selected_artifact_ids
+        ],
         proposer_rules=[item for item in bundle.proposer_rules if item.id in selected_artifact_ids],
         clarification_rules=[
             item for item in bundle.clarification_rules if item.id in selected_artifact_ids

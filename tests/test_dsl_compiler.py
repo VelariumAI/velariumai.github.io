@@ -107,3 +107,11 @@ def test_compiler_bundle_contains_expected_artifacts() -> None:
     assert bundle.proposer_rules
     assert bundle.relation_schemas
     assert bundle.renderer_templates
+
+
+def test_compiler_generation_template_compiles() -> None:
+    doc = DSLLoader.load(_example_path("generation_policy.json"))
+    bundle = DSLCompiler.compile(doc)
+
+    assert len(bundle.generation_templates) == 1
+    assert bundle.generation_templates[0].artifact_type == "policy"

@@ -32,6 +32,7 @@ def test_registry_duplicate_bundle_name_handled_cleanly() -> None:
         parser_patterns=second.parser_patterns,
         relation_schemas=second.relation_schemas,
         ingestion_templates=second.ingestion_templates,
+        generation_templates=second.generation_templates,
         proposer_rules=second.proposer_rules,
         clarification_rules=second.clarification_rules,
         renderer_templates=second.renderer_templates,

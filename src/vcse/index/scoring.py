@@ -20,6 +20,7 @@ DEFAULT_ARTIFACT_TYPE_WEIGHTS = {
     "parser_pattern": 1.2,
     "relation_schema": 1.0,
     "ingestion_template": 1.0,
+    "generation_template": 1.1,
     "proposer_rule": 1.1,
     "clarification_rule": 1.0,
     "renderer_template": 1.0,

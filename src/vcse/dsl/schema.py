@@ -11,6 +11,7 @@ ARTIFACT_TYPES = {
     "synonym",
     "relation_schema",
     "ingestion_template",
+    "generation_template",
     "proposer_rule",
     "verifier_rule_stub",
     "renderer_template",
@@ -86,6 +87,17 @@ class IngestionTemplateRule:
 
 
 @dataclass(frozen=True)
+class GenerationTemplateRule:
+    id: str
+    artifact_type: str
+    required_fields: list[str]
+    optional_fields: list[str]
+    body: dict[str, Any]
+    constraints: list[dict[str, Any]]
+    priority: int
+
+
+@dataclass(frozen=True)
 class VerifierRuleStub:
     id: str
     description: str
@@ -101,6 +113,7 @@ class CapabilityBundle:
     parser_patterns: list[ParserPatternRule] = field(default_factory=list)
     relation_schemas: list[dict[str, Any]] = field(default_factory=list)
     ingestion_templates: list[IngestionTemplateRule] = field(default_factory=list)
+    generation_templates: list[GenerationTemplateRule] = field(default_factory=list)
     proposer_rules: list[ProposerRule] = field(default_factory=list)
     clarification_rules: list[ClarificationRule] = field(default_factory=list)
     renderer_templates: list[RendererTemplateRule] = field(default_factory=list)

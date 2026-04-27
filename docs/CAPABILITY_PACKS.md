@@ -4,6 +4,7 @@ VCSE can export ingestion results as capability packs.
 Capability packs and DSL bundles are complementary:
 
 - DSL defines deterministic rules/templates.
+- DSL can also define deterministic generation templates.
 - Capability packs store extracted claims/constraints/provenance/benchmarks.
 - Verifiers still decide what is usable at solve time.
 

@@ -35,6 +35,9 @@ class CapabilityRegistry:
     def get_ingestion_templates(self):
         return [item for bundle in self._ordered() for item in bundle.ingestion_templates]
 
+    def get_generation_templates(self):
+        return [item for bundle in self._ordered() for item in bundle.generation_templates]
+
     def get_proposer_rules(self):
         return [item for bundle in self._ordered() for item in bundle.proposer_rules]
 

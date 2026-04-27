@@ -419,3 +419,60 @@ def test_cli_invalid_index_config_fails_structured() -> None:
     assert result.returncode == 2
     assert "status: ERROR" in result.stderr
     assert "error_type: INVALID_INDEX_CONFIG" in result.stderr
+
+
+def test_cli_generate_contractor_policy_works() -> None:
+    spec = Path(__file__).resolve().parents[1] / "examples" / "generation" / "contractor_policy_spec.json"
+    result = run_cli("generate", str(spec))
+
+    assert result.returncode == 0
+    assert "status: VERIFIED_ARTIFACT" in result.stdout
+    assert "artifact_type: policy" in result.stdout
+
+
+def test_cli_generate_incomplete_needs_clarification() -> None:
+    spec = Path(__file__).resolve().parents[1] / "examples" / "generation" / "incomplete_policy_spec.json"
+    result = run_cli("generate", str(spec))
+
+    assert result.returncode == 0
+    assert "status: NEEDS_CLARIFICATION" in result.stdout
+    assert "clarification_request:" in result.stdout
+
+
+def test_cli_generate_output_writes_file(tmp_path: Path) -> None:
+    spec = Path(__file__).resolve().parents[1] / "examples" / "generation" / "contractor_policy_spec.json"
+    output = tmp_path / "artifact.json"
+    result = run_cli("generate", str(spec), "--output", str(output))
+
+    assert result.returncode == 0
+    assert output.exists()
+    payload = json.loads(output.read_text())
+    assert payload["status"] == "VERIFIED_ARTIFACT"
+
+
+def test_cli_generate_malformed_spec_fails_cleanly(tmp_path: Path) -> None:
+    bad = tmp_path / "bad_spec.json"
+    bad.write_text("{bad json")
+    result = run_cli("generate", str(bad))
+
+    assert result.returncode == 2
+    assert "status: ERROR" in result.stderr
+    assert "error_type: MALFORMED_SPEC" in result.stderr
+    assert "traceback" not in result.stderr.lower()
+
+
+def test_cli_generate_with_dsl_template_and_index() -> None:
+    spec = Path(__file__).resolve().parents[1] / "examples" / "generation" / "contractor_policy_spec.json"
+    dsl = Path(__file__).resolve().parents[1] / "examples" / "dsl" / "generation_policy.json"
+    result = run_cli(
+        "generate",
+        str(spec),
+        "--dsl",
+        str(dsl),
+        "--index",
+        "--debug",
+    )
+
+    assert result.returncode == 0
+    assert "status: VERIFIED_ARTIFACT" in result.stdout
+    assert "template_stats:" in result.stdout

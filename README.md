@@ -59,6 +59,7 @@ vcse dsl validate examples/dsl/basic_logic.json
 vcse ask "Can Socrates perish?" --dsl examples/dsl/mortality.json
 vcse index build --dsl examples/dsl/basic_logic.json
 vcse ask "Can Socrates perish?" --dsl examples/dsl/mortality.json --index
+vcse generate examples/generation/contractor_policy_spec.json
 ```
 
 Example JSON input:
@@ -117,6 +118,25 @@ vcse ingest examples/ingestion/simple_policy.txt --dsl examples/dsl/simple_polic
 ```
 
 See [docs/DSL.md](docs/DSL.md).
+
+## Verified Generation
+
+VCSE 1.7.0 adds deterministic, verifier-centered generation from explicit specs
+and templates. Generation is construction plus verification.
+
+- No free-form creative generation
+- No LLM/neural dependencies
+- Missing required fields return `NEEDS_CLARIFICATION`
+- Artifacts include provenance and verification status
+
+```bash
+vcse generate examples/generation/contractor_policy_spec.json
+vcse generate examples/generation/incomplete_policy_spec.json
+vcse generate examples/generation/contractor_policy_spec.json --debug
+vcse generate examples/generation/contractor_policy_spec.json --index
+```
+
+See [docs/GENERATION.md](docs/GENERATION.md).
 
 ## Symbolic Indexing
 

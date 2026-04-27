@@ -118,6 +118,28 @@ def extract_bundle_features(bundle: CapabilityBundle) -> list[ArtifactFeatures]:
             )
         )
 
+    for item in bundle.generation_templates:
+        tokens = _to_tokens(
+            [
+                item.artifact_type,
+                "generation_template",
+                " ".join(item.required_fields),
+                " ".join(item.optional_fields),
+                _stringify(item.body),
+                _stringify(item.constraints),
+            ]
+        )
+        features.append(
+            ArtifactFeatures(
+                artifact_id=item.id,
+                artifact_type="generation_template",
+                source_bundle=bundle.name,
+                priority=item.priority,
+                token_freq=tokens,
+                frame_types=(item.artifact_type,),
+            )
+        )
+
     for item in bundle.proposer_rules:
         rule_texts = []
         relations: list[str] = []

@@ -10,6 +10,7 @@ from pathlib import Path
 from vcse.benchmark import BenchmarkCaseError, format_benchmark_text, run_benchmark
 from vcse.dsl import DSLCompiler, DSLLoader, DSLValidator, GLOBAL_REGISTRY
 from vcse.dsl.errors import DSLError
+from vcse.generation import GenerationError, VerifiedGenerator, spec_from_dict
 from vcse.index import SymbolicRetriever
 from vcse.engine import CaseValidationError, build_search, state_from_case
 from vcse.ingestion.pipeline import IngestionError, ingest_file
@@ -348,6 +349,78 @@ def run_ingest(
     return "\n".join(lines)
 
 
+def run_generate(
+    spec_path: Path,
+    mode: str = "strict",
+    enable_index: bool = False,
+    top_k_rules: int = 20,
+    dsl_bundle=None,
+    output_path: Path | None = None,
+) -> str:
+    try:
+        payload = json.loads(spec_path.read_text())
+    except json.JSONDecodeError as exc:
+        raise GenerationError("MALFORMED_SPEC", exc.msg) from exc
+    except OSError as exc:
+        raise GenerationError("FILE_ERROR", str(exc)) from exc
+    if not isinstance(payload, dict):
+        raise GenerationError("INVALID_SPEC", "spec root must be an object")
+    if mode:
+        payload["mode"] = mode
+
+    spec = spec_from_dict(payload)
+    memory = WorldStateMemory()
+    for fact in payload.get("memory_claims", []):
+        if not isinstance(fact, dict):
+            continue
+        subject = str(fact.get("subject", "")).strip()
+        relation = str(fact.get("relation", "")).strip()
+        obj = str(fact.get("object", "")).strip()
+        if subject and relation and obj:
+            if memory.get_relation_schema(relation) is None:
+                memory.add_relation_schema(RelationSchema(name=relation, transitive=(relation == "is_a")))
+            memory.add_claim(subject, relation, obj, TruthStatus.ASSERTED)
+
+    result = VerifiedGenerator().generate(
+        spec=spec,
+        memory=memory,
+        bundle=dsl_bundle,
+        enable_index=enable_index,
+        top_k_rules=top_k_rules,
+    )
+
+    output = {
+        "status": result.status,
+        "clarification_request": result.clarification_request,
+        "evaluation_reasons": result.evaluation_reasons,
+        "search_stats": result.search_stats,
+        "template_stats": result.template_stats,
+        "best_artifact": result.best_artifact.to_dict() if result.best_artifact else None,
+        "candidates": [item.to_dict() for item in result.candidates] if spec.mode == "debug" else None,
+    }
+
+    if output_path is not None:
+        output_path.write_text(json.dumps(output, indent=2, sort_keys=True))
+
+    lines = [f"status: {result.status}"]
+    if result.clarification_request:
+        lines.append(f"clarification_request: {result.clarification_request}")
+    if result.best_artifact is not None:
+        lines.append(f"artifact_type: {result.best_artifact.artifact_type}")
+        lines.append(f"template_id: {result.best_artifact.template_id}")
+        lines.append(f"artifact_status: {result.best_artifact.status}")
+        lines.append("artifact_content:")
+        lines.append(json.dumps(result.best_artifact.content, sort_keys=True))
+        lines.append("provenance:")
+        lines.append(json.dumps(result.best_artifact.provenance, sort_keys=True))
+    if spec.mode == "debug":
+        lines.append("template_stats:")
+        lines.append(json.dumps(result.template_stats, sort_keys=True))
+    if output_path is not None:
+        lines.append(f"output: {output_path}")
+    return "\n".join(lines)
+
+
 def load_dsl_bundle(path: str | Path):
     document = DSLLoader.load(path)
     validation = DSLValidator.validate(document)
@@ -436,6 +509,14 @@ def main(argv: list[str] | None = None) -> None:
     ingest_parser.add_argument("--export-pack", type=Path)
     ingest_parser.add_argument("--dsl")
 
+    generate_parser = subparsers.add_parser("generate")
+    generate_parser.add_argument("spec")
+    generate_parser.add_argument("--debug", action="store_true")
+    generate_parser.add_argument("--index", action="store_true")
+    generate_parser.add_argument("--dsl")
+    generate_parser.add_argument("--top-k", type=int, default=20, dest="top_k_rules")
+    generate_parser.add_argument("--output", type=Path)
+
     # New interaction commands
     ask_parser = subparsers.add_parser("ask")
     ask_parser.add_argument("text", nargs="*", default=[])
@@ -519,6 +600,21 @@ def main(argv: list[str] | None = None) -> None:
                 )
             )
             return
+        if args.command == "generate":
+            validate_index_args(args.top_k_rules, 1)
+            dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
+            mode = "debug" if args.debug else "strict"
+            print(
+                run_generate(
+                    Path(args.spec),
+                    mode=mode,
+                    enable_index=args.index,
+                    top_k_rules=args.top_k_rules,
+                    dsl_bundle=dsl_bundle,
+                    output_path=args.output,
+                )
+            )
+            return
         if args.command == "ask":
             validate_index_args(args.top_k_rules, args.top_k_packs)
             dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
@@ -567,6 +663,7 @@ def main(argv: list[str] | None = None) -> None:
                 print(f"parser_patterns: {len(bundle.parser_patterns)}")
                 print(f"relation_schemas: {len(bundle.relation_schemas)}")
                 print(f"ingestion_templates: {len(bundle.ingestion_templates)}")
+                print(f"generation_templates: {len(bundle.generation_templates)}")
                 print(f"proposer_rules: {len(bundle.proposer_rules)}")
                 print(f"renderer_templates: {len(bundle.renderer_templates)}")
                 print(f"clarification_rules: {len(bundle.clarification_rules)}")
@@ -603,7 +700,14 @@ def main(argv: list[str] | None = None) -> None:
             else:
                 reasonops_subparsers.print_help()
             return
-    except (ValueError, BenchmarkCaseError, CaseValidationError, IngestionError, DSLError) as exc:
+    except (
+        ValueError,
+        BenchmarkCaseError,
+        CaseValidationError,
+        IngestionError,
+        DSLError,
+        GenerationError,
+    ) as exc:
         error_type = getattr(exc, "error_type", None)
         reason = getattr(exc, "reason", None)
         if error_type is None:

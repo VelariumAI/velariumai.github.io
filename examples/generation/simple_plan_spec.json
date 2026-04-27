@@ -1,0 +1,23 @@
+{
+  "id": "plan_001",
+  "artifact_type": "plan",
+  "goal": "Create simple onboarding plan",
+  "required_fields": {
+    "title": "Onboarding Plan",
+    "steps": ["Create account", "Grant role", "Verify access"],
+    "preconditions": ["Approved ticket"],
+    "effects": ["User can access system"]
+  },
+  "constraints": [
+    {"kind": "field_present", "target": "steps"},
+    {"kind": "field_present", "target": "preconditions"},
+    {"kind": "field_present", "target": "effects"}
+  ],
+  "success_criteria": [
+    "Onboarding Plan",
+    "Create account",
+    "User can access system"
+  ],
+  "source_text": "Plan spec",
+  "mode": "strict"
+}

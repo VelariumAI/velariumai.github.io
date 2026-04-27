@@ -1,0 +1,25 @@
+{
+  "id": "contractor_policy_001",
+  "artifact_type": "policy",
+  "goal": "Create policy for contractor access",
+  "required_fields": {
+    "role": "Contractor",
+    "systems": "BillingPortal",
+    "approver": "SecurityLead",
+    "duration": "30 days"
+  },
+  "constraints": [
+    {"kind": "field_present", "target": "role"},
+    {"kind": "field_present", "target": "systems"},
+    {"kind": "field_present", "target": "approver"},
+    {"kind": "field_present", "target": "duration"}
+  ],
+  "success_criteria": [
+    "Contractor Access Policy",
+    "requires approval",
+    "expires"
+  ],
+  "allowed_templates": ["contractor_access_policy"],
+  "source_text": "Policy request from security",
+  "mode": "strict"
+}

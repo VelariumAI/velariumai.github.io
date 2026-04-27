@@ -48,6 +48,7 @@ Every artifact includes:
 - `parser_pattern`
 - `relation_schema`
 - `ingestion_template`
+- `generation_template`
 - `proposer_rule`
 - `verifier_rule_stub`
 - `renderer_template`
@@ -69,6 +70,7 @@ vcse ask "All men are mortal. Socrates is a man. Can Socrates die?" --dsl exampl
 vcse ask "Can Socrates perish?" --dsl examples/dsl/mortality.json
 vcse ingest examples/ingestion/simple_policy.txt --dsl examples/dsl/simple_policy.json --auto --dry-run
 vcse benchmark benchmarks/mixed_cases.jsonl --dsl examples/dsl/basic_logic.json
+vcse generate examples/generation/contractor_policy_spec.json --dsl examples/dsl/generation_policy.json
 ```
 
 ## Compilation Output
@@ -79,6 +81,7 @@ vcse benchmark benchmarks/mixed_cases.jsonl --dsl examples/dsl/basic_logic.json
 - parser patterns
 - relation schemas
 - ingestion templates
+- generation templates
 - proposer rules
 - clarification rules
 - renderer templates

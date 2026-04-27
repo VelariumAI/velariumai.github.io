@@ -107,3 +107,39 @@ def test_validator_invalid_transition_action_fails(tmp_path: Path) -> None:
 
     assert result.passed is False
     assert any("Invalid transition action" in item for item in result.errors)
+
+
+def test_validator_generation_template_placeholder_validation(tmp_path: Path) -> None:
+    path = tmp_path / "bad_generation_placeholder.json"
+    path.write_text(
+        """
+{
+  "name": "bad_generation",
+  "version": "1.0.0",
+  "description": "bad generation placeholders",
+  "artifacts": [
+    {
+      "id": "gen_bad",
+      "type": "generation_template",
+      "version": "1.0.0",
+      "description": "bad",
+      "enabled": true,
+      "priority": 10,
+      "artifact_type": "policy",
+      "required_fields": ["role"],
+      "optional_fields": [],
+      "body": {
+        "title": "{unknown} policy"
+      },
+      "constraints": []
+    }
+  ]
+}
+""".strip()
+    )
+
+    doc = DSLLoader.load(path)
+    result = DSLValidator.validate(doc)
+
+    assert result.passed is False
+    assert any("Invalid generation placeholders" in item for item in result.errors)

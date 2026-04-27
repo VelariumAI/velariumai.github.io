@@ -6,6 +6,7 @@ from vcse.dsl.schema import (
     CapabilityBundle,
     ClarificationRule,
     DSLDocument,
+    GenerationTemplateRule,
     IngestionTemplateRule,
     ParserPatternRule,
     ProposerRule,
@@ -67,6 +68,18 @@ class DSLCompiler:
                         id=artifact.id,
                         patterns=[str(item) for item in payload.get("patterns", [])],
                         output=dict(payload.get("output", {})),
+                        priority=artifact.priority,
+                    )
+                )
+            elif artifact.type == "generation_template":
+                bundle.generation_templates.append(
+                    GenerationTemplateRule(
+                        id=artifact.id,
+                        artifact_type=str(payload.get("artifact_type", "")),
+                        required_fields=[str(item) for item in payload.get("required_fields", [])],
+                        optional_fields=[str(item) for item in payload.get("optional_fields", [])],
+                        body=dict(payload.get("body", {})),
+                        constraints=[dict(item) for item in payload.get("constraints", [])],
                         priority=artifact.priority,
                     )
                 )

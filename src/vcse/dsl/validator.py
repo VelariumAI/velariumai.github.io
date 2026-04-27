@@ -12,6 +12,13 @@ PLACEHOLDER_RE = re.compile(r"\{([a-zA-Z_][a-zA-Z0-9_]*)\}")
 VALID_FRAME_TYPES = {"claim", "goal", "constraint", "definition"}
 VALID_ACTIONS = {"AddClaim"}
 VALID_RELATION_PROPERTIES = {"transitive", "symmetric", "reflexive", "functional"}
+VALID_GENERATION_ARTIFACT_TYPES = {
+    "plan",
+    "policy",
+    "structured_document",
+    "config",
+    "simple_code",
+}
 
 
 @dataclass
@@ -51,6 +58,40 @@ class DSLValidator:
 
             if artifact.type in {"parser_pattern", "ingestion_template"}:
                 _validate_placeholders(artifact.payload, errors, artifact.id)
+            if artifact.type == "generation_template":
+                _validate_placeholders(artifact.payload, errors, artifact.id)
+                artifact_type = str(artifact.payload.get("artifact_type", "")).strip().lower()
+                if artifact_type not in VALID_GENERATION_ARTIFACT_TYPES:
+                    errors.append(
+                        f"Invalid generation artifact_type in {artifact.id}: {artifact_type}"
+                    )
+                required_fields = artifact.payload.get("required_fields", [])
+                optional_fields = artifact.payload.get("optional_fields", [])
+                if not isinstance(required_fields, list) or not all(
+                    isinstance(item, str) and item.strip() for item in required_fields
+                ):
+                    errors.append(f"Invalid required_fields in {artifact.id}")
+                if not isinstance(optional_fields, list) or not all(
+                    isinstance(item, str) and item.strip() for item in optional_fields
+                ):
+                    errors.append(f"Invalid optional_fields in {artifact.id}")
+                body = artifact.payload.get("body", {})
+                if not isinstance(body, dict):
+                    errors.append(f"Invalid body in {artifact.id}")
+                constraints = artifact.payload.get("constraints", [])
+                if not isinstance(constraints, list):
+                    errors.append(f"Invalid constraints in {artifact.id}")
+                placeholders = _collect_placeholders(artifact.payload.get("body", {}))
+                allowed = {
+                    str(item).strip()
+                    for item in [*required_fields, *optional_fields]
+                    if str(item).strip()
+                }
+                invalid = sorted(item for item in placeholders if item not in allowed)
+                if invalid:
+                    errors.append(
+                        f"Invalid generation placeholders in {artifact.id}: {invalid}"
+                    )
             if artifact.type == "parser_pattern":
                 output = artifact.payload.get("output", {})
                 frame_type = str(output.get("frame_type", "")).lower()
@@ -103,3 +144,19 @@ def _validate_placeholders(payload: object, errors: list[str], artifact_id: str)
             if char in "{}" and index not in consumed:
                 errors.append(f"Invalid placeholder format in {artifact_id}: {payload}")
                 break
+
+
+def _collect_placeholders(payload: object) -> set[str]:
+    found: set[str] = set()
+    if isinstance(payload, dict):
+        for value in payload.values():
+            found.update(_collect_placeholders(value))
+        return found
+    if isinstance(payload, list):
+        for value in payload:
+            found.update(_collect_placeholders(value))
+        return found
+    if isinstance(payload, str):
+        for match in PLACEHOLDER_RE.finditer(payload):
+            found.add(match.group(1))
+    return found

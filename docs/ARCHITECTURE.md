@@ -8,6 +8,7 @@ search, and deterministic verification.
 Input JSON / CLI demo
   -> optional ingestion adapters/templates/provenance
   -> optional DSL bundle (synonyms/patterns/rules/templates)
+  -> optional generation template bundle for `vcse generate`
   -> optional symbolic index + capability retrieval (token/BM25)
   -> deterministic parser
   -> WorldStateMemory
@@ -26,6 +27,8 @@ Input JSON / CLI demo
   rules, renderer templates, and verifier stubs.
 - Ingestion: adapter + template pipeline imports candidate knowledge with
   provenance and validation.
+- Generation: deterministic template-based artifact construction and
+  verification with bounded repair.
 - Memory: stores claims, constraints, goals, symbol bindings, evidence, and
   contradiction indexes.
 - Proposers: produce `Transition` objects only.
@@ -52,3 +55,4 @@ Input JSON / CLI demo
 - DSL artifacts format behavior only; verifier remains the final authority.
 - Retrieval is optimization only; it may prioritize/deprioritize candidates but
   must not change truth conditions.
+- Generated artifacts are accepted only after deterministic evaluation.

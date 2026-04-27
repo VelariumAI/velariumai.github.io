@@ -1,0 +1,22 @@
+{
+  "id": "contractor_policy_incomplete",
+  "artifact_type": "policy",
+  "goal": "Create policy with missing fields",
+  "required_fields": {
+    "role": "Contractor",
+    "systems": "BillingPortal",
+    "approver": "",
+    "duration": ""
+  },
+  "constraints": [
+    {"kind": "field_present", "target": "role"},
+    {"kind": "field_present", "target": "systems"},
+    {"kind": "field_present", "target": "approver"},
+    {"kind": "field_present", "target": "duration"}
+  ],
+  "success_criteria": [
+    "Contractor Access Policy"
+  ],
+  "source_text": "Incomplete policy spec",
+  "mode": "strict"
+}
