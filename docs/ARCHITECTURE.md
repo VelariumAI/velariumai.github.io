@@ -31,6 +31,8 @@ Input JSON / CLI demo
   verification with bounded repair.
 - Gauntlet: adversarial benchmark runner/evaluator/metrics/reporting for
   trust validation.
+- API Adapter: OpenAI-compatible HTTP interface translating requests into
+  deterministic ask/generate/ingest VRM execution.
 - Memory: stores claims, constraints, goals, symbol bindings, evidence, and
   contradiction indexes.
 - Proposers: produce `Transition` objects only.

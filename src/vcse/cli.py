@@ -472,6 +472,17 @@ def run_gauntlet(
     return text, exit_code
 
 
+def run_serve(host: str, port: int) -> None:
+    try:
+        import uvicorn
+    except Exception as exc:  # pragma: no cover - dependency error path
+        raise ValueError("MISSING_DEPENDENCY: uvicorn is required for vcse serve") from exc
+    from vcse.api.server import create_app
+
+    print(f"Starting VCSE API server {host}:{port} (version {__import__('vcse').__version__})")
+    uvicorn.run(create_app(), host=host, port=port)
+
+
 def load_dsl_bundle(path: str | Path):
     document = DSLLoader.load(path)
     validation = DSLValidator.validate(document)
@@ -567,6 +578,10 @@ def main(argv: list[str] | None = None) -> None:
     generate_parser.add_argument("--dsl")
     generate_parser.add_argument("--top-k", type=int, default=20, dest="top_k_rules")
     generate_parser.add_argument("--output", type=Path)
+
+    serve_parser = subparsers.add_parser("serve")
+    serve_parser.add_argument("--host", default="127.0.0.1")
+    serve_parser.add_argument("--port", type=int, default=8000)
 
     gauntlet_parser = subparsers.add_parser("gauntlet")
     gauntlet_parser.add_argument("path")
@@ -676,6 +691,9 @@ def main(argv: list[str] | None = None) -> None:
                     output_path=args.output,
                 )
             )
+            return
+        if args.command == "serve":
+            run_serve(args.host, args.port)
             return
         if args.command == "gauntlet":
             validate_index_args(args.top_k_rules, args.top_k_packs)

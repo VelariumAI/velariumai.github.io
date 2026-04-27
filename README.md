@@ -61,6 +61,7 @@ vcse index build --dsl examples/dsl/basic_logic.json
 vcse ask "Can Socrates perish?" --dsl examples/dsl/mortality.json --index
 vcse generate examples/generation/contractor_policy_spec.json
 vcse gauntlet benchmarks/gauntlet/
+vcse serve
 ```
 
 Example JSON input:
@@ -157,6 +158,22 @@ vcse gauntlet benchmarks/gauntlet/ --search mcts --ts3 --index
 ```
 
 See [docs/GAUNTLET.md](docs/GAUNTLET.md).
+
+## API Usage
+
+VCSE 1.9.0 provides an OpenAI-compatible API adapter while preserving verifier
+semantics.
+
+```bash
+vcse serve
+curl http://localhost:8000/health
+curl http://localhost:8000/v1/models
+curl -X POST http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"vcse-vrm-1.9","messages":[{"role":"user","content":"All men are mortal. Socrates is a man. Can Socrates die?"}]}'
+```
+
+See [docs/API.md](docs/API.md).
 
 ## Symbolic Indexing
 
