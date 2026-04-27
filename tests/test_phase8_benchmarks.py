@@ -112,3 +112,21 @@ def test_mixed_benchmark_passes_with_ts3_enabled() -> None:
 
     assert summary["status"] == "BENCHMARK_COMPLETE"
     assert summary["cases_passed"] == summary["cases_total"]
+
+
+def test_mixed_benchmark_passes_with_mcts() -> None:
+    path = Path(__file__).resolve().parents[1] / "benchmarks" / "mixed_cases.jsonl"
+
+    summary = run_benchmark(path, search_backend="mcts")
+
+    assert summary["status"] == "BENCHMARK_COMPLETE"
+    assert summary["cases_passed"] == summary["cases_total"]
+
+
+def test_mixed_benchmark_passes_with_mcts_and_ts3() -> None:
+    path = Path(__file__).resolve().parents[1] / "benchmarks" / "mixed_cases.jsonl"
+
+    summary = run_benchmark(path, search_backend="mcts", enable_ts3=True)
+
+    assert summary["status"] == "BENCHMARK_COMPLETE"
+    assert summary["cases_passed"] == summary["cases_total"]

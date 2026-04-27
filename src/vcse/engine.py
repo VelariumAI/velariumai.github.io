@@ -11,6 +11,7 @@ from vcse.memory.world_state import TruthStatus, WorldStateMemory
 from vcse.proposer.domain_specific import DomainSpecificProposer
 from vcse.proposer.rule_based import RuleBasedProposer
 from vcse.search.beam import BeamSearch, SearchConfig
+from vcse.search.mcts import MCTSSearch
 from vcse.transitions.state_transition import Transition
 from vcse.verifier.final_state import FinalStateEvaluator
 from vcse.verifier.stack import VerifierStack
@@ -34,12 +35,28 @@ class CaseValidationError(ValueError):
         self.reason = reason
 
 
-def build_search(enable_ts3: bool = False) -> BeamSearch:
-    return BeamSearch(
-        proposer=CompositeProposer([RuleBasedProposer(), DomainSpecificProposer()]),
-        verifier_stack=VerifierStack.default(),
-        final_state_evaluator=FinalStateEvaluator(),
-        config=SearchConfig(enable_ts3=enable_ts3),
+def build_search(enable_ts3: bool = False, search_backend: str = "beam"):
+    proposer = CompositeProposer([RuleBasedProposer(), DomainSpecificProposer()])
+    verifier_stack = VerifierStack.default()
+    final_evaluator = FinalStateEvaluator()
+    config = SearchConfig(enable_ts3=enable_ts3, search_backend=search_backend)
+    if search_backend == "beam":
+        return BeamSearch(
+            proposer=proposer,
+            verifier_stack=verifier_stack,
+            final_state_evaluator=final_evaluator,
+            config=config,
+        )
+    if search_backend == "mcts":
+        return MCTSSearch(
+            proposer=proposer,
+            verifier_stack=verifier_stack,
+            final_state_evaluator=final_evaluator,
+            config=config,
+        )
+    raise CaseValidationError(
+        "INVALID_SEARCH_BACKEND",
+        f"Unsupported search backend: {search_backend!r}. Allowed: beam, mcts",
     )
 
 

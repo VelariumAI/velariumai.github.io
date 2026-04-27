@@ -9,7 +9,7 @@ Input JSON / CLI demo
   -> deterministic parser
   -> WorldStateMemory
   -> symbolic proposers
-  -> bounded transition search
+  -> search backend (Beam default, optional MCTS)
   -> verifier stack
   -> final state evaluator
   -> deterministic renderer
@@ -21,13 +21,20 @@ Input JSON / CLI demo
 - Memory: stores claims, constraints, goals, symbol bindings, evidence, and
   contradiction indexes.
 - Proposers: produce `Transition` objects only.
-- Search: explores bounded transition paths and prunes failed branches.
+- Search:
+  - BeamSearch (default): deterministic bounded frontier search.
+  - MCTSSearch (optional): UCB1-guided bounded exploration.
+  - Both backends are verifier-centered and return `SearchResult`.
+- TS3: optional transient symbolic state-space analysis for loop, reachability,
+  absorption, novelty, and contradiction-risk diagnostics.
 - Verifiers: judge claims, constraints, contradictions, and goal satisfaction.
 - Renderer: prints evaluated state with no inference or decision logic.
 
 ## Guardrails
 
 - Search is always bounded by depth, beam width, and node expansion limits.
+- MCTS exploration is bounded by iteration count, max depth, and rollout depth.
 - Final answers come only from `FinalStateEvaluator`.
 - Verified answers include proof traces.
 - Contradictory and unsatisfiable states are rejected as final answers.
+- TS3 may diagnose and deprioritize, but may not override final-state truth.

@@ -48,9 +48,12 @@ python -m pip install -e .
 vcse demo logic
 vcse demo arithmetic
 vcse demo contradiction
+vcse demo logic --search mcts
 vcse run examples/file.json
 vcse benchmark benchmarks/simple_logic_cases.jsonl
 vcse benchmark benchmarks/mixed_cases.jsonl --json
+vcse benchmark benchmarks/mixed_cases.jsonl --search mcts --ts3
+vcse ask "All men are mortal. Socrates is a man. Can Socrates die?" --search mcts
 ```
 
 Example JSON input:
@@ -105,6 +108,10 @@ Core implementation is CPU-only and must not add text-model dependencies. See
 - Current reasoning domains are small: transitive relations, equality conflicts,
   and simple numeric constraints.
 - Search uses Beam Search; richer strategies are future work.
+- Search backend is configurable:
+  - BeamSearch (default deterministic bounded search)
+  - MCTSSearch (optional exploration backend with verifier-centered scoring)
+- TS3 is an optional state-space analysis layer for loop/stagnation/absorption diagnostics.
 - Solver-backed proposals are optional and skipped when the external solver
   package is unavailable.
 

@@ -21,34 +21,48 @@ class BenchmarkCaseError(ValueError):
 STATUSES = ("VERIFIED", "CONTRADICTORY", "INCONCLUSIVE", "UNSATISFIABLE", "NEEDS_CLARIFICATION")
 
 
-def run_benchmark(path: PathLike, enable_ts3: bool = False) -> dict[str, Any]:
+def run_benchmark(
+    path: PathLike,
+    enable_ts3: bool = False,
+    search_backend: str = "beam",
+) -> dict[str, Any]:
     cases = _load_cases(Path(path))
     results: list[dict[str, Any]] = []
 
     for case in cases:
         started = time.perf_counter()
-        result = _run_case(case, enable_ts3=enable_ts3)
+        result = _run_case(case, enable_ts3=enable_ts3, search_backend=search_backend)
         runtime_ms = (time.perf_counter() - started) * 1000
         results.append({**result, "runtime_ms": runtime_ms})
 
     return _summary(results)
 
 
-def _run_case(case: dict[str, Any], enable_ts3: bool = False) -> dict[str, Any]:
+def _run_case(
+    case: dict[str, Any],
+    enable_ts3: bool = False,
+    search_backend: str = "beam",
+) -> dict[str, Any]:
     """Run a single benchmark case."""
     case_id = case.get("id")
     input_text = case.get("input")
 
     # Check if this is a text-input case
     if input_text and "expected_status" in case:
-        return _run_text_case(case_id, input_text, case, enable_ts3=enable_ts3)
+        return _run_text_case(
+            case_id,
+            input_text,
+            case,
+            enable_ts3=enable_ts3,
+            search_backend=search_backend,
+        )
 
     # Otherwise use original JSON case format
     try:
         state = state_from_case(case)
     except CaseValidationError as exc:
         raise BenchmarkCaseError(exc.error_type, exc.reason) from exc
-    search_result = build_search(enable_ts3=enable_ts3).run(state)
+    search_result = build_search(enable_ts3=enable_ts3, search_backend=search_backend).run(state)
     evaluation = search_result.evaluation
     status = evaluation.status.value
     expected_status = case.get("expected_status")
@@ -79,6 +93,7 @@ def _run_text_case(
     input_text: str,
     case: dict[str, Any],
     enable_ts3: bool = False,
+    search_backend: str = "beam",
 ) -> dict[str, Any]:
     """Run a text-input case through the interaction layer."""
     from vcse.interaction.session import Session
@@ -90,7 +105,7 @@ def _run_text_case(
 
     # Ingest and solve
     frames = session.ingest(input_text)
-    result = session.solve(enable_ts3=enable_ts3)
+    result = session.solve(enable_ts3=enable_ts3, search_backend=search_backend)
 
     # Determine output
     if result is None:

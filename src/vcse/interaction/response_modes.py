@@ -186,9 +186,12 @@ def _render_debug(
     if search_result:
         stats = search_result.stats
         lines.append("search_stats:")
+        lines.append(f"  backend: {stats.backend}")
         lines.append(f"  nodes_expanded: {stats.nodes_expanded}")
         lines.append(f"  max_depth_reached: {stats.max_depth_reached}")
         lines.append(f"  best_score: {stats.best_score}")
+        if stats.iterations:
+            lines.append(f"  iterations: {stats.iterations}")
         if search_result.ts3_analysis is not None:
             ts3 = search_result.ts3_analysis
             lines.append("ts3:")

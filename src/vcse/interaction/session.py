@@ -98,7 +98,11 @@ class Session:
 
         return frames
 
-    def solve(self, enable_ts3: bool = False) -> SearchResult | ClarificationRequest | None:
+    def solve(
+        self,
+        enable_ts3: bool = False,
+        search_backend: str = "beam",
+    ) -> SearchResult | ClarificationRequest | None:
         """Run search on current memory state."""
         from vcse.engine import build_search
         from vcse.interaction.frames_applicator import FrameApplicator
@@ -122,7 +126,7 @@ class Session:
 
         # Run search if there's a goal
         if self.memory.goals:
-            search = build_search(enable_ts3=enable_ts3)
+            search = build_search(enable_ts3=enable_ts3, search_backend=search_backend)
             result = search.run(self.memory)
             if self.history:
                 self.history[-1].search_result = result

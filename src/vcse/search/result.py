@@ -18,6 +18,8 @@ class SearchStats:
     terminal_status: str
     best_score: float
     max_frontier_size: int
+    backend: str = "beam"
+    iterations: int = 0
 
 
 @dataclass(frozen=True)

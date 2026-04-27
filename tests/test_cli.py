@@ -181,3 +181,49 @@ def test_cli_ask_debug_with_ts3_emits_ts3_stats() -> None:
     assert "absorption_counts:" in debug.stdout
     assert "novelty_score:" in debug.stdout
     assert "contradiction_risk:" in debug.stdout
+
+
+def test_cli_search_beam_and_mcts_modes_work() -> None:
+    beam = run_cli(
+        "ask",
+        "All men are mortal. Socrates is a man. Can Socrates die?",
+        "--search",
+        "beam",
+    )
+    mcts = run_cli(
+        "ask",
+        "All men are mortal. Socrates is a man. Can Socrates die?",
+        "--search",
+        "mcts",
+    )
+
+    assert beam.returncode == 0
+    assert mcts.returncode == 0
+    assert "Yes —" in beam.stdout
+    assert "Yes —" in mcts.stdout
+
+
+def test_cli_invalid_search_backend_fails_structured() -> None:
+    result = run_cli("ask", "Can Socrates die?", "--search", "invalid")
+
+    assert result.returncode == 2
+    assert "status: ERROR" in result.stderr
+    assert "error_type: INVALID_SEARCH_BACKEND" in result.stderr
+    assert "traceback" not in result.stderr.lower()
+
+
+def test_cli_search_mcts_with_ts3_debug_works() -> None:
+    result = run_cli(
+        "ask",
+        "All men are mortal. Socrates is a man. Can Socrates die?",
+        "--search",
+        "mcts",
+        "--ts3",
+        "--mode",
+        "debug",
+    )
+
+    assert result.returncode == 0
+    assert "search_stats:" in result.stdout
+    assert "backend: mcts" in result.stdout
+    assert "ts3:" in result.stdout

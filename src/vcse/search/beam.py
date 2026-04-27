@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from vcse.memory.world_state import WorldStateMemory
 from vcse.proposer.base import BaseProposer
+from vcse.search.backend import SearchBackend
 from vcse.search.node import SearchNode
 from vcse.search.result import SearchResult, SearchStats
 from vcse.ts3.signature import StateSignature
@@ -29,6 +30,11 @@ class SearchConfig:
     uncertainty_penalty: float = 0.5
     enable_ts3: bool = False
     ts3_stagnation_penalty: float = 0.0
+    search_backend: str = "beam"
+    mcts_iterations: int = 100
+    mcts_exploration_weight: float = 1.4
+    mcts_max_depth: int = 8
+    mcts_rollout_depth: int = 4
 
     def __post_init__(self) -> None:
         if self.max_depth < 0:
@@ -39,7 +45,7 @@ class SearchConfig:
             raise ValueError("max_nodes_expanded must be >= 0")
 
 
-class BeamSearch:
+class BeamSearch(SearchBackend):
     """Bounded search over explicit state transitions."""
 
     def __init__(
@@ -190,6 +196,21 @@ class BeamSearch:
         self._observe_ts3_terminal(best_evaluation.status.value)
         return self._result(best, best_evaluation)
 
+    @staticmethod
+    def search(
+        initial_state: WorldStateMemory,
+        proposer,
+        verifier_stack,
+        final_evaluator,
+        config,
+    ) -> SearchResult:
+        return BeamSearch(
+            proposer=proposer,
+            verifier_stack=verifier_stack,
+            final_state_evaluator=final_evaluator,
+            config=config,
+        ).run(initial_state)
+
     def _score(self, state: WorldStateMemory, depth: int, verifier_score: float) -> float:
         goal_progress = 0.0
         if state.goals:
@@ -222,6 +243,7 @@ class BeamSearch:
                 terminal_status=evaluation.status.value,
                 best_score=best.score,
                 max_frontier_size=self.max_frontier_size,
+                backend="beam",
             ),
             ts3_analysis=self._ts3.finalize() if self._ts3 is not None else None,
         )
