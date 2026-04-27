@@ -32,6 +32,11 @@ with validation before application, cloned-state execution, structured
 `AddConstraint`, `UpdateTruthStatus`, `BindSymbol`, `AddGoal`, `AddEvidence`,
 and `RecordContradiction`.
 
+Phase 3 completes the deterministic verifier stack with claim validation,
+numeric constraint checking, equality and numeric contradiction detection, goal
+satisfaction checks, and final-state classification into `VERIFIED`,
+`INCONCLUSIVE`, `CONTRADICTORY`, or `UNSATISFIABLE`.
+
 Current data flow:
 
 ```text

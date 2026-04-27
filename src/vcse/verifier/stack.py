@@ -7,6 +7,9 @@ from dataclasses import dataclass
 from vcse.memory.world_state import WorldStateMemory
 from vcse.verifier.base import VerificationResult, Verifier
 from vcse.verifier.claim_verifier import ClaimVerifier
+from vcse.verifier.constraint_verifier import ConstraintVerifier
+from vcse.verifier.contradiction_detector import ContradictionDetector
+from vcse.verifier.goal_checker import GoalSatisfactionChecker
 
 
 @dataclass
@@ -25,7 +28,14 @@ class VerifierStack:
 
     @classmethod
     def default(cls) -> "VerifierStack":
-        return cls([ClaimVerifier()])
+        return cls(
+            [
+                ClaimVerifier(),
+                ConstraintVerifier(),
+                ContradictionDetector(),
+                GoalSatisfactionChecker(),
+            ]
+        )
 
     def evaluate(
         self, state: WorldStateMemory, transition: object | None = None

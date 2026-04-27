@@ -31,14 +31,21 @@ class FinalStateEvaluator:
         self.verifier_threshold = verifier_threshold
 
     def evaluate(self, state: WorldStateMemory, verifier_score: float = 1.0) -> FinalStateEvaluation:
-        if any(state.contradictions.values()):
-            return FinalStateEvaluation(
-                status=FinalStatus.CONTRADICTORY,
-                reasons=["Contradiction exists in world state"],
-                verifier_score=verifier_score,
-            )
-
+        contradiction_reasons = self._contradiction_reasons(state)
+        has_unsat = self._has_unsat_contradiction(state)
         if not state.goals:
+            if has_unsat:
+                return FinalStateEvaluation(
+                    status=FinalStatus.UNSATISFIABLE,
+                    reasons=contradiction_reasons or ["Unsatisfiable state"],
+                    verifier_score=verifier_score,
+                )
+            if contradiction_reasons:
+                return FinalStateEvaluation(
+                    status=FinalStatus.CONTRADICTORY,
+                    reasons=contradiction_reasons,
+                    verifier_score=verifier_score,
+                )
             return FinalStateEvaluation(
                 status=FinalStatus.INCONCLUSIVE,
                 reasons=["No active goal"],
@@ -46,8 +53,27 @@ class FinalStateEvaluator:
             )
 
         goal = state.goals[0]
+
+        constraint_answer = self._evaluate_constraint_goal(
+            state, verifier_score, contradiction_reasons, has_unsat
+        )
+        if constraint_answer is not None:
+            return constraint_answer
+
         claim = state.find_claim(goal.subject, goal.relation, goal.object)
         if claim is None:
+            if has_unsat:
+                return FinalStateEvaluation(
+                    status=FinalStatus.UNSATISFIABLE,
+                    reasons=contradiction_reasons or ["Unsatisfiable state"],
+                    verifier_score=verifier_score,
+                )
+            if contradiction_reasons:
+                return FinalStateEvaluation(
+                    status=FinalStatus.CONTRADICTORY,
+                    reasons=contradiction_reasons,
+                    verifier_score=verifier_score,
+                )
             return FinalStateEvaluation(
                 status=FinalStatus.INCONCLUSIVE,
                 reasons=[f"Goal not satisfied: {goal.text}"],
@@ -61,6 +87,24 @@ class FinalStateEvaluator:
                 answer=claim.text,
                 proof_trace=state.proof_trace_for_claim(claim.id),
                 reasons=["Contradiction touches proof path"],
+                verifier_score=verifier_score,
+            )
+
+        if has_unsat:
+            return FinalStateEvaluation(
+                status=FinalStatus.UNSATISFIABLE,
+                answer=claim.text,
+                proof_trace=state.proof_trace_for_claim(claim.id),
+                reasons=contradiction_reasons or ["Unsatisfiable state"],
+                verifier_score=verifier_score,
+            )
+
+        if contradiction_reasons:
+            return FinalStateEvaluation(
+                status=FinalStatus.CONTRADICTORY,
+                answer=claim.text,
+                proof_trace=state.proof_trace_for_claim(claim.id),
+                reasons=contradiction_reasons,
                 verifier_score=verifier_score,
             )
 
@@ -97,4 +141,74 @@ class FinalStateEvaluator:
             proof_trace=proof_trace,
             reasons=["Goal satisfied with dependency trace"],
             verifier_score=verifier_score,
+        )
+
+    def _evaluate_constraint_goal(
+        self,
+        state: WorldStateMemory,
+        verifier_score: float,
+        contradiction_reasons: list[str],
+        has_unsat: bool,
+    ) -> FinalStateEvaluation | None:
+        if not state.goals:
+            return None
+        goal = state.goals[0]
+        if goal.relation != "satisfies" or goal.object != "constraints":
+            return None
+
+        if has_unsat:
+            return FinalStateEvaluation(
+                status=FinalStatus.UNSATISFIABLE,
+                answer=goal.text,
+                reasons=contradiction_reasons or ["Unsatisfiable constraints"],
+                verifier_score=verifier_score,
+            )
+        if contradiction_reasons:
+            return FinalStateEvaluation(
+                status=FinalStatus.CONTRADICTORY,
+                answer=goal.text,
+                reasons=contradiction_reasons,
+                verifier_score=verifier_score,
+            )
+        if verifier_score < self.verifier_threshold:
+            return FinalStateEvaluation(
+                status=FinalStatus.INCONCLUSIVE,
+                answer=goal.text,
+                reasons=["Verifier score below threshold"],
+                verifier_score=verifier_score,
+            )
+        target_constraints = [
+            constraint for constraint in state.constraints if constraint.target == goal.subject
+        ]
+        if goal.subject not in state.symbol_bindings or not target_constraints:
+            return FinalStateEvaluation(
+                status=FinalStatus.INCONCLUSIVE,
+                answer=goal.text,
+                reasons=[f"Goal not satisfied: {goal.text}"],
+                verifier_score=verifier_score,
+            )
+        return FinalStateEvaluation(
+            status=FinalStatus.VERIFIED,
+            answer=goal.text,
+            proof_trace=[goal.text],
+            reasons=["Constraint goal satisfied"],
+            verifier_score=verifier_score,
+        )
+
+    def _contradiction_reasons(self, state: WorldStateMemory) -> list[str]:
+        seen: set[str] = set()
+        reasons: list[str] = []
+        for contradictions in state.contradictions.values():
+            for contradiction in contradictions:
+                if contradiction.id in seen:
+                    continue
+                seen.add(contradiction.id)
+                reasons.append(contradiction.reason)
+        return reasons
+
+    def _has_unsat_contradiction(self, state: WorldStateMemory) -> bool:
+        return any(
+            contradiction.severity == "unsat"
+            for contradictions in state.contradictions.values()
+            for contradiction in contradictions
         )
