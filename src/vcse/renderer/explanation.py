@@ -81,9 +81,9 @@ class ExplanationRenderer:
         if state is not None:
             for contradictions in state.contradictions.values():
                 for contradiction in contradictions:
-                    if contradiction.id in seen:
+                    if contradiction.reason in seen:
                         continue
-                    seen.add(contradiction.id)
+                    seen.add(contradiction.reason)
                     values.append(contradiction.reason)
 
         if not values and evaluation.status.value in {"CONTRADICTORY", "UNSATISFIABLE"}:

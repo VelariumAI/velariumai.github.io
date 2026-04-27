@@ -200,9 +200,9 @@ class FinalStateEvaluator:
         reasons: list[str] = []
         for contradictions in state.contradictions.values():
             for contradiction in contradictions:
-                if contradiction.id in seen:
+                if contradiction.reason in seen:
                     continue
-                seen.add(contradiction.id)
+                seen.add(contradiction.reason)
                 reasons.append(contradiction.reason)
         return reasons
 

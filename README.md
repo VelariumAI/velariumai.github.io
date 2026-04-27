@@ -52,6 +52,11 @@ evaluations and search results. Output now consistently includes status,
 answer, proof trace, assumptions, contradictions, verifier reasons, and search
 statistics.
 
+Phase 7 completes the CPU-only CLI demo surface with `vcse demo logic`,
+`vcse demo arithmetic`, `vcse demo contradiction`, `vcse run <file.json>`, and
+`vcse benchmark <file.jsonl>`. JSON input is parsed into structured memory
+before search and verification.
+
 Current data flow:
 
 ```text
@@ -69,4 +74,6 @@ Run:
 ```bash
 python -m pytest
 python -m vcse.cli demo logic
+python -m vcse.cli demo arithmetic
+python -m vcse.cli demo contradiction
 ```
