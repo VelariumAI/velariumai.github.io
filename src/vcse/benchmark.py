@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from vcse.engine import CaseValidationError, build_search, state_from_case
+from vcse.engine import CaseValidationError, build_search, filter_bundle_for_query, state_from_case
 from vcse.memory.serialization import PathLike
 
 
@@ -26,6 +26,9 @@ def run_benchmark(
     enable_ts3: bool = False,
     search_backend: str = "beam",
     dsl_bundle=None,
+    enable_index: bool = False,
+    top_k_rules: int = 20,
+    top_k_packs: int = 5,
 ) -> dict[str, Any]:
     cases = _load_cases(Path(path))
     results: list[dict[str, Any]] = []
@@ -37,6 +40,9 @@ def run_benchmark(
             enable_ts3=enable_ts3,
             search_backend=search_backend,
             dsl_bundle=dsl_bundle,
+            enable_index=enable_index,
+            top_k_rules=top_k_rules,
+            top_k_packs=top_k_packs,
         )
         runtime_ms = (time.perf_counter() - started) * 1000
         results.append({**result, "runtime_ms": runtime_ms})
@@ -49,6 +55,9 @@ def _run_case(
     enable_ts3: bool = False,
     search_backend: str = "beam",
     dsl_bundle=None,
+    enable_index: bool = False,
+    top_k_rules: int = 20,
+    top_k_packs: int = 5,
 ) -> dict[str, Any]:
     """Run a single benchmark case."""
     case_id = case.get("id")
@@ -63,6 +72,9 @@ def _run_case(
             enable_ts3=enable_ts3,
             search_backend=search_backend,
             dsl_bundle=dsl_bundle,
+            enable_index=enable_index,
+            top_k_rules=top_k_rules,
+            top_k_packs=top_k_packs,
         )
 
     # Otherwise use original JSON case format
@@ -70,9 +82,26 @@ def _run_case(
         state = state_from_case(case)
     except CaseValidationError as exc:
         raise BenchmarkCaseError(exc.error_type, exc.reason) from exc
-    if dsl_bundle is not None:
+    active_bundle = dsl_bundle
+    if enable_index and dsl_bundle is not None:
+        goal_text = ""
+        relation_hints: set[str] = set()
+        goal = case.get("goal")
+        if isinstance(goal, dict):
+            goal_text = " ".join(str(goal.get(key, "")) for key in ("subject", "relation", "object"))
+            relation = str(goal.get("relation", "")).strip().lower()
+            if relation:
+                relation_hints.add(relation)
+        active_bundle, _ = filter_bundle_for_query(
+            dsl_bundle,
+            goal_text,
+            relation_hints=relation_hints,
+            top_k_rules=top_k_rules,
+            top_k_packs=top_k_packs,
+        )
+    if active_bundle is not None:
         from vcse.memory.relations import RelationSchema
-        for schema in getattr(dsl_bundle, "relation_schemas", []):
+        for schema in getattr(active_bundle, "relation_schemas", []):
             name = str(schema.get("name", "")).strip()
             if not name:
                 continue
@@ -90,7 +119,7 @@ def _run_case(
     search_result = build_search(
         enable_ts3=enable_ts3,
         search_backend=search_backend,
-        dsl_bundle=dsl_bundle,
+        dsl_bundle=active_bundle,
     ).run(state)
     evaluation = search_result.evaluation
     status = evaluation.status.value
@@ -124,12 +153,20 @@ def _run_text_case(
     enable_ts3: bool = False,
     search_backend: str = "beam",
     dsl_bundle=None,
+    enable_index: bool = False,
+    top_k_rules: int = 20,
+    top_k_packs: int = 5,
 ) -> dict[str, Any]:
     """Run a text-input case through the interaction layer."""
     from vcse.interaction.session import Session
     from vcse.interaction.response_modes import ResponseMode
 
-    session = Session.create(dsl_bundle=dsl_bundle)
+    session = Session.create(
+        dsl_bundle=dsl_bundle,
+        enable_indexing=enable_index,
+        top_k_rules=top_k_rules,
+        top_k_packs=top_k_packs,
+    )
     expected_status = case.get("expected_status")
     expected_answer = case.get("expected_answer")
 

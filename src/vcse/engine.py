@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from vcse.dsl.schema import CapabilityBundle
+from vcse.index.retrieval import RetrievalConfig, SymbolicRetriever, filter_bundle_by_artifact_ids
 from vcse.memory.constraints import Constraint
 from vcse.memory.relations import RelationSchema
 from vcse.memory.serialization import JSONDict
@@ -33,6 +35,36 @@ class CaseValidationError(ValueError):
         super().__init__(f"{error_type}: {reason}")
         self.error_type = error_type
         self.reason = reason
+
+
+def filter_bundle_for_query(
+    dsl_bundle: CapabilityBundle | None,
+    query_text: str,
+    relation_hints: set[str] | None = None,
+    top_k_rules: int = 20,
+    top_k_packs: int = 5,
+) -> tuple[CapabilityBundle | None, dict[str, object] | None]:
+    """Return a filtered capability bundle and retrieval stats for a query."""
+    if dsl_bundle is None:
+        return None, None
+
+    retriever = SymbolicRetriever.from_bundles([dsl_bundle])
+    retrieval = retriever.retrieve(
+        query_text=query_text,
+        relation_hints=relation_hints or set(),
+        config=RetrievalConfig(top_k_rules=top_k_rules, top_k_packs=top_k_packs),
+    )
+    selected_ids = set(retrieval.selected_artifact_ids)
+    filtered = filter_bundle_by_artifact_ids(dsl_bundle, selected_ids)
+    stats = {
+        "selected_packs": retrieval.selected_pack_ids,
+        "selected_artifacts_count": len(retrieval.selected_artifact_ids),
+        "top_scores": retrieval.top_scores,
+        "filtered_out_count": retrieval.filtered_out_count,
+        "candidate_count": retrieval.candidate_count,
+        "index_stats": retriever.index.stats(),
+    }
+    return filtered, stats
 
 
 def build_search(enable_ts3: bool = False, search_backend: str = "beam", dsl_bundle=None):

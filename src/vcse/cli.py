@@ -10,6 +10,7 @@ from pathlib import Path
 from vcse.benchmark import BenchmarkCaseError, format_benchmark_text, run_benchmark
 from vcse.dsl import DSLCompiler, DSLLoader, DSLValidator, GLOBAL_REGISTRY
 from vcse.dsl.errors import DSLError
+from vcse.index import SymbolicRetriever
 from vcse.engine import CaseValidationError, build_search, state_from_case
 from vcse.ingestion.pipeline import IngestionError, ingest_file
 from vcse.memory.constraints import Constraint
@@ -94,12 +95,20 @@ def run_ask(
     enable_ts3: bool = False,
     search_backend: str = "beam",
     dsl_bundle=None,
+    enable_index: bool = False,
+    top_k_rules: int = 20,
+    top_k_packs: int = 5,
 ) -> str:
     """Handle vcse ask command."""
     from vcse.interaction.session import Session
     from vcse.interaction.response_modes import ResponseMode, render_response
 
-    session = Session.create(dsl_bundle=dsl_bundle)
+    session = Session.create(
+        dsl_bundle=dsl_bundle,
+        enable_indexing=enable_index,
+        top_k_rules=top_k_rules,
+        top_k_packs=top_k_packs,
+    )
     session.mode = mode
 
     # Ingest user input
@@ -122,7 +131,9 @@ def run_ask(
         result,
         response_mode,
         session.memory,
-        renderer_templates=_renderer_templates_from_bundle(dsl_bundle),
+        renderer_templates=_renderer_templates_from_bundle(
+            session.history[-1].runtime_bundle if session.history else dsl_bundle
+        ),
     )
 
 
@@ -345,6 +356,54 @@ def load_dsl_bundle(path: str | Path):
     return DSLCompiler.compile(document)
 
 
+def validate_index_args(top_k_rules: int, top_k_packs: int) -> None:
+    if top_k_rules < 1:
+        raise ValueError("INVALID_INDEX_CONFIG: --top-k must be >= 1")
+    if top_k_packs < 1:
+        raise ValueError("INVALID_INDEX_CONFIG: --top-k-packs must be >= 1")
+
+
+def _bundles_for_index(dsl_path: str | None):
+    bundles = []
+    if dsl_path:
+        bundles.append(load_dsl_bundle(dsl_path))
+    for name in GLOBAL_REGISTRY.list_bundles():
+        bundle = GLOBAL_REGISTRY.bundles.get(name)
+        if bundle is not None:
+            bundles.append(bundle)
+    return bundles
+
+
+def run_index_build(dsl_path: str | None = None) -> str:
+    bundles = _bundles_for_index(dsl_path)
+    retriever = SymbolicRetriever.from_bundles(bundles)
+    stats = retriever.index.stats()
+    lines = [
+        "status: INDEX_BUILT",
+        f"bundles: {len(bundles)}",
+        f"artifact_count: {stats['artifact_count']}",
+        f"token_count: {stats['token_count']}",
+        f"pack_count: {stats['pack_count']}",
+        f"average_doc_length: {stats['average_doc_length']}",
+    ]
+    return "\n".join(lines)
+
+
+def run_index_stats(dsl_path: str | None = None) -> str:
+    bundles = _bundles_for_index(dsl_path)
+    retriever = SymbolicRetriever.from_bundles(bundles)
+    stats = retriever.index.stats()
+    lines = [
+        "status: INDEX_STATS",
+        f"bundles: {len(bundles)}",
+        f"artifact_count: {stats['artifact_count']}",
+        f"token_count: {stats['token_count']}",
+        f"pack_count: {stats['pack_count']}",
+        f"average_doc_length: {stats['average_doc_length']}",
+    ]
+    return "\n".join(lines)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="vcse")
     subparsers = parser.add_subparsers(dest="command")
@@ -364,6 +423,9 @@ def main(argv: list[str] | None = None) -> None:
     benchmark_parser.add_argument("--ts3", action="store_true")
     benchmark_parser.add_argument("--search", default="beam")
     benchmark_parser.add_argument("--dsl")
+    benchmark_parser.add_argument("--index", action="store_true")
+    benchmark_parser.add_argument("--top-k", type=int, default=20, dest="top_k_rules")
+    benchmark_parser.add_argument("--top-k-packs", type=int, default=5, dest="top_k_packs")
 
     ingest_parser = subparsers.add_parser("ingest")
     ingest_parser.add_argument("path")
@@ -381,6 +443,9 @@ def main(argv: list[str] | None = None) -> None:
     ask_parser.add_argument("--ts3", action="store_true")
     ask_parser.add_argument("--search", default="beam")
     ask_parser.add_argument("--dsl")
+    ask_parser.add_argument("--index", action="store_true")
+    ask_parser.add_argument("--top-k", type=int, default=20, dest="top_k_rules")
+    ask_parser.add_argument("--top-k-packs", type=int, default=5, dest="top_k_packs")
 
     normalize_parser = subparsers.add_parser("normalize")
     normalize_parser.add_argument("text", nargs="*", default=[])
@@ -406,6 +471,13 @@ def main(argv: list[str] | None = None) -> None:
     dsl_load_parser.add_argument("path")
     dsl_subparsers.add_parser("list")
 
+    index_parser = subparsers.add_parser("index")
+    index_subparsers = index_parser.add_subparsers(dest="index_command")
+    index_build_parser = index_subparsers.add_parser("build")
+    index_build_parser.add_argument("--dsl")
+    index_stats_parser = index_subparsers.add_parser("stats")
+    index_stats_parser.add_argument("--dsl")
+
     args = parser.parse_args(argv)
     try:
         if args.command == "demo":
@@ -415,12 +487,16 @@ def main(argv: list[str] | None = None) -> None:
             print(run_case_file(Path(args.path)))
             return
         if args.command == "benchmark":
+            validate_index_args(args.top_k_rules, args.top_k_packs)
             dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
             summary = run_benchmark(
                 Path(args.path),
                 enable_ts3=args.ts3,
                 search_backend=args.search,
                 dsl_bundle=dsl_bundle,
+                enable_index=args.index,
+                top_k_rules=args.top_k_rules,
+                top_k_packs=args.top_k_packs,
             )
             if args.json_output:
                 print(json.dumps(summary, sort_keys=True))
@@ -444,6 +520,7 @@ def main(argv: list[str] | None = None) -> None:
             )
             return
         if args.command == "ask":
+            validate_index_args(args.top_k_rules, args.top_k_packs)
             dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
             text = " ".join(args.text) if args.text else ""
             print(
@@ -453,9 +530,19 @@ def main(argv: list[str] | None = None) -> None:
                     enable_ts3=args.ts3,
                     search_backend=args.search,
                     dsl_bundle=dsl_bundle,
+                    enable_index=args.index,
+                    top_k_rules=args.top_k_rules,
+                    top_k_packs=args.top_k_packs,
                 )
             )
             return
+        if args.command == "index":
+            if args.index_command == "build":
+                print(run_index_build(args.dsl))
+                return
+            if args.index_command == "stats":
+                print(run_index_stats(args.dsl))
+                return
         if args.command == "dsl":
             if args.dsl_command == "validate":
                 document = DSLLoader.load(args.path)

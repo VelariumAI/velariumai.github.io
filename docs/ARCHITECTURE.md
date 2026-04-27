@@ -8,6 +8,7 @@ search, and deterministic verification.
 Input JSON / CLI demo
   -> optional ingestion adapters/templates/provenance
   -> optional DSL bundle (synonyms/patterns/rules/templates)
+  -> optional symbolic index + capability retrieval (token/BM25)
   -> deterministic parser
   -> WorldStateMemory
   -> symbolic proposers
@@ -34,6 +35,8 @@ Input JSON / CLI demo
   - Both backends are verifier-centered and return `SearchResult`.
 - TS3: optional transient symbolic state-space analysis for loop, reachability,
   absorption, novelty, and contradiction-risk diagnostics.
+- Symbolic Indexing: optional deterministic retrieval layer that selects
+  relevant artifacts/packs using symbolic tokens and BM25-style scoring.
 - Verifiers: judge claims, constraints, contradictions, and goal satisfaction.
 - Renderer: prints evaluated state with no inference or decision logic.
 
@@ -47,3 +50,5 @@ Input JSON / CLI demo
 - TS3 may diagnose and deprioritize, but may not override final-state truth.
 - Ingested knowledge is never implicitly true; verifiers determine usable state.
 - DSL artifacts format behavior only; verifier remains the final authority.
+- Retrieval is optimization only; it may prioritize/deprioritize candidates but
+  must not change truth conditions.

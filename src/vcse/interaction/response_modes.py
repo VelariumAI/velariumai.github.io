@@ -225,6 +225,15 @@ def _render_debug(
             lines.append(f"  absorption_counts: {ts3.absorption_counts}")
             lines.append(f"  novelty_score: {ts3.novelty_score}")
             lines.append(f"  contradiction_risk: {ts3.contradiction_risk}")
+        if search_result.retrieval_stats is not None:
+            retrieval = search_result.retrieval_stats
+            lines.append("index:")
+            lines.append(f"  selected_packs: {retrieval.get('selected_packs', [])}")
+            lines.append(
+                f"  selected_artifacts_count: {retrieval.get('selected_artifacts_count', 0)}"
+            )
+            lines.append(f"  top_scores: {retrieval.get('top_scores', [])}")
+            lines.append(f"  filtered_out_count: {retrieval.get('filtered_out_count', 0)}")
 
     return "\n".join(lines)
 

@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import Any
 
+from vcse.engine import filter_bundle_for_query
 from vcse.interaction.clarification import ClarificationRequest
 from vcse.interaction.frames import FrameParseResult, FrameStatus
 from vcse.interaction.normalizer import NormalizedInput
@@ -24,6 +25,8 @@ class TurnRecord:
     transitions_applied: list[str] = field(default_factory=list)
     result_status: str | None = None
     search_result: SearchResult | None = None
+    runtime_bundle: Any = None
+    retrieval_stats: dict[str, object] | None = None
 
 
 @dataclass
@@ -35,15 +38,28 @@ class Session:
     current_goal: Any = None
     mode: str = "explain"
     dsl_bundle: Any = None
+    enable_indexing: bool = False
+    top_k_rules: int = 20
+    top_k_packs: int = 5
+    retrieval_stats: dict[str, object] | None = None
     created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
 
     @classmethod
-    def create(cls, dsl_bundle: Any = None) -> "Session":
+    def create(
+        cls,
+        dsl_bundle: Any = None,
+        enable_indexing: bool = False,
+        top_k_rules: int = 20,
+        top_k_packs: int = 5,
+    ) -> "Session":
         """Create a new session."""
         return cls(
             id=str(uuid.uuid4())[:8],
             memory=WorldStateMemory(),
             dsl_bundle=dsl_bundle,
+            enable_indexing=enable_indexing,
+            top_k_rules=top_k_rules,
+            top_k_packs=top_k_packs,
         )
 
     def ingest(self, text: str) -> FrameParseResult:
@@ -53,14 +69,25 @@ class Session:
         from vcse.interaction.frames import GoalFrame, ClaimFrame
         import re
 
+        runtime_bundle = self.dsl_bundle
+        retrieval_stats: dict[str, object] | None = None
+        if self.enable_indexing and self.dsl_bundle is not None:
+            runtime_bundle, retrieval_stats = filter_bundle_for_query(
+                self.dsl_bundle,
+                text,
+                top_k_rules=self.top_k_rules,
+                top_k_packs=self.top_k_packs,
+            )
+            self.retrieval_stats = retrieval_stats
+
         external_synonyms = []
         external_patterns = []
-        if self.dsl_bundle is not None:
+        if runtime_bundle is not None:
             external_synonyms = [
                 (rule.pattern, rule.replacement)
-                for rule in getattr(self.dsl_bundle, "synonyms", [])
+                for rule in getattr(runtime_bundle, "synonyms", [])
             ]
-            external_patterns = list(getattr(self.dsl_bundle, "parser_patterns", []))
+            external_patterns = list(getattr(runtime_bundle, "parser_patterns", []))
 
         normalizer = SemanticNormalizer(external_synonyms=external_synonyms)
         parser = PatternParser(external_patterns=external_patterns)
@@ -104,6 +131,8 @@ class Session:
             user_input=text,
             normalized=normalized,
             frames=frames,
+            runtime_bundle=runtime_bundle,
+            retrieval_stats=retrieval_stats,
         )
         self.history.append(turn)
 
@@ -120,8 +149,13 @@ class Session:
         from vcse.interaction.clarification import ClarificationEngine
         from vcse.memory.relations import RelationSchema
 
-        if self.dsl_bundle is not None:
-            for schema in getattr(self.dsl_bundle, "relation_schemas", []):
+        active_bundle = self.dsl_bundle
+        if self.history and self.history[-1].runtime_bundle is not None:
+            active_bundle = self.history[-1].runtime_bundle
+        retrieval_stats = self.history[-1].retrieval_stats if self.history else None
+
+        if active_bundle is not None:
+            for schema in getattr(active_bundle, "relation_schemas", []):
                 name = str(schema.get("name", "")).strip()
                 if not name:
                     continue
@@ -147,7 +181,7 @@ class Session:
 
         # Check for clarification need
         clarification = ClarificationEngine(
-            external_rules=getattr(self.dsl_bundle, "clarification_rules", None)
+            external_rules=getattr(active_bundle, "clarification_rules", None)
         ).clarify(
             self.history[-1].frames if self.history else None,
             self.memory,
@@ -161,9 +195,11 @@ class Session:
             search = build_search(
                 enable_ts3=enable_ts3,
                 search_backend=search_backend,
-                dsl_bundle=self.dsl_bundle,
+                dsl_bundle=active_bundle,
             )
             result = search.run(self.memory)
+            if retrieval_stats:
+                result = replace(result, retrieval_stats=retrieval_stats)
             if self.history:
                 self.history[-1].search_result = result
                 self.history[-1].result_status = result.evaluation.status.value

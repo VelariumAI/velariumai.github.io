@@ -349,3 +349,73 @@ def test_cli_invalid_dsl_fails_cleanly() -> None:
     assert "status: ERROR" in result.stderr
     assert "error_type: INVALID_DSL" in result.stderr
     assert "traceback" not in result.stderr.lower()
+
+
+def test_cli_index_build_and_stats_work() -> None:
+    dsl_path = Path(__file__).resolve().parents[1] / "examples" / "dsl" / "basic_logic.json"
+
+    built = run_cli("index", "build", "--dsl", str(dsl_path))
+    stats = run_cli("index", "stats", "--dsl", str(dsl_path))
+
+    assert built.returncode == 0
+    assert "status: INDEX_BUILT" in built.stdout
+    assert "artifact_count:" in built.stdout
+
+    assert stats.returncode == 0
+    assert "status: INDEX_STATS" in stats.stdout
+    assert "token_count:" in stats.stdout
+
+
+def test_cli_ask_index_debug_emits_selection_stats() -> None:
+    dsl_path = Path(__file__).resolve().parents[1] / "examples" / "dsl" / "basic_logic.json"
+    result = run_cli(
+        "ask",
+        "All men are mortal. Socrates is a man. Can Socrates die?",
+        "--mode",
+        "debug",
+        "--dsl",
+        str(dsl_path),
+        "--index",
+        "--top-k",
+        "2",
+        "--top-k-packs",
+        "1",
+    )
+
+    assert result.returncode == 0
+    assert "index:" in result.stdout
+    assert "selected_packs:" in result.stdout
+    assert "selected_artifacts_count:" in result.stdout
+    assert "top_scores:" in result.stdout
+    assert "filtered_out_count:" in result.stdout
+
+
+def test_cli_benchmark_index_flag_works() -> None:
+    dsl_path = Path(__file__).resolve().parents[1] / "examples" / "dsl" / "basic_logic.json"
+    benchmark_path = Path(__file__).resolve().parents[1] / "benchmarks" / "mixed_cases.jsonl"
+    result = run_cli(
+        "benchmark",
+        str(benchmark_path),
+        "--search",
+        "beam",
+        "--dsl",
+        str(dsl_path),
+        "--index",
+    )
+
+    assert result.returncode == 0
+    assert "status: BENCHMARK_COMPLETE" in result.stdout
+
+
+def test_cli_invalid_index_config_fails_structured() -> None:
+    result = run_cli(
+        "ask",
+        "Can Socrates die?",
+        "--index",
+        "--top-k",
+        "0",
+    )
+
+    assert result.returncode == 2
+    assert "status: ERROR" in result.stderr
+    assert "error_type: INVALID_INDEX_CONFIG" in result.stderr

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 from vcse.memory.world_state import WorldStateMemory
 from vcse.search.node import SearchNode
@@ -28,6 +29,7 @@ class SearchResult:
     evaluation: FinalStateEvaluation
     stats: SearchStats
     ts3_analysis: TS3AnalysisResult | None = None
+    retrieval_stats: dict[str, Any] | None = None
 
     @property
     def state(self) -> WorldStateMemory:

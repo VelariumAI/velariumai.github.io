@@ -57,6 +57,8 @@ vcse benchmark benchmarks/mixed_cases.jsonl --search mcts --ts3
 vcse ask "All men are mortal. Socrates is a man. Can Socrates die?" --search mcts
 vcse dsl validate examples/dsl/basic_logic.json
 vcse ask "Can Socrates perish?" --dsl examples/dsl/mortality.json
+vcse index build --dsl examples/dsl/basic_logic.json
+vcse ask "Can Socrates perish?" --dsl examples/dsl/mortality.json --index
 ```
 
 Example JSON input:
@@ -116,6 +118,26 @@ vcse ingest examples/ingestion/simple_policy.txt --dsl examples/dsl/simple_polic
 
 See [docs/DSL.md](docs/DSL.md).
 
+## Symbolic Indexing
+
+VCSE 1.6.0 adds an optional deterministic symbolic index for capability
+retrieval. It uses tokenized symbolic features with BM25-style scoring over DSL
+artifacts and capability packs.
+
+- No embeddings
+- No neural dependencies
+- CPU-only deterministic ranking
+- Retrieval suggests candidates; verifier remains final authority
+
+Indexing is opt-in and default behavior is unchanged.
+
+```bash
+vcse index build --dsl examples/dsl/basic_logic.json
+vcse index stats --dsl examples/dsl/basic_logic.json
+vcse ask "Can Socrates perish?" --dsl examples/dsl/mortality.json --index
+vcse benchmark benchmarks/mixed_cases.jsonl --search mcts --ts3 --index
+```
+
 Metrics include status accuracy, answer accuracy, status rates, runtime, nodes
 expanded, search depth, and proof trace length.
 
@@ -147,6 +169,8 @@ Core implementation is CPU-only and must not add text-model dependencies. See
   - MCTSSearch (optional exploration backend with verifier-centered scoring)
 - TS3 is an optional state-space analysis layer for loop/stagnation/absorption diagnostics.
 - DSL is optional and deterministic; built-ins remain active when no bundle is loaded.
+- Symbolic indexing is optional and deterministic; when disabled, VCSE uses full
+  bundle behavior exactly as before.
 - Solver-backed proposals are optional and skipped when the external solver
   package is unavailable.
 
