@@ -15,3 +15,5 @@ class SearchNode:
     score: float = 0.0
     depth: int = 0
     terminal_status: str | None = None
+    state_signature: str | None = None
+    path_signatures: tuple[str, ...] = field(default_factory=tuple)

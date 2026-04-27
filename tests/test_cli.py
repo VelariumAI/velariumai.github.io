@@ -163,3 +163,21 @@ def test_cli_ask_explain_and_debug_preserve_proof_trace() -> None:
     assert "proof_trace_human:" in debug.stdout
     assert "socrates is_a man" in debug.stdout.lower()
     assert "socrates is a man" in debug.stdout.lower()
+
+
+def test_cli_ask_debug_with_ts3_emits_ts3_stats() -> None:
+    debug = run_cli(
+        "ask",
+        "All men are mortal. Socrates is a man. Can Socrates die?",
+        "--mode",
+        "debug",
+        "--ts3",
+    )
+
+    assert debug.returncode == 0
+    assert "ts3:" in debug.stdout
+    assert "loop_detected:" in debug.stdout
+    assert "reachable_by_depth:" in debug.stdout
+    assert "absorption_counts:" in debug.stdout
+    assert "novelty_score:" in debug.stdout
+    assert "contradiction_risk:" in debug.stdout

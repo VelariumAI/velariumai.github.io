@@ -10,7 +10,7 @@ from vcse.memory.serialization import JSONDict
 from vcse.memory.world_state import TruthStatus, WorldStateMemory
 from vcse.proposer.domain_specific import DomainSpecificProposer
 from vcse.proposer.rule_based import RuleBasedProposer
-from vcse.search.beam import BeamSearch
+from vcse.search.beam import BeamSearch, SearchConfig
 from vcse.transitions.state_transition import Transition
 from vcse.verifier.final_state import FinalStateEvaluator
 from vcse.verifier.stack import VerifierStack
@@ -34,11 +34,12 @@ class CaseValidationError(ValueError):
         self.reason = reason
 
 
-def build_search() -> BeamSearch:
+def build_search(enable_ts3: bool = False) -> BeamSearch:
     return BeamSearch(
         proposer=CompositeProposer([RuleBasedProposer(), DomainSpecificProposer()]),
         verifier_stack=VerifierStack.default(),
         final_state_evaluator=FinalStateEvaluator(),
+        config=SearchConfig(enable_ts3=enable_ts3),
     )
 
 

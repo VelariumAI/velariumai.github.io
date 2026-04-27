@@ -189,6 +189,14 @@ def _render_debug(
         lines.append(f"  nodes_expanded: {stats.nodes_expanded}")
         lines.append(f"  max_depth_reached: {stats.max_depth_reached}")
         lines.append(f"  best_score: {stats.best_score}")
+        if search_result.ts3_analysis is not None:
+            ts3 = search_result.ts3_analysis
+            lines.append("ts3:")
+            lines.append(f"  loop_detected: {ts3.loop_detected}")
+            lines.append(f"  reachable_by_depth: {ts3.reachable_by_depth}")
+            lines.append(f"  absorption_counts: {ts3.absorption_counts}")
+            lines.append(f"  novelty_score: {ts3.novelty_score}")
+            lines.append(f"  contradiction_risk: {ts3.contradiction_risk}")
 
     return "\n".join(lines)
 

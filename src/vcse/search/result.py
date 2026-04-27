@@ -8,6 +8,7 @@ from vcse.memory.world_state import WorldStateMemory
 from vcse.search.node import SearchNode
 from vcse.transitions.state_transition import Transition
 from vcse.verifier.final_state import FinalStateEvaluation
+from vcse.ts3.transient_analyzer import TS3AnalysisResult
 
 
 @dataclass(frozen=True)
@@ -24,6 +25,7 @@ class SearchResult:
     best_node: SearchNode
     evaluation: FinalStateEvaluation
     stats: SearchStats
+    ts3_analysis: TS3AnalysisResult | None = None
 
     @property
     def state(self) -> WorldStateMemory:
@@ -60,3 +62,7 @@ class SearchResult:
     @property
     def max_frontier_size(self) -> int:
         return self.stats.max_frontier_size
+
+    @property
+    def ts3_stats(self) -> TS3AnalysisResult | None:
+        return self.ts3_analysis

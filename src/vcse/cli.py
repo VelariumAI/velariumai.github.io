@@ -39,19 +39,19 @@ def build_contradiction_demo_state() -> WorldStateMemory:
     return state
 
 
-def run_logic_demo() -> str:
-    search = build_search()
+def run_logic_demo(enable_ts3: bool = False) -> str:
+    search = build_search(enable_ts3=enable_ts3)
     node = search.run(build_logic_demo_state())
     return ExplanationRenderer().render(node)
 
 
-def run_demo(name: str) -> str:
+def run_demo(name: str, enable_ts3: bool = False) -> str:
     builders = {
         "logic": build_logic_demo_state,
         "arithmetic": build_arithmetic_demo_state,
         "contradiction": build_contradiction_demo_state,
     }
-    result = build_search().run(builders[name]())
+    result = build_search(enable_ts3=enable_ts3).run(builders[name]())
     return ExplanationRenderer().render(result)
 
 
@@ -85,7 +85,7 @@ def run_case_file(path: Path) -> str:
     return ExplanationRenderer().render(result)
 
 
-def run_ask(text: str, mode: str = "explain") -> str:
+def run_ask(text: str, mode: str = "explain", enable_ts3: bool = False) -> str:
     """Handle vcse ask command."""
     from vcse.interaction.session import Session
     from vcse.interaction.response_modes import ResponseMode, render_response
@@ -97,7 +97,7 @@ def run_ask(text: str, mode: str = "explain") -> str:
     frames = session.ingest(text)
 
     # Solve
-    result = session.solve()
+    result = session.solve(enable_ts3=enable_ts3)
 
     # Handle different result types
     if result is None:
@@ -263,6 +263,7 @@ def main(argv: list[str] | None = None) -> None:
 
     demo_parser = subparsers.add_parser("demo")
     demo_parser.add_argument("name", choices=["logic", "arithmetic", "contradiction"])
+    demo_parser.add_argument("--ts3", action="store_true")
 
     run_parser = subparsers.add_parser("run")
     run_parser.add_argument("path")
@@ -271,11 +272,13 @@ def main(argv: list[str] | None = None) -> None:
     benchmark_parser.add_argument("path")
     benchmark_parser.add_argument("--json", action="store_true", dest="json_output")
     benchmark_parser.add_argument("--allow-fail", action="store_true")
+    benchmark_parser.add_argument("--ts3", action="store_true")
 
     # New interaction commands
     ask_parser = subparsers.add_parser("ask")
     ask_parser.add_argument("text", nargs="*", default=[])
     ask_parser.add_argument("--mode", default="explain")
+    ask_parser.add_argument("--ts3", action="store_true")
 
     normalize_parser = subparsers.add_parser("normalize")
     normalize_parser.add_argument("text", nargs="...", default="")
@@ -294,13 +297,13 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     try:
         if args.command == "demo":
-            print(run_demo(args.name))
+            print(run_demo(args.name, enable_ts3=args.ts3))
             return
         if args.command == "run":
             print(run_case_file(Path(args.path)))
             return
         if args.command == "benchmark":
-            summary = run_benchmark(Path(args.path))
+            summary = run_benchmark(Path(args.path), enable_ts3=args.ts3)
             if args.json_output:
                 print(json.dumps(summary, sort_keys=True))
             else:
@@ -310,7 +313,7 @@ def main(argv: list[str] | None = None) -> None:
             return
         if args.command == "ask":
             text = " ".join(args.text) if args.text else ""
-            print(run_ask(text, args.mode))
+            print(run_ask(text, args.mode, enable_ts3=args.ts3))
             return
         if args.command == "normalize":
             text = " ".join(args.text) if args.text else ""
