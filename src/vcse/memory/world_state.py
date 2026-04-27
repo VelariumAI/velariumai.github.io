@@ -97,6 +97,8 @@ class WorldStateMemory:
         self._claim_index: dict[tuple[str, str, str, tuple[tuple[str, str], ...]], str] = {}
         self.relation_schemas: dict[str, RelationSchema] = {}
         self.constraints: list[Constraint] = []
+        self.symbol_bindings: dict[str, Any] = {}
+        self.evidence: dict[str, list[dict[str, Any]]] = {}
         self.goals: list[Goal] = []
         self.contradictions: dict[str, list[Contradiction]] = {}
         self.version: int = 0
@@ -122,6 +124,9 @@ class WorldStateMemory:
     def add_relation_schema(self, schema: RelationSchema) -> None:
         self.relation_schemas[schema.canonical_name] = schema
         self.version += 1
+
+    def add_relation_schema_from_name(self, name: str, **properties: Any) -> None:
+        self.add_relation_schema(RelationSchema(name=name, **properties))
 
     def get_relation_schema(self, relation: str) -> RelationSchema | None:
         return self.relation_schemas.get(_norm(relation))
@@ -189,6 +194,29 @@ class WorldStateMemory:
     def add_constraint(self, constraint: Constraint) -> None:
         self.constraints.append(constraint)
         self.version += 1
+
+    def constraint_id_for_index(self, index: int) -> str:
+        return f"constraint:{index + 1}"
+
+    def update_truth_status(self, claim_id: str, status: TruthStatus) -> bool:
+        claim = self.claims.get(claim_id)
+        if claim is None:
+            return False
+        claim.status = status
+        self.version += 1
+        return True
+
+    def bind_symbol(self, name: object, value: Any) -> str:
+        symbol = _norm(name)
+        self.symbol_bindings[symbol] = value
+        self.version += 1
+        return f"symbol:{symbol}"
+
+    def add_evidence(self, target_id: str, content: object, source: str = "transition") -> str:
+        entry = {"content": _norm(content), "source": _norm(source)}
+        self.evidence.setdefault(target_id, []).append(entry)
+        self.version += 1
+        return f"evidence:{target_id}:{len(self.evidence[target_id])}"
 
     def record_contradiction(
         self,
@@ -267,6 +295,11 @@ class WorldStateMemory:
                 for claim in self.claims.values()
             ],
             "constraints": [constraint.to_dict() for constraint in self.constraints],
+            "symbol_bindings": dict(self.symbol_bindings),
+            "evidence": {
+                target_id: [dict(entry) for entry in entries]
+                for target_id, entries in self.evidence.items()
+            },
             "goals": [
                 {
                     "id": goal.id,
@@ -316,6 +349,11 @@ class WorldStateMemory:
         state.constraints = [
             Constraint.from_dict(item) for item in data.get("constraints", [])
         ]
+        state.symbol_bindings = dict(data.get("symbol_bindings", {}))
+        state.evidence = {
+            str(target_id): [dict(entry) for entry in entries]
+            for target_id, entries in data.get("evidence", {}).items()
+        }
 
         state.goals = [
             Goal(

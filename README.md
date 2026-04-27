@@ -26,6 +26,12 @@ identity, relation schema persistence, structured constraints, contradiction
 indexing, versioned cloning, dependency paths, and JSON serialization that
 preserves `TruthStatus` enums.
 
+Phase 2 formalizes state transitions. Core paths now use `Transition` objects
+with validation before application, cloned-state execution, structured
+`VerificationResult` failures, and affected element tracking for `AddClaim`,
+`AddConstraint`, `UpdateTruthStatus`, `BindSymbol`, `AddGoal`, `AddEvidence`,
+and `RecordContradiction`.
+
 Current data flow:
 
 ```text
