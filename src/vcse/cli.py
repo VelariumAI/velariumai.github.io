@@ -9,6 +9,7 @@ from pathlib import Path
 
 from vcse.benchmark import BenchmarkCaseError, format_benchmark_text, run_benchmark
 from vcse.engine import CaseValidationError, build_search, state_from_case
+from vcse.ingestion.pipeline import IngestionError, ingest_file
 from vcse.memory.constraints import Constraint
 from vcse.memory.relations import RelationSchema
 from vcse.memory.world_state import TruthStatus, WorldStateMemory
@@ -262,6 +263,58 @@ def run_reasonops_report(path: Path) -> str:
     return generate_report(path)
 
 
+def run_ingest(
+    path: Path,
+    template_name: str | None = None,
+    auto: bool = False,
+    dry_run: bool = False,
+    output_memory: Path | None = None,
+    export_pack: Path | None = None,
+) -> str:
+    result = ingest_file(
+        path=path,
+        template_name=template_name,
+        auto=auto,
+        dry_run=dry_run,
+        output_memory_path=output_memory,
+        export_pack_path=export_pack,
+    )
+    imported = result.import_result
+    lines = [
+        f"status: {imported.status}",
+        f"source_id: {imported.source_id}",
+        f"frames_extracted: {imported.frames_extracted}",
+        f"created_elements: {imported.created_elements}",
+        "transitions_applied:",
+    ]
+    if imported.transitions_applied:
+        for item in imported.transitions_applied:
+            lines.append(f"  - {item}")
+    else:
+        lines.append("  - none")
+    lines.append("contradictions_detected:")
+    if imported.contradictions_detected:
+        for item in imported.contradictions_detected:
+            lines.append(f"  - {item}")
+    else:
+        lines.append("  - none")
+    if imported.warnings:
+        lines.append("warnings:")
+        for warning in imported.warnings:
+            lines.append(f"  - {warning}")
+    if imported.errors:
+        lines.append("errors:")
+        for error in imported.errors:
+            lines.append(f"  - {error}")
+    if dry_run:
+        lines.append("dry_run: true")
+    if output_memory:
+        lines.append(f"output_memory: {output_memory}")
+    if export_pack:
+        lines.append(f"export_pack: {export_pack}")
+    return "\n".join(lines)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="vcse")
     subparsers = parser.add_subparsers(dest="command")
@@ -280,6 +333,14 @@ def main(argv: list[str] | None = None) -> None:
     benchmark_parser.add_argument("--allow-fail", action="store_true")
     benchmark_parser.add_argument("--ts3", action="store_true")
     benchmark_parser.add_argument("--search", default="beam")
+
+    ingest_parser = subparsers.add_parser("ingest")
+    ingest_parser.add_argument("path")
+    ingest_parser.add_argument("--template", dest="template_name")
+    ingest_parser.add_argument("--auto", action="store_true")
+    ingest_parser.add_argument("--dry-run", action="store_true")
+    ingest_parser.add_argument("--output-memory", type=Path)
+    ingest_parser.add_argument("--export-pack", type=Path)
 
     # New interaction commands
     ask_parser = subparsers.add_parser("ask")
@@ -323,6 +384,18 @@ def main(argv: list[str] | None = None) -> None:
             if summary["status"] != "BENCHMARK_COMPLETE" and not args.allow_fail:
                 raise SystemExit(1)
             return
+        if args.command == "ingest":
+            print(
+                run_ingest(
+                    Path(args.path),
+                    template_name=args.template_name,
+                    auto=args.auto,
+                    dry_run=args.dry_run,
+                    output_memory=args.output_memory,
+                    export_pack=args.export_pack,
+                )
+            )
+            return
         if args.command == "ask":
             text = " ".join(args.text) if args.text else ""
             print(
@@ -351,7 +424,7 @@ def main(argv: list[str] | None = None) -> None:
             else:
                 reasonops_subparsers.print_help()
             return
-    except (ValueError, BenchmarkCaseError, CaseValidationError) as exc:
+    except (ValueError, BenchmarkCaseError, CaseValidationError, IngestionError) as exc:
         error_type = getattr(exc, "error_type", None)
         reason = getattr(exc, "reason", None)
         if error_type is None:

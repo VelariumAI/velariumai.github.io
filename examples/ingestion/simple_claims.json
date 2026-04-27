@@ -1,0 +1,6 @@
+{
+  "facts": [
+    {"subject": "employee", "relation": "is_a", "object": "worker"},
+    {"subject": "employee", "relation": "requires", "object": "BackgroundChecked"}
+  ]
+}

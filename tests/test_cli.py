@@ -227,3 +227,56 @@ def test_cli_search_mcts_with_ts3_debug_works() -> None:
     assert "search_stats:" in result.stdout
     assert "backend: mcts" in result.stdout
     assert "ts3:" in result.stdout
+
+
+def test_cli_ingest_auto_and_dry_run(tmp_path: Path) -> None:
+    path = tmp_path / "sample.txt"
+    path.write_text("All employees are workers.\nEmployees must be background checked.")
+    result = run_cli("ingest", str(path), "--auto", "--dry-run")
+
+    assert result.returncode == 0
+    assert "status:" in result.stdout
+    assert "frames_extracted:" in result.stdout
+    assert "dry_run: true" in result.stdout
+
+
+def test_cli_ingest_unsupported_file_fails_cleanly(tmp_path: Path) -> None:
+    path = tmp_path / "sample.md"
+    path.write_text("hello")
+    result = run_cli("ingest", str(path), "--auto")
+
+    assert result.returncode == 0
+    assert "status: UNSUPPORTED_FORMAT" in result.stdout
+    assert "traceback" not in result.stdout.lower()
+
+
+def test_cli_ingest_malformed_json_fails_cleanly(tmp_path: Path) -> None:
+    path = tmp_path / "bad.json"
+    path.write_text("{not json")
+    result = run_cli("ingest", str(path), "--auto")
+
+    assert result.returncode == 0
+    assert "status: REJECTED" in result.stdout
+    assert "MALFORMED_JSON" in result.stdout
+
+
+def test_cli_ingest_output_memory_and_export_pack(tmp_path: Path) -> None:
+    source = tmp_path / "sample.txt"
+    source.write_text("All employees are workers.")
+    memory_out = tmp_path / "memory.json"
+    pack_dir = tmp_path / "pack"
+
+    result = run_cli(
+        "ingest",
+        str(source),
+        "--auto",
+        "--output-memory",
+        str(memory_out),
+        "--export-pack",
+        str(pack_dir),
+    )
+
+    assert result.returncode == 0
+    assert memory_out.exists()
+    assert (pack_dir / "pack.yaml").exists()
+    assert (pack_dir / "claims.jsonl").exists()

@@ -24,6 +24,8 @@ class ClaimFrame:
     object: str | None = None
     qualifiers: list[str] = field(default_factory=list)
     source_text: str = ""
+    provenance: dict[str, object] | None = None
+    confidence: float = 1.0
 
 
 @dataclass
@@ -35,6 +37,9 @@ class GoalFrame:
     constraints: list[str] = field(default_factory=list)
     success_criteria: str = ""
     source_text: str = ""
+    provenance: dict[str, object] | None = None
+    confidence: float = 1.0
+    qualifiers: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -44,6 +49,9 @@ class ConstraintFrame:
     operator: str
     value: str | int | float
     source_text: str = ""
+    provenance: dict[str, object] | None = None
+    confidence: float = 1.0
+    qualifiers: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -52,6 +60,9 @@ class DefinitionFrame:
     term: str
     definition: str
     source_text: str = ""
+    provenance: dict[str, object] | None = None
+    confidence: float = 1.0
+    qualifiers: list[str] = field(default_factory=list)
 
 
 @dataclass

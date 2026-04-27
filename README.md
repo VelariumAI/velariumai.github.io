@@ -49,6 +49,7 @@ vcse demo logic
 vcse demo arithmetic
 vcse demo contradiction
 vcse demo logic --search mcts
+vcse ingest examples/ingestion/simple_policy.txt --auto --dry-run
 vcse run examples/file.json
 vcse benchmark benchmarks/simple_logic_cases.jsonl
 vcse benchmark benchmarks/mixed_cases.jsonl --json
@@ -81,6 +82,23 @@ vcse benchmark benchmarks/contradiction_cases.jsonl
 vcse benchmark benchmarks/mixed_cases.jsonl
 vcse benchmark benchmarks/mixed_cases.jsonl --json
 ```
+
+## Ingestion
+
+VCSE can import candidate knowledge from local JSON/JSONL/CSV/TXT (and YAML when
+available) through deterministic adapters and template extraction.
+
+Ingestion is not blind trust: imported facts are validated, applied on cloned
+memory, and checked by verifiers before acceptance.
+
+```bash
+vcse ingest examples/ingestion/simple_policy.txt --auto --dry-run
+vcse ingest examples/ingestion/simple_policy.txt --auto --output-memory /tmp/vcse_memory.json
+vcse ingest examples/ingestion/simple_policy.txt --auto --export-pack /tmp/vcse_pack
+```
+
+See [docs/INGESTION.md](docs/INGESTION.md) and
+[docs/CAPABILITY_PACKS.md](docs/CAPABILITY_PACKS.md).
 
 Metrics include status accuracy, answer accuracy, status rates, runtime, nodes
 expanded, search depth, and proof trace length.

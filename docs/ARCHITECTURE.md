@@ -6,6 +6,7 @@ search, and deterministic verification.
 
 ```text
 Input JSON / CLI demo
+  -> optional ingestion adapters/templates/provenance
   -> deterministic parser
   -> WorldStateMemory
   -> symbolic proposers
@@ -18,6 +19,8 @@ Input JSON / CLI demo
 ## Components
 
 - Parser: extracts facts, constraints, and goals into typed memory objects.
+- Ingestion: adapter + template pipeline imports candidate knowledge with
+  provenance and validation.
 - Memory: stores claims, constraints, goals, symbol bindings, evidence, and
   contradiction indexes.
 - Proposers: produce `Transition` objects only.
@@ -38,3 +41,4 @@ Input JSON / CLI demo
 - Verified answers include proof traces.
 - Contradictory and unsatisfiable states are rejected as final answers.
 - TS3 may diagnose and deprioritize, but may not override final-state truth.
+- Ingested knowledge is never implicitly true; verifiers determine usable state.

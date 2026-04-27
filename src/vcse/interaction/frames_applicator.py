@@ -24,6 +24,7 @@ class ApplicationResult:
     errors: list[str] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
     created_elements: int = 0
+    created_ids: list[str] = field(default_factory=list)
 
 
 class FrameApplicator:
@@ -59,7 +60,7 @@ class FrameApplicator:
             memory = result.memory
             self._ensure_relation_schema(memory, frame.relation)
             # Add the claim
-            memory.add_claim(
+            claim_id = memory.add_claim(
                 frame.subject,
                 frame.relation,
                 frame.object or "",
@@ -67,6 +68,7 @@ class FrameApplicator:
             )
             result.transitions_applied.append(f"claim:{frame.subject}/{frame.relation}/{frame.object}")
             result.created_elements += 1
+            result.created_ids.append(claim_id)
         except Exception as exc:
             result.errors.append(f"Failed to apply claim: {exc}")
 
@@ -75,13 +77,14 @@ class FrameApplicator:
         try:
             memory = result.memory
             self._ensure_relation_schema(memory, frame.relation)
-            memory.add_goal(
+            goal_id = memory.add_goal(
                 frame.subject,
                 frame.relation,
                 frame.object or "",
             )
             result.transitions_applied.append(f"goal:{frame.subject}/{frame.relation}/{frame.object}")
             result.created_elements += 1
+            result.created_ids.append(goal_id)
         except Exception as exc:
             result.errors.append(f"Failed to apply goal: {exc}")
 
@@ -99,6 +102,7 @@ class FrameApplicator:
             )
             result.transitions_applied.append(f"constraint:{frame.target}/{frame.operator}/{frame.value}")
             result.created_elements += 1
+            result.created_ids.append(memory.constraint_id_for_index(len(memory.constraints) - 1))
         except Exception as exc:
             result.errors.append(f"Failed to apply constraint: {exc}")
 
