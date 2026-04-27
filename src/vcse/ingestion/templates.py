@@ -6,6 +6,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
+from vcse.dsl.schema import CapabilityBundle
 from vcse.ingestion.provenance import Provenance
 from vcse.ingestion.source import SourceDocument
 from vcse.interaction.frames import ClaimFrame, ConstraintFrame, DefinitionFrame, GoalFrame
@@ -56,11 +57,21 @@ def resolve_template(
     source: SourceDocument,
     template_name: str | None,
     auto: bool,
+    dsl_bundle: CapabilityBundle | None = None,
 ) -> Template | None:
+    external_templates = _dsl_ingestion_templates(dsl_bundle)
     if template_name:
-        return BUILTIN_TEMPLATES.get(template_name)
+        if template_name in BUILTIN_TEMPLATES:
+            return BUILTIN_TEMPLATES.get(template_name)
+        for template in external_templates:
+            if template.name == template_name:
+                return template
+        return None
     if not auto:
         return None
+    for template in external_templates:
+        if template.input_type == source.source_type:
+            return template
     if source.source_type == "text":
         return BUILTIN_TEMPLATES["text_policy"]
     if source.source_type == "json":
@@ -79,6 +90,29 @@ def resolve_template(
                 return BUILTIN_TEMPLATES["csv_entity_relation_value"]
         return BUILTIN_TEMPLATES["csv_triples"]
     return None
+
+
+def _dsl_ingestion_templates(dsl_bundle: CapabilityBundle | None) -> list[Template]:
+    templates: list[Template] = []
+    if dsl_bundle is None:
+        return templates
+    for rule in sorted(dsl_bundle.ingestion_templates, key=lambda item: (item.priority, item.id)):
+        output = rule.output
+        templates.append(
+            Template(
+                name=rule.id,
+                input_type="text",
+                patterns=list(rule.patterns),
+                output_frame_type=str(output.get("frame_type", "ClaimFrame")),
+                relation=str(output.get("relation", "is_a")),
+                field_mappings={
+                    "subject": str(output.get("subject", "{subject}")),
+                    "object": str(output.get("object", "{object}")),
+                },
+                confidence=0.9,
+            )
+        )
+    return templates
 
 
 def extract_frames(
@@ -104,6 +138,10 @@ def _extract_text(source: SourceDocument, template: Template, warnings: list[str
     text = str(source.content or "")
     statements = [item.strip() for item in re.split(r"[.\n]+", text) if item.strip()]
     frames: list[object] = []
+    if template.name != "text_policy":
+        custom = _extract_text_with_template(source, template, statements, warnings)
+        if custom:
+            return custom
     for index, statement in enumerate(statements, start=1):
         provenance = Provenance(
             source_id=source.id,
@@ -172,6 +210,51 @@ def _extract_text(source: SourceDocument, template: Template, warnings: list[str
             )
             continue
         warnings.append(f"No template match for text statement: {statement}")
+    return frames
+
+
+def _extract_text_with_template(
+    source: SourceDocument,
+    template: Template,
+    statements: list[str],
+    warnings: list[str],
+) -> list[object]:
+    frames: list[object] = []
+    for index, statement in enumerate(statements, start=1):
+        matched = False
+        for pattern in template.patterns:
+            regex = _pattern_to_regex(pattern)
+            match = re.match(regex, statement, re.IGNORECASE)
+            if not match:
+                continue
+            matched = True
+            values = {key: _singular(value) for key, value in match.groupdict().items()}
+            provenance = Provenance(
+                source_id=source.id,
+                source_type=source.source_type,
+                location=f"statement:{index}",
+                evidence_text=statement,
+                confidence=template.confidence,
+            )
+            subject_t = template.field_mappings.get("subject", "{subject}")
+            object_t = template.field_mappings.get("object", "{object}")
+            subject = _fill_placeholders(subject_t, values)
+            obj = _fill_placeholders(object_t, values)
+            relation = template.relation
+            frames.append(
+                ClaimFrame(
+                    subject=subject,
+                    relation=relation,
+                    object=obj,
+                    source_text=statement,
+                    provenance=provenance.to_dict(),
+                    confidence=template.confidence,
+                    qualifiers=list(template.qualifiers),
+                )
+            )
+            break
+        if not matched:
+            warnings.append(f"No template match for text statement: {statement}")
     return frames
 
 
@@ -306,3 +389,16 @@ def _normalize_requirement(value: str, pascal_case: bool) -> str:
         return clean
     tokens = [token for token in clean.split() if token]
     return "".join(token.capitalize() for token in tokens)
+
+
+def _pattern_to_regex(pattern: str) -> str:
+    escaped = re.escape(pattern)
+    escaped = re.sub(r"\\\{([a-zA-Z_][a-zA-Z0-9_]*)\\\}", r"(?P<\1>.+?)", escaped)
+    return r"^" + escaped + r"$"
+
+
+def _fill_placeholders(template: str, values: dict[str, str]) -> str:
+    text = template
+    for key, value in values.items():
+        text = text.replace("{" + key + "}", value)
+    return text.strip().lower()

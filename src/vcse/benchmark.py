@@ -25,13 +25,19 @@ def run_benchmark(
     path: PathLike,
     enable_ts3: bool = False,
     search_backend: str = "beam",
+    dsl_bundle=None,
 ) -> dict[str, Any]:
     cases = _load_cases(Path(path))
     results: list[dict[str, Any]] = []
 
     for case in cases:
         started = time.perf_counter()
-        result = _run_case(case, enable_ts3=enable_ts3, search_backend=search_backend)
+        result = _run_case(
+            case,
+            enable_ts3=enable_ts3,
+            search_backend=search_backend,
+            dsl_bundle=dsl_bundle,
+        )
         runtime_ms = (time.perf_counter() - started) * 1000
         results.append({**result, "runtime_ms": runtime_ms})
 
@@ -42,6 +48,7 @@ def _run_case(
     case: dict[str, Any],
     enable_ts3: bool = False,
     search_backend: str = "beam",
+    dsl_bundle=None,
 ) -> dict[str, Any]:
     """Run a single benchmark case."""
     case_id = case.get("id")
@@ -55,6 +62,7 @@ def _run_case(
             case,
             enable_ts3=enable_ts3,
             search_backend=search_backend,
+            dsl_bundle=dsl_bundle,
         )
 
     # Otherwise use original JSON case format
@@ -62,7 +70,28 @@ def _run_case(
         state = state_from_case(case)
     except CaseValidationError as exc:
         raise BenchmarkCaseError(exc.error_type, exc.reason) from exc
-    search_result = build_search(enable_ts3=enable_ts3, search_backend=search_backend).run(state)
+    if dsl_bundle is not None:
+        from vcse.memory.relations import RelationSchema
+        for schema in getattr(dsl_bundle, "relation_schemas", []):
+            name = str(schema.get("name", "")).strip()
+            if not name:
+                continue
+            if state.get_relation_schema(name) is None:
+                properties = set(schema.get("properties", []))
+                state.add_relation_schema(
+                    RelationSchema(
+                        name=name,
+                        transitive="transitive" in properties,
+                        symmetric="symmetric" in properties,
+                        reflexive="reflexive" in properties,
+                        functional="functional" in properties,
+                    )
+                )
+    search_result = build_search(
+        enable_ts3=enable_ts3,
+        search_backend=search_backend,
+        dsl_bundle=dsl_bundle,
+    ).run(state)
     evaluation = search_result.evaluation
     status = evaluation.status.value
     expected_status = case.get("expected_status")
@@ -94,18 +123,22 @@ def _run_text_case(
     case: dict[str, Any],
     enable_ts3: bool = False,
     search_backend: str = "beam",
+    dsl_bundle=None,
 ) -> dict[str, Any]:
     """Run a text-input case through the interaction layer."""
     from vcse.interaction.session import Session
     from vcse.interaction.response_modes import ResponseMode
 
-    session = Session.create()
+    session = Session.create(dsl_bundle=dsl_bundle)
     expected_status = case.get("expected_status")
     expected_answer = case.get("expected_answer")
 
     # Ingest and solve
     frames = session.ingest(input_text)
-    result = session.solve(enable_ts3=enable_ts3, search_backend=search_backend)
+    result = session.solve(
+        enable_ts3=enable_ts3,
+        search_backend=search_backend,
+    )
 
     # Determine output
     if result is None:

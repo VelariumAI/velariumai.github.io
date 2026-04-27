@@ -7,6 +7,7 @@ search, and deterministic verification.
 ```text
 Input JSON / CLI demo
   -> optional ingestion adapters/templates/provenance
+  -> optional DSL bundle (synonyms/patterns/rules/templates)
   -> deterministic parser
   -> WorldStateMemory
   -> symbolic proposers
@@ -19,6 +20,9 @@ Input JSON / CLI demo
 ## Components
 
 - Parser: extracts facts, constraints, and goals into typed memory objects.
+- DSL: optional deterministic capability bundle for parser patterns, synonym
+  rules, relation schemas, ingestion templates, proposer rules, clarification
+  rules, renderer templates, and verifier stubs.
 - Ingestion: adapter + template pipeline imports candidate knowledge with
   provenance and validation.
 - Memory: stores claims, constraints, goals, symbol bindings, evidence, and
@@ -42,3 +46,4 @@ Input JSON / CLI demo
 - Contradictory and unsatisfiable states are rejected as final answers.
 - TS3 may diagnose and deprioritize, but may not override final-state truth.
 - Ingested knowledge is never implicitly true; verifiers determine usable state.
+- DSL artifacts format behavior only; verifier remains the final authority.

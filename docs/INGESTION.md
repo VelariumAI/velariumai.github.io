@@ -31,6 +31,7 @@ source file
 vcse ingest examples/ingestion/simple_policy.txt --auto --dry-run
 vcse ingest examples/ingestion/simple_policy.txt --auto --output-memory /tmp/vcse_memory.json
 vcse ingest examples/ingestion/simple_policy.txt --auto --export-pack /tmp/vcse_pack
+vcse ingest examples/ingestion/simple_policy.txt --dsl examples/dsl/simple_policy.json --auto --dry-run
 ```
 
 Supported extensions:
@@ -40,3 +41,6 @@ Supported extensions:
 - `.csv`
 - `.txt`
 - `.yaml` / `.yml` (when PyYAML is available)
+
+DSL ingestion templates can be loaded per command with `--dsl` to extend
+deterministic extraction patterns.

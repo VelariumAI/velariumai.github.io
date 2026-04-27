@@ -25,6 +25,7 @@ QUESTION_AUXILIARIES = {"can", "could", "would", "should", "does", "do", "did", 
 @dataclass
 class PatternParser:
     """Deterministic pattern parser for semantic frames."""
+    external_patterns: list[object] = field(default_factory=list)
 
     def parse(self, text: str) -> FrameParseResult:
         """Parse text into frames."""
@@ -75,6 +76,11 @@ class PatternParser:
         result = FrameParseResult()
         text = text.strip()
 
+        # External DSL patterns first
+        external_result = self._try_external_patterns(text)
+        if external_result.status != FrameStatus.UNSUPPORTED:
+            return external_result
+
         # Try each pattern in order of specificity
         # Questions first
         question_result = self._try_question(text)
@@ -94,6 +100,46 @@ class PatternParser:
         # If nothing matched, return unsupported
         result.status = FrameStatus.UNSUPPORTED
         result.warnings.append(f"No pattern matched: {text}")
+        return result
+
+    def _try_external_patterns(self, text: str) -> FrameParseResult:
+        result = FrameParseResult(status=FrameStatus.UNSUPPORTED)
+        for rule in self.external_patterns:
+            pattern_text = getattr(rule, "pattern", None)
+            output = getattr(rule, "output", None)
+            if not pattern_text or not isinstance(output, dict):
+                continue
+            regex = self._template_to_regex(pattern_text)
+            match = re.match(regex, text, re.IGNORECASE)
+            if not match:
+                continue
+            values = {key: self._canonicalize(value) for key, value in match.groupdict().items()}
+            frame_type = str(output.get("frame_type", "claim")).lower()
+            relation = self._substitute_template(str(output.get("relation", "is_a")), values)
+            subject = self._substitute_template(str(output.get("subject", "{subject}")), values)
+            obj = self._substitute_template(str(output.get("object", "{object}")), values)
+
+            if frame_type == "claim":
+                frame = ClaimFrame(subject=subject, relation=relation, object=obj, source_text=text)
+            elif frame_type == "goal":
+                frame = GoalFrame(subject=subject, relation=relation, object=obj, source_text=text)
+            elif frame_type == "constraint":
+                frame = ConstraintFrame(
+                    target=subject,
+                    operator=relation,
+                    value=obj,
+                    source_text=text,
+                )
+            elif frame_type == "definition":
+                frame = DefinitionFrame(term=subject, definition=obj, source_text=text)
+            else:
+                result.status = FrameStatus.UNSUPPORTED
+                result.warnings.append(f"Unsupported external frame_type: {frame_type}")
+                return result
+            result.frames.append(frame)
+            result.status = FrameStatus.PARSED
+            result.confidence = 0.9
+            return result
         return result
 
     def _try_question(self, text: str) -> FrameParseResult:
@@ -431,3 +477,14 @@ class PatternParser:
         if not starts_with_aux:
             return text.strip()
         return re.sub(rf"^\s*{re.escape(aux)}\s+", "", text, count=1, flags=re.IGNORECASE).strip()
+
+    def _template_to_regex(self, template: str) -> str:
+        escaped = re.escape(template)
+        escaped = re.sub(r"\\\{([a-zA-Z_][a-zA-Z0-9_]*)\\\}", r"(?P<\1>.+?)", escaped)
+        return r"^" + escaped + r"\.?$"
+
+    def _substitute_template(self, template: str, values: dict[str, str]) -> str:
+        def repl(match: re.Match[str]) -> str:
+            key = match.group(1)
+            return values.get(key, "")
+        return re.sub(r"\{([a-zA-Z_][a-zA-Z0-9_]*)\}", repl, template)

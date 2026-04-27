@@ -12,8 +12,9 @@ from vcse.transitions.state_transition import Transition
 class RuleBasedProposer:
     """Deterministic proposal module for simple symbolic closures."""
 
-    def __init__(self, max_proposals: int = 32) -> None:
+    def __init__(self, max_proposals: int = 32, external_rules: list[object] | None = None) -> None:
         self.max_proposals = max_proposals
+        self.external_rules = list(external_rules or [])
 
     def propose(self, memory: WorldStateMemory, goal: Goal | None = None) -> list[Transition]:
         proposals: list[Transition] = []
@@ -21,6 +22,7 @@ class RuleBasedProposer:
         proposals.extend(self._propose_transitive_closure(memory, claims))
         proposals.extend(self._propose_equality_propagation(memory, claims))
         proposals.extend(self._propose_contradiction_candidates(memory, claims))
+        proposals.extend(self._propose_external_rules(memory, claims))
         return self._goal_first(self._limit(proposals), goal)
 
     def _propose_transitive_closure(self, memory: WorldStateMemory, claims) -> list[Transition]:
@@ -157,3 +159,78 @@ class RuleBasedProposer:
                 or item.args.get("object") != goal.object
             ),
         )
+
+    def _propose_external_rules(self, memory: WorldStateMemory, claims) -> list[Transition]:
+        proposals: list[Transition] = []
+        for rule in self.external_rules:
+            when = getattr(rule, "when", None)
+            then = getattr(rule, "then", None)
+            if not isinstance(when, list) or not isinstance(then, dict):
+                continue
+            bindings, dependencies = self._match_rule(when, claims)
+            if bindings is None:
+                continue
+            action = str(then.get("action", ""))
+            if action != ADD_CLAIM:
+                continue
+            subject = self._bind(str(then.get("subject", "")), bindings)
+            relation = self._bind(str(then.get("relation", "")), bindings)
+            obj = self._bind(str(then.get("object", "")), bindings)
+            if not subject or not relation or not obj:
+                continue
+            if memory.find_claim(subject, relation, obj) is not None:
+                continue
+            proposals.append(
+                Transition(
+                    type=ADD_CLAIM,
+                    args={
+                        "subject": subject,
+                        "relation": relation,
+                        "object": obj,
+                        "status": TruthStatus.SUPPORTED,
+                        "dependencies": dependencies,
+                    },
+                    description=f"DSL rule infer {subject} {relation} {obj}",
+                    expected_effect="Adds DSL-supported claim",
+                    source="dsl_proposer",
+                )
+            )
+        return proposals
+
+    def _match_rule(self, conditions: list[dict[str, str]], claims) -> tuple[dict[str, str] | None, list[str]]:
+        bindings: dict[str, str] = {}
+        dependencies: list[str] = []
+        for condition in conditions:
+            matched_claim = None
+            for claim in claims:
+                local_bindings = dict(bindings)
+                if not self._match_value(condition.get("subject", ""), claim.subject, local_bindings):
+                    continue
+                if not self._match_value(condition.get("relation", ""), claim.relation, local_bindings):
+                    continue
+                if not self._match_value(condition.get("object", ""), claim.object, local_bindings):
+                    continue
+                matched_claim = claim
+                bindings = local_bindings
+                break
+            if matched_claim is None:
+                return None, []
+            dependencies.append(matched_claim.id)
+        return bindings, dependencies
+
+    def _match_value(self, pattern: str, actual: str, bindings: dict[str, str]) -> bool:
+        token = pattern.strip()
+        if token.startswith("{") and token.endswith("}"):
+            key = token[1:-1]
+            existing = bindings.get(key)
+            if existing is None:
+                bindings[key] = actual
+                return True
+            return existing == actual
+        return token == actual
+
+    def _bind(self, template: str, bindings: dict[str, str]) -> str:
+        value = template
+        for key, mapped in bindings.items():
+            value = value.replace("{" + key + "}", mapped)
+        return value

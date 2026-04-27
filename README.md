@@ -55,6 +55,8 @@ vcse benchmark benchmarks/simple_logic_cases.jsonl
 vcse benchmark benchmarks/mixed_cases.jsonl --json
 vcse benchmark benchmarks/mixed_cases.jsonl --search mcts --ts3
 vcse ask "All men are mortal. Socrates is a man. Can Socrates die?" --search mcts
+vcse dsl validate examples/dsl/basic_logic.json
+vcse ask "Can Socrates perish?" --dsl examples/dsl/mortality.json
 ```
 
 Example JSON input:
@@ -100,6 +102,20 @@ vcse ingest examples/ingestion/simple_policy.txt --auto --export-pack /tmp/vcse_
 See [docs/INGESTION.md](docs/INGESTION.md) and
 [docs/CAPABILITY_PACKS.md](docs/CAPABILITY_PACKS.md).
 
+## DSL
+
+VCSE includes a deterministic Rule/Template DSL for loading capabilities without
+changing Python core modules. DSL bundles are explicit and command-scoped.
+
+```bash
+vcse dsl validate examples/dsl/basic_logic.json
+vcse dsl compile examples/dsl/basic_logic.json
+vcse ask "All men are mortal. Socrates is a man. Can Socrates die?" --dsl examples/dsl/basic_logic.json
+vcse ingest examples/ingestion/simple_policy.txt --dsl examples/dsl/simple_policy.json --auto --dry-run
+```
+
+See [docs/DSL.md](docs/DSL.md).
+
 Metrics include status accuracy, answer accuracy, status rates, runtime, nodes
 expanded, search depth, and proof trace length.
 
@@ -130,6 +146,7 @@ Core implementation is CPU-only and must not add text-model dependencies. See
   - BeamSearch (default deterministic bounded search)
   - MCTSSearch (optional exploration backend with verifier-centered scoring)
 - TS3 is an optional state-space analysis layer for loop/stagnation/absorption diagnostics.
+- DSL is optional and deterministic; built-ins remain active when no bundle is loaded.
 - Solver-backed proposals are optional and skipped when the external solver
   package is unavailable.
 

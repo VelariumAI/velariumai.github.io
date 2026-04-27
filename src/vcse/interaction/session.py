@@ -34,14 +34,16 @@ class Session:
     history: list[TurnRecord] = field(default_factory=list)
     current_goal: Any = None
     mode: str = "explain"
+    dsl_bundle: Any = None
     created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
 
     @classmethod
-    def create(cls) -> "Session":
+    def create(cls, dsl_bundle: Any = None) -> "Session":
         """Create a new session."""
         return cls(
             id=str(uuid.uuid4())[:8],
             memory=WorldStateMemory(),
+            dsl_bundle=dsl_bundle,
         )
 
     def ingest(self, text: str) -> FrameParseResult:
@@ -51,8 +53,17 @@ class Session:
         from vcse.interaction.frames import GoalFrame, ClaimFrame
         import re
 
-        normalizer = SemanticNormalizer()
-        parser = PatternParser()
+        external_synonyms = []
+        external_patterns = []
+        if self.dsl_bundle is not None:
+            external_synonyms = [
+                (rule.pattern, rule.replacement)
+                for rule in getattr(self.dsl_bundle, "synonyms", [])
+            ]
+            external_patterns = list(getattr(self.dsl_bundle, "parser_patterns", []))
+
+        normalizer = SemanticNormalizer(external_synonyms=external_synonyms)
+        parser = PatternParser(external_patterns=external_patterns)
 
         normalized = normalizer.normalize(text)
         frames = parser.parse(normalized.normalized_text)
@@ -107,6 +118,25 @@ class Session:
         from vcse.engine import build_search
         from vcse.interaction.frames_applicator import FrameApplicator
         from vcse.interaction.clarification import ClarificationEngine
+        from vcse.memory.relations import RelationSchema
+
+        if self.dsl_bundle is not None:
+            for schema in getattr(self.dsl_bundle, "relation_schemas", []):
+                name = str(schema.get("name", "")).strip()
+                if not name:
+                    continue
+                properties = set(schema.get("properties", []))
+                existing = self.memory.get_relation_schema(name)
+                if existing is None:
+                    self.memory.add_relation_schema(
+                        RelationSchema(
+                            name=name,
+                            transitive="transitive" in properties,
+                            symmetric="symmetric" in properties,
+                            reflexive="reflexive" in properties,
+                            functional="functional" in properties,
+                        )
+                    )
 
         # Apply frames from history
         applicator = FrameApplicator()
@@ -116,7 +146,9 @@ class Session:
                 turn.transitions_applied = result.transitions_applied
 
         # Check for clarification need
-        clarification = ClarificationEngine().clarify(
+        clarification = ClarificationEngine(
+            external_rules=getattr(self.dsl_bundle, "clarification_rules", None)
+        ).clarify(
             self.history[-1].frames if self.history else None,
             self.memory,
             self.current_goal,
@@ -126,7 +158,11 @@ class Session:
 
         # Run search if there's a goal
         if self.memory.goals:
-            search = build_search(enable_ts3=enable_ts3, search_backend=search_backend)
+            search = build_search(
+                enable_ts3=enable_ts3,
+                search_backend=search_backend,
+                dsl_bundle=self.dsl_bundle,
+            )
             result = search.run(self.memory)
             if self.history:
                 self.history[-1].search_result = result

@@ -80,6 +80,9 @@ class NormalizedInput:
 class SemanticNormalizer:
     """Deterministic text normalization for VCSE interaction layer."""
 
+    def __init__(self, external_synonyms: list[tuple[str, str]] | None = None) -> None:
+        self.external_synonyms = list(external_synonyms or [])
+
     def normalize(self, text: str) -> NormalizedInput:
         """Normalize input text into canonical form."""
         original = text
@@ -171,7 +174,9 @@ class SemanticNormalizer:
         self, text: str, replacements: list[tuple[str, str]]
     ) -> str:
         """Replace synonyms with canonical forms."""
-        for phrase, canonical in SYNONYM_MAP.items():
+        synonym_items = [(phrase, canonical) for phrase, canonical in self.external_synonyms]
+        synonym_items.extend(SYNONYM_MAP.items())
+        for phrase, canonical in synonym_items:
             pattern = re.compile(r"\b" + re.escape(phrase) + r"\b", re.IGNORECASE)
             new_text, count = pattern.subn(canonical, text)
             if count:

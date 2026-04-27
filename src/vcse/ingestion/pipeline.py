@@ -46,6 +46,7 @@ def ingest_file(
     dry_run: bool = False,
     output_memory_path: str | Path | None = None,
     export_pack_path: str | Path | None = None,
+    dsl_bundle=None,
 ) -> IngestionPipelineResult:
     base_memory = memory or WorldStateMemory()
     try:
@@ -62,7 +63,12 @@ def ingest_file(
             source_id="unknown",
         )
 
-    template = resolve_template(source, template_name=template_name, auto=auto)
+    template = resolve_template(
+        source,
+        template_name=template_name,
+        auto=auto,
+        dsl_bundle=dsl_bundle,
+    )
     if template is None:
         raise IngestionError(
             "MISSING_TEMPLATE",
@@ -85,6 +91,23 @@ def ingest_file(
         )
 
     candidate_memory = base_memory.clone()
+    if dsl_bundle is not None:
+        from vcse.memory.relations import RelationSchema
+        for schema in getattr(dsl_bundle, "relation_schemas", []):
+            name = str(schema.get("name", "")).strip()
+            if not name:
+                continue
+            if candidate_memory.get_relation_schema(name) is None:
+                properties = set(schema.get("properties", []))
+                candidate_memory.add_relation_schema(
+                    RelationSchema(
+                        name=name,
+                        transitive="transitive" in properties,
+                        symmetric="symmetric" in properties,
+                        reflexive="reflexive" in properties,
+                        functional="functional" in properties,
+                    )
+                )
     applicator = FrameApplicator()
     apply_result = applicator.apply(validation.valid_frames, candidate_memory)
     verifier = VerifierStack.default().evaluate(candidate_memory)

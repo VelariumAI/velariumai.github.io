@@ -30,6 +30,7 @@ def render_response(
     evaluation: FinalStateEvaluation | SearchResult,
     mode: ResponseMode,
     state: WorldStateMemory | None = None,
+    renderer_templates: dict[str, str] | None = None,
 ) -> str:
     """Render evaluated result in the specified mode."""
     search_result = evaluation if isinstance(evaluation, SearchResult) else None
@@ -37,19 +38,26 @@ def render_response(
     render_state = search_result.state if search_result is not None else state
 
     if mode == ResponseMode.SIMPLE:
-        return _render_simple(final)
+        return _render_simple(final, renderer_templates=renderer_templates)
     elif mode == ResponseMode.EXPLAIN:
-        return _render_explain(final, render_state)
+        return _render_explain(final, render_state, renderer_templates=renderer_templates)
     elif mode == ResponseMode.DEBUG:
-        return _render_debug(final, search_result, render_state)
+        return _render_debug(final, search_result, render_state, renderer_templates=renderer_templates)
     else:  # STRICT
         return _render_strict(final, search_result)
 
 
-def _render_simple(evaluation: FinalStateEvaluation) -> str:
+def _render_simple(
+    evaluation: FinalStateEvaluation,
+    renderer_templates: dict[str, str] | None = None,
+) -> str:
     """Simple yes/no style response."""
     status = evaluation.status.value
-    answer = _humanize_claim(evaluation.answer, include_article_for_is_a=False)
+    answer = _humanize_claim(
+        evaluation.answer,
+        include_article_for_is_a=False,
+        renderer_templates=renderer_templates,
+    )
 
     if status == "VERIFIED":
         return f"Yes — {answer or 'verified'}."
@@ -62,7 +70,11 @@ def _render_simple(evaluation: FinalStateEvaluation) -> str:
     return f"Status: {status}"
 
 
-def _humanize_claim(answer: str | None, include_article_for_is_a: bool = False) -> str | None:
+def _humanize_claim(
+    answer: str | None,
+    include_article_for_is_a: bool = False,
+    renderer_templates: dict[str, str] | None = None,
+) -> str | None:
     """Render internal canonical triples in a friendlier sentence form."""
     if not answer:
         return answer
@@ -74,6 +86,8 @@ def _humanize_claim(answer: str | None, include_article_for_is_a: bool = False) 
 
     subject = _strip_leading_question_aux(subject)
     subject_display = _display_subject(subject)
+    if renderer_templates and relation in renderer_templates:
+        return renderer_templates[relation].format(subject=subject_display, object=_display_object(obj, relation, include_article_for_is_a))
     relation_display = RELATION_DISPLAY_MAP.get(relation, relation.replace("_", " "))
     object_display = _display_object(obj, relation, include_article_for_is_a)
     return f"{subject_display} {relation_display} {object_display}"
@@ -122,14 +136,22 @@ def _needs_indefinite_article(obj: str) -> bool:
     return obj.isalpha()
 
 
-def _render_explain(evaluation: FinalStateEvaluation, state: WorldStateMemory | None) -> str:
+def _render_explain(
+    evaluation: FinalStateEvaluation,
+    state: WorldStateMemory | None,
+    renderer_templates: dict[str, str] | None = None,
+) -> str:
     """Explain with reasoning."""
     status = evaluation.status.value
-    answer = _humanize_claim(evaluation.answer, include_article_for_is_a=False)
+    answer = _humanize_claim(
+        evaluation.answer,
+        include_article_for_is_a=False,
+        renderer_templates=renderer_templates,
+    )
 
     if status == "VERIFIED" and evaluation.proof_trace:
         trace = " → ".join(
-            _humanize_claim(step, include_article_for_is_a=True) or step
+            _humanize_claim(step, include_article_for_is_a=True, renderer_templates=renderer_templates) or step
             for step in evaluation.proof_trace[:3]
         )
         return f"Yes — {answer} because {trace}."
@@ -148,6 +170,7 @@ def _render_debug(
     evaluation: FinalStateEvaluation,
     search_result: SearchResult | None,
     state: WorldStateMemory | None,
+    renderer_templates: dict[str, str] | None = None,
 ) -> str:
     """Full debug output."""
     lines = [f"status: {evaluation.status.value}"]
@@ -156,6 +179,8 @@ def _render_debug(
         lines.append(f"answer: {evaluation.answer}")
         lines.append(
             f"answer_human: {_humanize_claim(evaluation.answer, include_article_for_is_a=False)}"
+            if renderer_templates is None
+            else f"answer_human: {_humanize_claim(evaluation.answer, include_article_for_is_a=False, renderer_templates=renderer_templates)}"
         )
     else:
         lines.append("answer: null")
@@ -171,7 +196,7 @@ def _render_debug(
     lines.append("proof_trace_human:")
     if evaluation.proof_trace:
         for step in evaluation.proof_trace:
-            human_step = _humanize_claim(step, include_article_for_is_a=True) or step
+            human_step = _humanize_claim(step, include_article_for_is_a=True, renderer_templates=renderer_templates) or step
             lines.append(f"  - {human_step}")
     else:
         lines.append("  - null")

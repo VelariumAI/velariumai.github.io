@@ -280,3 +280,72 @@ def test_cli_ingest_output_memory_and_export_pack(tmp_path: Path) -> None:
     assert memory_out.exists()
     assert (pack_dir / "pack.yaml").exists()
     assert (pack_dir / "claims.jsonl").exists()
+
+
+def test_cli_dsl_validate_compile_and_list_work() -> None:
+    base = Path(__file__).resolve().parents[1] / "examples" / "dsl"
+    dsl_path = str(base / "basic_logic.json")
+
+    validate = run_cli("dsl", "validate", dsl_path)
+    compile_result = run_cli("dsl", "compile", dsl_path)
+    listed = run_cli("dsl", "list")
+
+    assert validate.returncode == 0
+    assert "status: VALID" in validate.stdout
+
+    assert compile_result.returncode == 0
+    assert "status: COMPILED" in compile_result.stdout
+    assert "parser_patterns:" in compile_result.stdout
+
+    assert listed.returncode == 0
+    assert "bundles:" in listed.stdout
+
+
+def test_cli_ask_with_dsl_works() -> None:
+    dsl_path = Path(__file__).resolve().parents[1] / "examples" / "dsl" / "basic_logic.json"
+    result = run_cli(
+        "ask",
+        "All men are mortal. Socrates is a man. Can Socrates die?",
+        "--dsl",
+        str(dsl_path),
+        "--mode",
+        "simple",
+    )
+
+    assert result.returncode == 0
+    assert "Yes — Socrates is mortal." in result.stdout
+
+
+def test_cli_ingest_with_dsl_works(tmp_path: Path) -> None:
+    dsl_path = Path(__file__).resolve().parents[1] / "examples" / "dsl" / "simple_policy.json"
+    source = tmp_path / "policy.txt"
+    source.write_text("Employees requires background checked.")
+
+    result = run_cli(
+        "ingest",
+        str(source),
+        "--dsl",
+        str(dsl_path),
+        "--auto",
+        "--dry-run",
+    )
+
+    assert result.returncode == 0
+    assert "status:" in result.stdout
+    assert "frames_extracted:" in result.stdout
+
+
+def test_cli_invalid_dsl_fails_cleanly() -> None:
+    dsl_path = Path(__file__).resolve().parents[1] / "examples" / "dsl" / "invalid_unknown_type.json"
+
+    result = run_cli(
+        "ask",
+        "Can Socrates die?",
+        "--dsl",
+        str(dsl_path),
+    )
+
+    assert result.returncode == 2
+    assert "status: ERROR" in result.stderr
+    assert "error_type: INVALID_DSL" in result.stderr
+    assert "traceback" not in result.stderr.lower()

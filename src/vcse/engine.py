@@ -35,8 +35,13 @@ class CaseValidationError(ValueError):
         self.reason = reason
 
 
-def build_search(enable_ts3: bool = False, search_backend: str = "beam"):
-    proposer = CompositeProposer([RuleBasedProposer(), DomainSpecificProposer()])
+def build_search(enable_ts3: bool = False, search_backend: str = "beam", dsl_bundle=None):
+    proposer = CompositeProposer(
+        [
+            RuleBasedProposer(external_rules=getattr(dsl_bundle, "proposer_rules", None)),
+            DomainSpecificProposer(),
+        ]
+    )
     verifier_stack = VerifierStack.default()
     final_evaluator = FinalStateEvaluator()
     config = SearchConfig(enable_ts3=enable_ts3, search_backend=search_backend)

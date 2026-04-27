@@ -8,6 +8,8 @@ import sys
 from pathlib import Path
 
 from vcse.benchmark import BenchmarkCaseError, format_benchmark_text, run_benchmark
+from vcse.dsl import DSLCompiler, DSLLoader, DSLValidator, GLOBAL_REGISTRY
+from vcse.dsl.errors import DSLError
 from vcse.engine import CaseValidationError, build_search, state_from_case
 from vcse.ingestion.pipeline import IngestionError, ingest_file
 from vcse.memory.constraints import Constraint
@@ -91,12 +93,13 @@ def run_ask(
     mode: str = "explain",
     enable_ts3: bool = False,
     search_backend: str = "beam",
+    dsl_bundle=None,
 ) -> str:
     """Handle vcse ask command."""
     from vcse.interaction.session import Session
     from vcse.interaction.response_modes import ResponseMode, render_response
 
-    session = Session.create()
+    session = Session.create(dsl_bundle=dsl_bundle)
     session.mode = mode
 
     # Ingest user input
@@ -115,7 +118,24 @@ def run_ask(
 
     # Render the result
     response_mode = ResponseMode(mode) if mode in ["simple", "explain", "debug", "strict"] else ResponseMode.EXPLAIN
-    return render_response(result, response_mode, session.memory)
+    return render_response(
+        result,
+        response_mode,
+        session.memory,
+        renderer_templates=_renderer_templates_from_bundle(dsl_bundle),
+    )
+
+
+def _renderer_templates_from_bundle(dsl_bundle) -> dict[str, str]:
+    mapping: dict[str, str] = {}
+    if dsl_bundle is None:
+        return mapping
+    for rule in getattr(dsl_bundle, "renderer_templates", []):
+        relation = str(getattr(rule, "relation", "")).strip()
+        template = str(getattr(rule, "template", "")).strip()
+        if relation and template:
+            mapping[relation] = template
+    return mapping
 
 
 def run_normalize(text: str) -> str:
@@ -270,6 +290,7 @@ def run_ingest(
     dry_run: bool = False,
     output_memory: Path | None = None,
     export_pack: Path | None = None,
+    dsl_bundle=None,
 ) -> str:
     result = ingest_file(
         path=path,
@@ -278,6 +299,7 @@ def run_ingest(
         dry_run=dry_run,
         output_memory_path=output_memory,
         export_pack_path=export_pack,
+        dsl_bundle=dsl_bundle,
     )
     imported = result.import_result
     lines = [
@@ -315,6 +337,14 @@ def run_ingest(
     return "\n".join(lines)
 
 
+def load_dsl_bundle(path: str | Path):
+    document = DSLLoader.load(path)
+    validation = DSLValidator.validate(document)
+    if not validation.passed:
+        raise DSLError("INVALID_DSL", "; ".join(validation.errors))
+    return DSLCompiler.compile(document)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="vcse")
     subparsers = parser.add_subparsers(dest="command")
@@ -333,6 +363,7 @@ def main(argv: list[str] | None = None) -> None:
     benchmark_parser.add_argument("--allow-fail", action="store_true")
     benchmark_parser.add_argument("--ts3", action="store_true")
     benchmark_parser.add_argument("--search", default="beam")
+    benchmark_parser.add_argument("--dsl")
 
     ingest_parser = subparsers.add_parser("ingest")
     ingest_parser.add_argument("path")
@@ -341,6 +372,7 @@ def main(argv: list[str] | None = None) -> None:
     ingest_parser.add_argument("--dry-run", action="store_true")
     ingest_parser.add_argument("--output-memory", type=Path)
     ingest_parser.add_argument("--export-pack", type=Path)
+    ingest_parser.add_argument("--dsl")
 
     # New interaction commands
     ask_parser = subparsers.add_parser("ask")
@@ -348,12 +380,13 @@ def main(argv: list[str] | None = None) -> None:
     ask_parser.add_argument("--mode", default="explain")
     ask_parser.add_argument("--ts3", action="store_true")
     ask_parser.add_argument("--search", default="beam")
+    ask_parser.add_argument("--dsl")
 
     normalize_parser = subparsers.add_parser("normalize")
-    normalize_parser.add_argument("text", nargs="...", default="")
+    normalize_parser.add_argument("text", nargs="*", default=[])
 
     parse_parser = subparsers.add_parser("parse")
-    parse_parser.add_argument("text", nargs="...", default="")
+    parse_parser.add_argument("text", nargs="*", default=[])
 
     session_parser = subparsers.add_parser("session")
 
@@ -362,6 +395,16 @@ def main(argv: list[str] | None = None) -> None:
     )
     reasonops_report_parser = reasonops_subparsers.add_parser("report")
     reasonops_report_parser.add_argument("path", type=Path)
+
+    dsl_parser = subparsers.add_parser("dsl")
+    dsl_subparsers = dsl_parser.add_subparsers(dest="dsl_command")
+    dsl_validate_parser = dsl_subparsers.add_parser("validate")
+    dsl_validate_parser.add_argument("path")
+    dsl_compile_parser = dsl_subparsers.add_parser("compile")
+    dsl_compile_parser.add_argument("path")
+    dsl_load_parser = dsl_subparsers.add_parser("load")
+    dsl_load_parser.add_argument("path")
+    dsl_subparsers.add_parser("list")
 
     args = parser.parse_args(argv)
     try:
@@ -372,10 +415,12 @@ def main(argv: list[str] | None = None) -> None:
             print(run_case_file(Path(args.path)))
             return
         if args.command == "benchmark":
+            dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
             summary = run_benchmark(
                 Path(args.path),
                 enable_ts3=args.ts3,
                 search_backend=args.search,
+                dsl_bundle=dsl_bundle,
             )
             if args.json_output:
                 print(json.dumps(summary, sort_keys=True))
@@ -385,6 +430,7 @@ def main(argv: list[str] | None = None) -> None:
                 raise SystemExit(1)
             return
         if args.command == "ingest":
+            dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
             print(
                 run_ingest(
                     Path(args.path),
@@ -393,10 +439,12 @@ def main(argv: list[str] | None = None) -> None:
                     dry_run=args.dry_run,
                     output_memory=args.output_memory,
                     export_pack=args.export_pack,
+                    dsl_bundle=dsl_bundle,
                 )
             )
             return
         if args.command == "ask":
+            dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
             text = " ".join(args.text) if args.text else ""
             print(
                 run_ask(
@@ -404,9 +452,53 @@ def main(argv: list[str] | None = None) -> None:
                     args.mode,
                     enable_ts3=args.ts3,
                     search_backend=args.search,
+                    dsl_bundle=dsl_bundle,
                 )
             )
             return
+        if args.command == "dsl":
+            if args.dsl_command == "validate":
+                document = DSLLoader.load(args.path)
+                validation = DSLValidator.validate(document)
+                if validation.passed:
+                    print("status: VALID")
+                    print(f"artifact_count: {validation.artifact_count}")
+                    print(f"enabled_count: {validation.enabled_count}")
+                else:
+                    print("status: INVALID")
+                    print("errors:")
+                    for error in validation.errors:
+                        print(f"  - {error}")
+                    raise SystemExit(2)
+                return
+            if args.dsl_command == "compile":
+                bundle = load_dsl_bundle(args.path)
+                print("status: COMPILED")
+                print(f"name: {bundle.name}")
+                print(f"version: {bundle.version}")
+                print(f"synonyms: {len(bundle.synonyms)}")
+                print(f"parser_patterns: {len(bundle.parser_patterns)}")
+                print(f"relation_schemas: {len(bundle.relation_schemas)}")
+                print(f"ingestion_templates: {len(bundle.ingestion_templates)}")
+                print(f"proposer_rules: {len(bundle.proposer_rules)}")
+                print(f"renderer_templates: {len(bundle.renderer_templates)}")
+                print(f"clarification_rules: {len(bundle.clarification_rules)}")
+                return
+            if args.dsl_command == "load":
+                bundle = load_dsl_bundle(args.path)
+                GLOBAL_REGISTRY.register_bundle(bundle)
+                print("status: LOADED")
+                print(f"name: {bundle.name}")
+                return
+            if args.dsl_command == "list":
+                print("bundles:")
+                names = GLOBAL_REGISTRY.list_bundles()
+                if names:
+                    for name in names:
+                        print(f"  - {name}")
+                else:
+                    print("  - none")
+                return
         if args.command == "normalize":
             text = " ".join(args.text) if args.text else ""
             print(run_normalize(text))
@@ -424,7 +516,7 @@ def main(argv: list[str] | None = None) -> None:
             else:
                 reasonops_subparsers.print_help()
             return
-    except (ValueError, BenchmarkCaseError, CaseValidationError, IngestionError) as exc:
+    except (ValueError, BenchmarkCaseError, CaseValidationError, IngestionError, DSLError) as exc:
         error_type = getattr(exc, "error_type", None)
         reason = getattr(exc, "reason", None)
         if error_type is None:

@@ -22,6 +22,9 @@ class ClarificationRequest:
 class ClarificationEngine:
     """Generate deterministic clarification requests instead of guessing."""
 
+    def __init__(self, external_rules: list[object] | None = None) -> None:
+        self.external_rules = list(external_rules or [])
+
     def clarify(
         self,
         parse_result: FrameParseResult,
@@ -29,6 +32,10 @@ class ClarificationEngine:
         goal: Any = None,
     ) -> ClarificationRequest | None:
         """Generate clarification request if needed, else None."""
+        custom = self._apply_external_rules(parse_result, memory)
+        if custom is not None:
+            return custom
+
         # Check for unknown relation
         if self._has_unknown_relation(parse_result, memory):
             return ClarificationRequest(
@@ -67,6 +74,33 @@ class ClarificationEngine:
                 machine_code="UNSUPPORTED_QUERY",
             )
 
+        return None
+
+    def _apply_external_rules(
+        self,
+        parse_result: FrameParseResult,
+        memory: WorldStateMemory,
+    ) -> ClarificationRequest | None:
+        for rule in self.external_rules:
+            trigger = getattr(rule, "trigger", None)
+            message = getattr(rule, "message", "")
+            if not isinstance(trigger, dict) or not message:
+                continue
+            relation = str(trigger.get("relation", "")).strip()
+            missing_rule = bool(trigger.get("missing_rule", False))
+            if not relation:
+                continue
+            for frame in parse_result.frames:
+                if getattr(frame, "relation", None) != relation:
+                    continue
+                if missing_rule and memory.get_relation_schema(relation) is not None:
+                    continue
+                return ClarificationRequest(
+                    reason=f"dsl_rule:{getattr(rule, 'id', 'unknown')}",
+                    user_message=message,
+                    missing_fields=["rule"],
+                    machine_code="NEEDS_CLARIFICATION",
+                )
         return None
 
     def _has_unknown_relation(
