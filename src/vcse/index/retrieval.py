@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from vcse.dsl.schema import CapabilityBundle
+from vcse.perf import increment, stage
 from vcse.index.bm25 import BM25Scorer
 from vcse.index.features import extract_bundle_features
 from vcse.index.index import CapabilityPackIndex, SymbolicIndex
@@ -39,6 +40,7 @@ class SymbolicRetriever:
         self.index = index
         self._bm25 = BM25Scorer(index)
         self._pack_selector = PackSelector()
+        self._retrieve_cache: dict[tuple[str, tuple[str, ...], int, int], RetrievalResult] = {}
 
     @staticmethod
     def from_bundles(bundles: list[CapabilityBundle]) -> "SymbolicRetriever":
@@ -85,29 +87,44 @@ class SymbolicRetriever:
         normalized = normalize_text(query_text)
         qtokens = normalized_tokens(query_text)
         normalized_qtokens = normalized_tokens(normalized)
+        cache_key = (
+            normalized,
+            tuple(sorted(relation_hints)),
+            config.top_k_rules,
+            config.top_k_packs,
+        )
+        cached = self._retrieve_cache.get(cache_key)
+        if cached is not None:
+            increment("index.cache_hit")
+            return cached
+        increment("index.cache_miss")
 
-        candidate_ids = self._candidate_ids(qtokens)
+        with stage("index.lookup"):
+            candidate_ids = self._candidate_ids(qtokens)
         if not candidate_ids:
-            return RetrievalResult(
+            result = RetrievalResult(
                 selected_artifact_ids=[],
                 selected_pack_ids=[],
                 top_scores=[],
                 filtered_out_count=0,
                 candidate_count=0,
             )
+            self._retrieve_cache[cache_key] = result
+            return result
 
         scored: list[RetrievalCandidate] = []
-        for artifact_id in sorted(candidate_ids):
-            artifact = self.index.artifacts[artifact_id]
-            score = score_artifact(
-                artifact,
-                qtokens,
-                normalized_qtokens,
-                relation_hints,
-                bm25=self._bm25,
-            )
-            if score > 0:
-                scored.append(RetrievalCandidate(artifact_id=artifact_id, score=score))
+        with stage("index.scoring"):
+            for artifact_id in sorted(candidate_ids):
+                artifact = self.index.artifacts[artifact_id]
+                score = score_artifact(
+                    artifact,
+                    qtokens,
+                    normalized_qtokens,
+                    relation_hints,
+                    bm25=self._bm25,
+                )
+                if score > 0:
+                    scored.append(RetrievalCandidate(artifact_id=artifact_id, score=score))
 
         scored.sort(key=lambda item: (-item.score, item.artifact_id))
         top = scored[: config.top_k_rules]
@@ -120,13 +137,15 @@ class SymbolicRetriever:
             top_k=config.top_k_packs,
         )
 
-        return RetrievalResult(
+        result = RetrievalResult(
             selected_artifact_ids=selected_ids,
             selected_pack_ids=[item.pack_id for item in selected_packs],
             top_scores=[(item.artifact_id, item.score) for item in top[:5]],
             filtered_out_count=max(0, self.index.artifact_count - len(selected_ids)),
             candidate_count=len(candidate_ids),
         )
+        self._retrieve_cache[cache_key] = result
+        return result
 
     def _candidate_ids(self, query_tokens: list[str]) -> set[str]:
         candidate_ids: set[str] = set()

@@ -9,6 +9,7 @@ from typing import Any
 
 from vcse.engine import CaseValidationError, build_search, filter_bundle_for_query, state_from_case
 from vcse.memory.serialization import PathLike
+from vcse.perf import increment, stage
 
 
 class BenchmarkCaseError(ValueError):
@@ -30,24 +31,26 @@ def run_benchmark(
     top_k_rules: int = 20,
     top_k_packs: int = 5,
 ) -> dict[str, Any]:
-    cases = _load_cases(Path(path))
-    results: list[dict[str, Any]] = []
+    with stage("benchmark.run"):
+        cases = _load_cases(Path(path))
+        results: list[dict[str, Any]] = []
 
-    for case in cases:
-        started = time.perf_counter()
-        result = _run_case(
-            case,
-            enable_ts3=enable_ts3,
-            search_backend=search_backend,
-            dsl_bundle=dsl_bundle,
-            enable_index=enable_index,
-            top_k_rules=top_k_rules,
-            top_k_packs=top_k_packs,
-        )
-        runtime_ms = (time.perf_counter() - started) * 1000
-        results.append({**result, "runtime_ms": runtime_ms})
+        for case in cases:
+            started = time.perf_counter()
+            result = _run_case(
+                case,
+                enable_ts3=enable_ts3,
+                search_backend=search_backend,
+                dsl_bundle=dsl_bundle,
+                enable_index=enable_index,
+                top_k_rules=top_k_rules,
+                top_k_packs=top_k_packs,
+            )
+            runtime_ms = (time.perf_counter() - started) * 1000
+            increment("benchmark.cases")
+            results.append({**result, "runtime_ms": runtime_ms})
 
-    return _summary(results)
+        return _summary(results)
 
 
 def _run_case(

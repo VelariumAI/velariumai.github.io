@@ -14,6 +14,7 @@ from vcse.ts3.symbolic_state import SymbolicState
 from vcse.ts3.trajectory import Trajectory
 from vcse.ts3.transient_analyzer import TransientAnalyzer
 from vcse.verifier.final_state import FinalStatus
+from vcse.perf import increment, stage
 
 
 @dataclass
@@ -68,59 +69,60 @@ class MCTSSearch(SearchBackend):
         ).run(initial_state)
 
     def run(self, initial_state: WorldStateMemory) -> SearchResult:
-        self.nodes_expanded = 0
-        self.max_depth_reached = 0
-        self.max_frontier_size = 1
-        self.iterations = 0
-        self._ts3 = TransientAnalyzer() if self.config.enable_ts3 else None
+        with stage("search.mcts"):
+            self.nodes_expanded = 0
+            self.max_depth_reached = 0
+            self.max_frontier_size = 1
+            self.iterations = 0
+            self._ts3 = TransientAnalyzer() if self.config.enable_ts3 else None
 
-        root_state = initial_state.clone()
-        root_signature = self._signature_for(root_state)
-        root = MCTSNode(
-            state=root_state,
-            depth=0,
-            state_signature=root_signature,
-            path_signatures=(root_signature,) if root_signature else tuple(),
-        )
-        root_eval, root_stack_score = self._evaluate_state(root.state, transition=None)
-        root.terminal_status = root_eval.status.value
-        root.verifier_score = root_stack_score
-        root.untried_transitions = self._proposals(root.state)
-        self._observe_ts3_state(root, outgoing=len(root.untried_transitions))
+            root_state = initial_state.clone()
+            root_signature = self._signature_for(root_state)
+            root = MCTSNode(
+                state=root_state,
+                depth=0,
+                state_signature=root_signature,
+                path_signatures=(root_signature,) if root_signature else tuple(),
+            )
+            root_eval, root_stack_score = self._evaluate_state(root.state, transition=None)
+            root.terminal_status = root_eval.status.value
+            root.verifier_score = root_stack_score
+            root.untried_transitions = self._proposals(root.state)
+            self._observe_ts3_state(root, outgoing=len(root.untried_transitions))
 
-        best_node = root
-        best_eval = root_eval
+            best_node = root
+            best_eval = root_eval
 
-        if root_eval.status == FinalStatus.VERIFIED:
-            self._observe_ts3_terminal(root_eval.status.value)
-            return self._result(root, root_eval)
+            if root_eval.status == FinalStatus.VERIFIED:
+                self._observe_ts3_terminal(root_eval.status.value)
+                return self._result(root, root_eval)
 
-        for iteration in range(self.config.mcts_iterations):
-            self.iterations = iteration + 1
-            selected = self._select(root)
-            expanded = self._expand(selected)
-            leaf = expanded if expanded is not None else selected
+            for iteration in range(self.config.mcts_iterations):
+                self.iterations = iteration + 1
+                selected = self._select(root)
+                expanded = self._expand(selected)
+                leaf = expanded if expanded is not None else selected
 
-            rollout_score, rollout_eval = self._simulate(leaf)
-            self._backpropagate(leaf, rollout_score)
+                rollout_score, rollout_eval = self._simulate(leaf)
+                self._backpropagate(leaf, rollout_score)
 
-            if rollout_eval.status == FinalStatus.VERIFIED:
-                best_node = leaf
-                best_eval = rollout_eval
-                self._observe_ts3_terminal(rollout_eval.status.value)
-                break
+                if rollout_eval.status == FinalStatus.VERIFIED:
+                    best_node = leaf
+                    best_eval = rollout_eval
+                    self._observe_ts3_terminal(rollout_eval.status.value)
+                    break
 
-            if self._is_better(leaf, rollout_eval, best_node, best_eval):
-                best_node = leaf
-                best_eval = rollout_eval
+                if self._is_better(leaf, rollout_eval, best_node, best_eval):
+                    best_node = leaf
+                    best_eval = rollout_eval
 
-            frontier_size = self._leaf_count(root)
-            self.max_frontier_size = max(self.max_frontier_size, frontier_size)
+                frontier_size = self._leaf_count(root)
+                self.max_frontier_size = max(self.max_frontier_size, frontier_size)
 
-        if best_eval.status != FinalStatus.VERIFIED:
-            best_eval, _ = self._evaluate_state(best_node.state, transition=None)
-        self._observe_ts3_terminal(best_eval.status.value)
-        return self._result(best_node, best_eval)
+            if best_eval.status != FinalStatus.VERIFIED:
+                best_eval, _ = self._evaluate_state(best_node.state, transition=None)
+            self._observe_ts3_terminal(best_eval.status.value)
+            return self._result(best_node, best_eval)
 
     def _select(self, root: MCTSNode) -> MCTSNode:
         node = root
@@ -142,6 +144,7 @@ class MCTSSearch(SearchBackend):
             return None
         transition = node.untried_transitions.pop(0)
         self.nodes_expanded += 1
+        increment("search.nodes_expanded")
         new_state, transition_result = transition.apply(node.state)
         if not transition_result.passed:
             return None

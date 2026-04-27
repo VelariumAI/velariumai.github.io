@@ -15,6 +15,7 @@ from vcse.ts3.trajectory import Trajectory
 from vcse.ts3.transient_analyzer import TransientAnalyzer
 from vcse.verifier.final_state import FinalStateEvaluator, FinalStatus
 from vcse.verifier.stack import VerifierStack
+from vcse.perf import increment, stage
 
 
 @dataclass(frozen=True)
@@ -75,126 +76,127 @@ class BeamSearch(SearchBackend):
         self._ts3: TransientAnalyzer | None = None
 
     def run(self, initial_state: WorldStateMemory) -> SearchResult:
-        self.nodes_expanded = 0
-        self.max_depth_reached = 0
-        self.max_frontier_size = 1
-        self._ts3 = TransientAnalyzer() if self.config.enable_ts3 else None
-        initial_score = self._score(initial_state, 0, 1.0)
-        root_state = initial_state.clone()
-        root_signature = self._signature_for(root_state)
-        root = SearchNode(
-            state=root_state,
-            score=initial_score,
-            depth=0,
-            state_signature=root_signature,
-            path_signatures=(root_signature,) if root_signature else tuple(),
-        )
-        best = root
-        frontier = [root]
-        best_evaluation = self.final_state_evaluator.evaluate(root.state)
-        self._observe_ts3_state(root, best_evaluation.status.value, outgoing_transition_count=0)
+        with stage("search.beam"):
+            self.nodes_expanded = 0
+            self.max_depth_reached = 0
+            self.max_frontier_size = 1
+            self._ts3 = TransientAnalyzer() if self.config.enable_ts3 else None
+            initial_score = self._score(initial_state, 0, 1.0)
+            root_state = initial_state.clone()
+            root_signature = self._signature_for(root_state)
+            root = SearchNode(
+                state=root_state,
+                score=initial_score,
+                depth=0,
+                state_signature=root_signature,
+                path_signatures=(root_signature,) if root_signature else tuple(),
+            )
+            best = root
+            frontier = [root]
+            best_evaluation = self.final_state_evaluator.evaluate(root.state)
+            self._observe_ts3_state(root, best_evaluation.status.value, outgoing_transition_count=0)
 
-        while frontier and self.nodes_expanded < self.config.max_nodes_expanded:
-            next_frontier: list[SearchNode] = []
-            self.max_frontier_size = max(self.max_frontier_size, len(frontier))
+            while frontier and self.nodes_expanded < self.config.max_nodes_expanded:
+                next_frontier: list[SearchNode] = []
+                self.max_frontier_size = max(self.max_frontier_size, len(frontier))
+                for node in frontier:
+                    stack_result = self.verifier_stack.evaluate(node.state)
+                    final = self.final_state_evaluator.evaluate(node.state, stack_result.score)
+                    node.terminal_status = final.status.value
+                    node.score = self._score(node.state, node.depth, stack_result.score)
+                    self.max_depth_reached = max(self.max_depth_reached, node.depth)
 
-            for node in frontier:
-                stack_result = self.verifier_stack.evaluate(node.state)
-                final = self.final_state_evaluator.evaluate(node.state, stack_result.score)
-                node.terminal_status = final.status.value
-                node.score = self._score(node.state, node.depth, stack_result.score)
-                self.max_depth_reached = max(self.max_depth_reached, node.depth)
-
-                if node.score > best.score or final.status == FinalStatus.VERIFIED:
-                    best = node
-                    best_evaluation = final
-                if final.status == FinalStatus.VERIFIED:
-                    return self._result(best, final)
-                if final.status in {FinalStatus.CONTRADICTORY, FinalStatus.UNSATISFIABLE}:
-                    self._observe_ts3_terminal(final.status.value)
-                    continue
-                if node.depth >= self.config.max_depth:
-                    self._observe_ts3_terminal(FinalStatus.INCONCLUSIVE.value)
-                    continue
-
-                goal = node.state.goals[0] if node.state.goals else None
-                proposals = self.proposer.propose(node.state, goal)
-                for transition in proposals:
-                    if self.nodes_expanded >= self.config.max_nodes_expanded:
-                        break
-                    self.nodes_expanded += 1
-                    new_state, transition_result = transition.apply(node.state)
-                    if not transition_result.passed:
+                    if node.score > best.score or final.status == FinalStatus.VERIFIED:
+                        best = node
+                        best_evaluation = final
+                    if final.status == FinalStatus.VERIFIED:
+                        return self._result(best, final)
+                    if final.status in {FinalStatus.CONTRADICTORY, FinalStatus.UNSATISFIABLE}:
+                        self._observe_ts3_terminal(final.status.value)
+                        continue
+                    if node.depth >= self.config.max_depth:
+                        self._observe_ts3_terminal(FinalStatus.INCONCLUSIVE.value)
                         continue
 
-                    stack_result = self.verifier_stack.evaluate(new_state, transition)
-                    child_depth = node.depth + 1
-                    final = self.final_state_evaluator.evaluate(new_state, stack_result.score)
-                    child_score = self._score(new_state, child_depth, stack_result.score)
-                    child_signature = self._signature_for(new_state)
-
-                    if self.config.enable_ts3 and child_signature:
-                        if (
-                            child_signature in set(node.path_signatures)
-                            and self._has_no_progress(node.state, new_state)
-                        ):
-                            self._observe_ts3_loop(node, child_signature)
+                    goal = node.state.goals[0] if node.state.goals else None
+                    proposals = self.proposer.propose(node.state, goal)
+                    for transition in proposals:
+                        if self.nodes_expanded >= self.config.max_nodes_expanded:
+                            break
+                        self.nodes_expanded += 1
+                        increment("search.nodes_expanded")
+                        new_state, transition_result = transition.apply(node.state)
+                        if not transition_result.passed:
                             continue
 
-                    if (
-                        not stack_result.passed
-                        or final.status in {FinalStatus.CONTRADICTORY, FinalStatus.UNSATISFIABLE}
-                        or stack_result.score < self.config.verifier_score_threshold
-                    ):
-                        if final.status in {FinalStatus.CONTRADICTORY, FinalStatus.UNSATISFIABLE}:
-                            self._observe_ts3_terminal(final.status.value)
-                        continue
+                        stack_result = self.verifier_stack.evaluate(new_state, transition)
+                        child_depth = node.depth + 1
+                        final = self.final_state_evaluator.evaluate(new_state, stack_result.score)
+                        child_score = self._score(new_state, child_depth, stack_result.score)
+                        child_signature = self._signature_for(new_state)
 
-                    if self.config.enable_ts3 and child_signature and self.config.ts3_stagnation_penalty > 0:
-                        if any(
-                            n.state_signature == child_signature and n.state.version == new_state.version
-                            for n in next_frontier
-                            if n.state_signature is not None
+                        if self.config.enable_ts3 and child_signature:
+                            if (
+                                child_signature in set(node.path_signatures)
+                                and self._has_no_progress(node.state, new_state)
+                            ):
+                                self._observe_ts3_loop(node, child_signature)
+                                continue
+
+                        if (
+                            not stack_result.passed
+                            or final.status in {FinalStatus.CONTRADICTORY, FinalStatus.UNSATISFIABLE}
+                            or stack_result.score < self.config.verifier_score_threshold
                         ):
-                            child_score -= self.config.ts3_stagnation_penalty
+                            if final.status in {FinalStatus.CONTRADICTORY, FinalStatus.UNSATISFIABLE}:
+                                self._observe_ts3_terminal(final.status.value)
+                            continue
 
-                    child = SearchNode(
-                        state=new_state,
-                        transition_history=[*node.transition_history, transition],
-                        score=child_score,
-                        depth=child_depth,
-                        terminal_status=final.status.value,
-                        state_signature=child_signature,
-                        path_signatures=(
-                            (*node.path_signatures, child_signature)
-                            if child_signature
-                            else node.path_signatures
-                        ),
-                    )
-                    self._observe_ts3_state(
-                        child,
-                        final.status.value,
-                        outgoing_transition_count=len(proposals),
-                    )
-                    self.max_depth_reached = max(self.max_depth_reached, child.depth)
-                    if final.status == FinalStatus.VERIFIED:
-                        self._observe_ts3_terminal(final.status.value)
-                        return self._result(child, final)
-                    next_frontier.append(child)
+                        if self.config.enable_ts3 and child_signature and self.config.ts3_stagnation_penalty > 0:
+                            if any(
+                                n.state_signature == child_signature and n.state.version == new_state.version
+                                for n in next_frontier
+                                if n.state_signature is not None
+                            ):
+                                child_score -= self.config.ts3_stagnation_penalty
 
-            next_frontier.sort(key=lambda item: item.score, reverse=True)
-            frontier = next_frontier[: self.config.beam_width]
-            self.max_frontier_size = max(self.max_frontier_size, len(frontier))
-            if frontier and frontier[0].score > best.score:
-                best = frontier[0]
-                stack_result = self.verifier_stack.evaluate(best.state)
-                best_evaluation = self.final_state_evaluator.evaluate(best.state, stack_result.score)
+                        child = SearchNode(
+                            state=new_state,
+                            transition_history=[*node.transition_history, transition],
+                            score=child_score,
+                            depth=child_depth,
+                            terminal_status=final.status.value,
+                            state_signature=child_signature,
+                            path_signatures=(
+                                (*node.path_signatures, child_signature)
+                                if child_signature
+                                else node.path_signatures
+                            ),
+                        )
+                        self._observe_ts3_state(
+                            child,
+                            final.status.value,
+                            outgoing_transition_count=len(proposals),
+                        )
+                        self.max_depth_reached = max(self.max_depth_reached, child.depth)
+                        if final.status == FinalStatus.VERIFIED:
+                            self._observe_ts3_terminal(final.status.value)
+                            return self._result(child, final)
+                        next_frontier.append(child)
 
-        stack_result = self.verifier_stack.evaluate(best.state)
-        best_evaluation = self.final_state_evaluator.evaluate(best.state, stack_result.score)
-        best.terminal_status = best_evaluation.status.value
-        self._observe_ts3_terminal(best_evaluation.status.value)
-        return self._result(best, best_evaluation)
+                next_frontier.sort(key=lambda item: item.score, reverse=True)
+                frontier = next_frontier[: self.config.beam_width]
+                self.max_frontier_size = max(self.max_frontier_size, len(frontier))
+                if frontier and frontier[0].score > best.score:
+                    best = frontier[0]
+                    stack_result = self.verifier_stack.evaluate(best.state)
+                    best_evaluation = self.final_state_evaluator.evaluate(best.state, stack_result.score)
+
+            stack_result = self.verifier_stack.evaluate(best.state)
+            best_evaluation = self.final_state_evaluator.evaluate(best.state, stack_result.score)
+            best.terminal_status = best_evaluation.status.value
+            self._observe_ts3_terminal(best_evaluation.status.value)
+            return self._result(best, best_evaluation)
 
     @staticmethod
     def search(

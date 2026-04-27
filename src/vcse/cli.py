@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import sys
+from contextlib import redirect_stdout
 from pathlib import Path
 
 from vcse.benchmark import BenchmarkCaseError, format_benchmark_text, run_benchmark
+from vcse.config import load_settings
 from vcse.dsl import DSLCompiler, DSLLoader, DSLValidator, GLOBAL_REGISTRY
 from vcse.dsl.errors import DSLError
 from vcse.gauntlet import (
@@ -27,6 +30,7 @@ from vcse.ingestion.pipeline import IngestionError, ingest_file
 from vcse.memory.constraints import Constraint
 from vcse.memory.relations import RelationSchema
 from vcse.memory.world_state import TruthStatus, WorldStateMemory
+from vcse.perf import profile_result, profile_run
 from vcse.renderer.explanation import ExplanationRenderer
 
 
@@ -109,43 +113,57 @@ def run_ask(
     enable_index: bool = False,
     top_k_rules: int = 20,
     top_k_packs: int = 5,
+    profile: bool = False,
 ) -> str:
     """Handle vcse ask command."""
     from vcse.interaction.session import Session
     from vcse.interaction.response_modes import ResponseMode, render_response
 
-    session = Session.create(
-        dsl_bundle=dsl_bundle,
-        enable_indexing=enable_index,
-        top_k_rules=top_k_rules,
-        top_k_packs=top_k_packs,
-    )
-    session.mode = mode
+    def _run() -> str:
+        session = Session.create(
+            dsl_bundle=dsl_bundle,
+            enable_indexing=enable_index,
+            top_k_rules=top_k_rules,
+            top_k_packs=top_k_packs,
+        )
+        session.mode = mode
 
-    # Ingest user input
-    frames = session.ingest(text)
+        session.ingest(text)
+        result = session.solve(enable_ts3=enable_ts3, search_backend=search_backend)
 
-    # Solve
-    result = session.solve(enable_ts3=enable_ts3, search_backend=search_backend)
+        if result is None:
+            return "No result."
 
-    # Handle different result types
-    if result is None:
-        return "No result."
+        if hasattr(result, "user_message"):
+            return result.user_message
 
-    # Check if it's a clarification request
-    if hasattr(result, "user_message"):
-        return result.user_message
+        response_mode = ResponseMode(mode) if mode in ["simple", "explain", "debug", "strict"] else ResponseMode.EXPLAIN
+        return render_response(
+            result,
+            response_mode,
+            session.memory,
+            renderer_templates=_renderer_templates_from_bundle(
+                session.history[-1].runtime_bundle if session.history else dsl_bundle
+            ),
+        )
 
-    # Render the result
-    response_mode = ResponseMode(mode) if mode in ["simple", "explain", "debug", "strict"] else ResponseMode.EXPLAIN
-    return render_response(
-        result,
-        response_mode,
-        session.memory,
-        renderer_templates=_renderer_templates_from_bundle(
-            session.history[-1].runtime_bundle if session.history else dsl_bundle
-        ),
-    )
+    if not profile:
+        return _run()
+
+    with profile_run() as (trace, holder):
+        output = _run()
+    total_seconds = holder[0] if holder else 0.0
+    result = profile_result(trace, total_seconds)
+    lines = [output, "profile:", f"  total_seconds: {result.total_seconds:.6f}"]
+    if result.stage_durations:
+        lines.append("  stages:")
+        for name, duration in result.stage_durations.items():
+            lines.append(f"    {name}: {duration:.6f}")
+    if result.counters:
+        lines.append("  counters:")
+        for name, count in result.counters.items():
+            lines.append(f"    {name}: {count}")
+    return "\n".join(lines)
 
 
 def _renderer_templates_from_bundle(dsl_bundle) -> dict[str, str]:
@@ -366,68 +384,88 @@ def run_generate(
     top_k_rules: int = 20,
     dsl_bundle=None,
     output_path: Path | None = None,
+    profile: bool = False,
 ) -> str:
-    try:
-        payload = json.loads(spec_path.read_text())
-    except json.JSONDecodeError as exc:
-        raise GenerationError("MALFORMED_SPEC", exc.msg) from exc
-    except OSError as exc:
-        raise GenerationError("FILE_ERROR", str(exc)) from exc
-    if not isinstance(payload, dict):
-        raise GenerationError("INVALID_SPEC", "spec root must be an object")
-    if mode:
-        payload["mode"] = mode
+    def _run() -> str:
+        try:
+            payload = json.loads(spec_path.read_text())
+        except json.JSONDecodeError as exc:
+            raise GenerationError("MALFORMED_SPEC", exc.msg) from exc
+        except OSError as exc:
+            raise GenerationError("FILE_ERROR", str(exc)) from exc
+        if not isinstance(payload, dict):
+            raise GenerationError("INVALID_SPEC", "spec root must be an object")
+        if mode:
+            payload["mode"] = mode
 
-    spec = spec_from_dict(payload)
-    memory = WorldStateMemory()
-    for fact in payload.get("memory_claims", []):
-        if not isinstance(fact, dict):
-            continue
-        subject = str(fact.get("subject", "")).strip()
-        relation = str(fact.get("relation", "")).strip()
-        obj = str(fact.get("object", "")).strip()
-        if subject and relation and obj:
-            if memory.get_relation_schema(relation) is None:
-                memory.add_relation_schema(RelationSchema(name=relation, transitive=(relation == "is_a")))
-            memory.add_claim(subject, relation, obj, TruthStatus.ASSERTED)
+        spec = spec_from_dict(payload)
+        memory = WorldStateMemory()
+        for fact in payload.get("memory_claims", []):
+            if not isinstance(fact, dict):
+                continue
+            subject = str(fact.get("subject", "")).strip()
+            relation = str(fact.get("relation", "")).strip()
+            obj = str(fact.get("object", "")).strip()
+            if subject and relation and obj:
+                if memory.get_relation_schema(relation) is None:
+                    memory.add_relation_schema(RelationSchema(name=relation, transitive=(relation == "is_a")))
+                memory.add_claim(subject, relation, obj, TruthStatus.ASSERTED)
 
-    result = VerifiedGenerator().generate(
-        spec=spec,
-        memory=memory,
-        bundle=dsl_bundle,
-        enable_index=enable_index,
-        top_k_rules=top_k_rules,
-    )
+        result = VerifiedGenerator().generate(
+            spec=spec,
+            memory=memory,
+            bundle=dsl_bundle,
+            enable_index=enable_index,
+            top_k_rules=top_k_rules,
+        )
 
-    output = {
-        "status": result.status,
-        "clarification_request": result.clarification_request,
-        "evaluation_reasons": result.evaluation_reasons,
-        "search_stats": result.search_stats,
-        "template_stats": result.template_stats,
-        "best_artifact": result.best_artifact.to_dict() if result.best_artifact else None,
-        "candidates": [item.to_dict() for item in result.candidates] if spec.mode == "debug" else None,
-    }
+        output = {
+            "status": result.status,
+            "clarification_request": result.clarification_request,
+            "evaluation_reasons": result.evaluation_reasons,
+            "search_stats": result.search_stats,
+            "template_stats": result.template_stats,
+            "best_artifact": result.best_artifact.to_dict() if result.best_artifact else None,
+            "candidates": [item.to_dict() for item in result.candidates] if spec.mode == "debug" else None,
+        }
 
-    if output_path is not None:
-        output_path.write_text(json.dumps(output, indent=2, sort_keys=True))
+        if output_path is not None:
+            output_path.write_text(json.dumps(output, indent=2, sort_keys=True))
 
-    lines = [f"status: {result.status}"]
-    if result.clarification_request:
-        lines.append(f"clarification_request: {result.clarification_request}")
-    if result.best_artifact is not None:
-        lines.append(f"artifact_type: {result.best_artifact.artifact_type}")
-        lines.append(f"template_id: {result.best_artifact.template_id}")
-        lines.append(f"artifact_status: {result.best_artifact.status}")
-        lines.append("artifact_content:")
-        lines.append(json.dumps(result.best_artifact.content, sort_keys=True))
-        lines.append("provenance:")
-        lines.append(json.dumps(result.best_artifact.provenance, sort_keys=True))
-    if spec.mode == "debug":
-        lines.append("template_stats:")
-        lines.append(json.dumps(result.template_stats, sort_keys=True))
-    if output_path is not None:
-        lines.append(f"output: {output_path}")
+        lines = [f"status: {result.status}"]
+        if result.clarification_request:
+            lines.append(f"clarification_request: {result.clarification_request}")
+        if result.best_artifact is not None:
+            lines.append(f"artifact_type: {result.best_artifact.artifact_type}")
+            lines.append(f"template_id: {result.best_artifact.template_id}")
+            lines.append(f"artifact_status: {result.best_artifact.status}")
+            lines.append("artifact_content:")
+            lines.append(json.dumps(result.best_artifact.content, sort_keys=True))
+            lines.append("provenance:")
+            lines.append(json.dumps(result.best_artifact.provenance, sort_keys=True))
+        if spec.mode == "debug":
+            lines.append("template_stats:")
+            lines.append(json.dumps(result.template_stats, sort_keys=True))
+        if output_path is not None:
+            lines.append(f"output: {output_path}")
+        return "\n".join(lines)
+
+    if not profile:
+        return _run()
+
+    with profile_run() as (trace, holder):
+        output = _run()
+    total_seconds = holder[0] if holder else 0.0
+    result = profile_result(trace, total_seconds)
+    lines = [output, "profile:", f"  total_seconds: {result.total_seconds:.6f}"]
+    if result.stage_durations:
+        lines.append("  stages:")
+        for name, duration in result.stage_durations.items():
+            lines.append(f"    {name}: {duration:.6f}")
+    if result.counters:
+        lines.append("  counters:")
+        for name, count in result.counters.items():
+            lines.append(f"    {name}: {count}")
     return "\n".join(lines)
 
 
@@ -472,7 +510,7 @@ def run_gauntlet(
     return text, exit_code
 
 
-def run_serve(host: str, port: int) -> None:
+def run_serve(host: str, port: int, settings=None) -> None:
     try:
         import uvicorn
     except Exception as exc:  # pragma: no cover - dependency error path
@@ -480,7 +518,34 @@ def run_serve(host: str, port: int) -> None:
     from vcse.api.server import create_app
 
     print(f"Starting VCSE API server {host}:{port} (version {__import__('vcse').__version__})")
-    uvicorn.run(create_app(), host=host, port=port)
+    log_level = getattr(settings, "log_level", "INFO").lower() if settings is not None else "info"
+    uvicorn.run(create_app(settings=settings), host=host, port=port, log_level=log_level)
+
+
+def run_profile(argv: list[str], settings) -> tuple[str, int]:
+    """Execute a VCSE command and append profiling output."""
+    buffer = io.StringIO()
+    exit_code = 0
+    with profile_run() as (trace, holder):
+        with redirect_stdout(buffer):
+            try:
+                main(argv)
+            except SystemExit as exc:
+                exit_code = exc.code if isinstance(exc.code, int) else 1
+    total_seconds = holder[0] if holder else 0.0
+    profile = profile_result(trace, total_seconds)
+    lines = [buffer.getvalue().rstrip()]
+    lines.append("profile:")
+    lines.append(f"  total_seconds: {profile.total_seconds:.6f}")
+    if profile.stage_durations:
+        lines.append("  stages:")
+        for name, duration in profile.stage_durations.items():
+            lines.append(f"    {name}: {duration:.6f}")
+    if profile.counters:
+        lines.append("  counters:")
+        for name, count in profile.counters.items():
+            lines.append(f"    {name}: {count}")
+    return "\n".join(line for line in lines if line), exit_code
 
 
 def load_dsl_bundle(path: str | Path):
@@ -541,12 +606,13 @@ def run_index_stats(dsl_path: str | None = None) -> str:
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="vcse")
+    parser.add_argument("--config")
     subparsers = parser.add_subparsers(dest="command")
 
     demo_parser = subparsers.add_parser("demo")
     demo_parser.add_argument("name", choices=["logic", "arithmetic", "contradiction"])
     demo_parser.add_argument("--ts3", action="store_true")
-    demo_parser.add_argument("--search", default="beam")
+    demo_parser.add_argument("--search")
 
     run_parser = subparsers.add_parser("run")
     run_parser.add_argument("path")
@@ -556,11 +622,11 @@ def main(argv: list[str] | None = None) -> None:
     benchmark_parser.add_argument("--json", action="store_true", dest="json_output")
     benchmark_parser.add_argument("--allow-fail", action="store_true")
     benchmark_parser.add_argument("--ts3", action="store_true")
-    benchmark_parser.add_argument("--search", default="beam")
+    benchmark_parser.add_argument("--search")
     benchmark_parser.add_argument("--dsl")
     benchmark_parser.add_argument("--index", action="store_true")
-    benchmark_parser.add_argument("--top-k", type=int, default=20, dest="top_k_rules")
-    benchmark_parser.add_argument("--top-k-packs", type=int, default=5, dest="top_k_packs")
+    benchmark_parser.add_argument("--top-k", type=int, dest="top_k_rules")
+    benchmark_parser.add_argument("--top-k-packs", type=int, dest="top_k_packs")
 
     ingest_parser = subparsers.add_parser("ingest")
     ingest_parser.add_argument("path")
@@ -576,34 +642,38 @@ def main(argv: list[str] | None = None) -> None:
     generate_parser.add_argument("--debug", action="store_true")
     generate_parser.add_argument("--index", action="store_true")
     generate_parser.add_argument("--dsl")
-    generate_parser.add_argument("--top-k", type=int, default=20, dest="top_k_rules")
+    generate_parser.add_argument("--top-k", type=int, dest="top_k_rules")
     generate_parser.add_argument("--output", type=Path)
+    generate_parser.add_argument("--profile", action="store_true")
 
     serve_parser = subparsers.add_parser("serve")
-    serve_parser.add_argument("--host", default="127.0.0.1")
-    serve_parser.add_argument("--port", type=int, default=8000)
+    serve_parser.add_argument("--host")
+    serve_parser.add_argument("--port", type=int)
+    serve_parser.add_argument("--profile", action="store_true")
 
     gauntlet_parser = subparsers.add_parser("gauntlet")
     gauntlet_parser.add_argument("path")
     gauntlet_parser.add_argument("--json", action="store_true", dest="json_output")
     gauntlet_parser.add_argument("--debug", action="store_true")
-    gauntlet_parser.add_argument("--search", default="beam")
+    gauntlet_parser.add_argument("--search")
     gauntlet_parser.add_argument("--ts3", action="store_true")
     gauntlet_parser.add_argument("--index", action="store_true")
-    gauntlet_parser.add_argument("--top-k", type=int, default=20, dest="top_k_rules")
-    gauntlet_parser.add_argument("--top-k-packs", type=int, default=5, dest="top_k_packs")
+    gauntlet_parser.add_argument("--top-k", type=int, dest="top_k_rules")
+    gauntlet_parser.add_argument("--top-k-packs", type=int, dest="top_k_packs")
     gauntlet_parser.add_argument("--dsl")
+    gauntlet_parser.add_argument("--profile", action="store_true")
 
     # New interaction commands
     ask_parser = subparsers.add_parser("ask")
     ask_parser.add_argument("text", nargs="*", default=[])
     ask_parser.add_argument("--mode", default="explain")
     ask_parser.add_argument("--ts3", action="store_true")
-    ask_parser.add_argument("--search", default="beam")
+    ask_parser.add_argument("--search")
     ask_parser.add_argument("--dsl")
     ask_parser.add_argument("--index", action="store_true")
-    ask_parser.add_argument("--top-k", type=int, default=20, dest="top_k_rules")
-    ask_parser.add_argument("--top-k-packs", type=int, default=5, dest="top_k_packs")
+    ask_parser.add_argument("--top-k", type=int, dest="top_k_rules")
+    ask_parser.add_argument("--top-k-packs", type=int, dest="top_k_packs")
+    ask_parser.add_argument("--profile", action="store_true")
 
     normalize_parser = subparsers.add_parser("normalize")
     normalize_parser.add_argument("text", nargs="*", default=[])
@@ -612,6 +682,9 @@ def main(argv: list[str] | None = None) -> None:
     parse_parser.add_argument("text", nargs="*", default=[])
 
     session_parser = subparsers.add_parser("session")
+
+    profile_parser = subparsers.add_parser("profile")
+    profile_parser.add_argument("argv", nargs=argparse.REMAINDER)
 
     reasonops_subparsers = subparsers.add_parser("reasonops").add_subparsers(
         dest="reasonops_command"
@@ -636,25 +709,28 @@ def main(argv: list[str] | None = None) -> None:
     index_stats_parser = index_subparsers.add_parser("stats")
     index_stats_parser.add_argument("--dsl")
 
-    args = parser.parse_args(argv)
     try:
+        args = parser.parse_args(argv)
+        settings = load_settings(args.config)
         if args.command == "demo":
-            print(run_demo(args.name, enable_ts3=args.ts3, search_backend=args.search))
+            print(run_demo(args.name, enable_ts3=args.ts3, search_backend=args.search or settings.search_backend))
             return
         if args.command == "run":
             print(run_case_file(Path(args.path)))
             return
         if args.command == "benchmark":
-            validate_index_args(args.top_k_rules, args.top_k_packs)
+            top_k_rules = args.top_k_rules if args.top_k_rules is not None else settings.top_k_rules
+            top_k_packs = args.top_k_packs if args.top_k_packs is not None else settings.top_k_packs
+            validate_index_args(top_k_rules, top_k_packs)
             dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
             summary = run_benchmark(
                 Path(args.path),
                 enable_ts3=args.ts3,
-                search_backend=args.search,
+                search_backend=args.search or settings.search_backend,
                 dsl_bundle=dsl_bundle,
                 enable_index=args.index,
-                top_k_rules=args.top_k_rules,
-                top_k_packs=args.top_k_packs,
+                top_k_rules=top_k_rules,
+                top_k_packs=top_k_packs,
             )
             if args.json_output:
                 print(json.dumps(summary, sort_keys=True))
@@ -678,7 +754,8 @@ def main(argv: list[str] | None = None) -> None:
             )
             return
         if args.command == "generate":
-            validate_index_args(args.top_k_rules, 1)
+            top_k_rules = args.top_k_rules if args.top_k_rules is not None else settings.top_k_rules
+            validate_index_args(top_k_rules, 1)
             dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
             mode = "debug" if args.debug else "strict"
             print(
@@ -686,25 +763,30 @@ def main(argv: list[str] | None = None) -> None:
                     Path(args.spec),
                     mode=mode,
                     enable_index=args.index,
-                    top_k_rules=args.top_k_rules,
+                    top_k_rules=top_k_rules,
                     dsl_bundle=dsl_bundle,
                     output_path=args.output,
+                    profile=args.profile,
                 )
             )
             return
         if args.command == "serve":
-            run_serve(args.host, args.port)
+            host = args.host or settings.api_host
+            port = args.port if args.port is not None else settings.api_port
+            run_serve(host, port, settings=settings)
             return
         if args.command == "gauntlet":
-            validate_index_args(args.top_k_rules, args.top_k_packs)
+            top_k_rules = args.top_k_rules if args.top_k_rules is not None else settings.top_k_rules
+            top_k_packs = args.top_k_packs if args.top_k_packs is not None else settings.top_k_packs
+            validate_index_args(top_k_rules, top_k_packs)
             dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
             text, exit_code = run_gauntlet(
                 Path(args.path),
-                search_backend=args.search,
+                search_backend=args.search or settings.search_backend,
                 enable_ts3=args.ts3,
                 enable_index=args.index,
-                top_k_rules=args.top_k_rules,
-                top_k_packs=args.top_k_packs,
+                top_k_rules=top_k_rules,
+                top_k_packs=top_k_packs,
                 dsl_bundle=dsl_bundle,
                 json_output=args.json_output,
                 debug=args.debug,
@@ -714,7 +796,9 @@ def main(argv: list[str] | None = None) -> None:
                 raise SystemExit(exit_code)
             return
         if args.command == "ask":
-            validate_index_args(args.top_k_rules, args.top_k_packs)
+            top_k_rules = args.top_k_rules if args.top_k_rules is not None else settings.top_k_rules
+            top_k_packs = args.top_k_packs if args.top_k_packs is not None else settings.top_k_packs
+            validate_index_args(top_k_rules, top_k_packs)
             dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
             text = " ".join(args.text) if args.text else ""
             print(
@@ -722,11 +806,12 @@ def main(argv: list[str] | None = None) -> None:
                     text,
                     args.mode,
                     enable_ts3=args.ts3,
-                    search_backend=args.search,
+                    search_backend=args.search or settings.search_backend,
                     dsl_bundle=dsl_bundle,
                     enable_index=args.index,
-                    top_k_rules=args.top_k_rules,
-                    top_k_packs=args.top_k_packs,
+                    top_k_rules=top_k_rules,
+                    top_k_packs=top_k_packs,
+                    profile=args.profile,
                 )
             )
             return
@@ -791,6 +876,17 @@ def main(argv: list[str] | None = None) -> None:
             return
         if args.command == "session":
             run_session()
+            return
+        if args.command == "profile":
+            if not args.argv:
+                raise SystemExit("profile requires a nested command")
+            profile_argv = list(args.argv)
+            if args.config:
+                profile_argv = ["--config", args.config, *profile_argv]
+            profile_text, exit_code = run_profile(profile_argv, settings)
+            print(profile_text)
+            if exit_code != 0:
+                raise SystemExit(exit_code)
             return
         if args.command == "reasonops":
             if args.reasonops_command == "report":

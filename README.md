@@ -240,3 +240,18 @@ VCSE 1.0.0 is released. Future work tracked in docs/ROADMAP.md.
 ```bash
 python -m pytest
 ```
+
+## Production Use
+
+```bash
+python -m pip install -e .
+vcse serve
+vcse serve --host 0.0.0.0 --port 8000
+```
+
+```bash
+docker build -t vcse .
+docker run -p 8000:8000 vcse
+```
+
+See [docs/CONFIG.md](docs/CONFIG.md) and [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for runtime settings and deployment notes.

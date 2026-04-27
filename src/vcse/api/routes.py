@@ -6,7 +6,7 @@ import hashlib
 import json
 from typing import Any
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 
 from vcse.api.config import API_VERSION, MODEL_ID, MODEL_OWNER
 from vcse.api.errors import APIError
@@ -20,12 +20,18 @@ from vcse.api.schemas import (
     Usage,
 )
 from vcse.api.translator import translate_user_input
+from vcse.perf import stage
 
 router = APIRouter()
 
 
+def _settings(request: Request):
+    return getattr(request.app.state, "settings", None)
+
+
 @router.get("/health")
-def health() -> dict[str, str]:
+def health(request: Request) -> dict[str, str]:
+    _settings(request)
     return {"status": "ok", "version": API_VERSION}
 
 
@@ -36,13 +42,22 @@ def models() -> list[dict[str, str]]:
 
 @router.post("/v1/chat/completions")
 def chat_completions(
+    http_request: Request,
     request: ChatCompletionRequest,
     debug: bool = Query(False),
 ) -> ChatCompletionResponse:
     if request.model != MODEL_ID:
         raise APIError("INVALID_REQUEST", f"Unknown model: {request.model}", "MODEL_NOT_FOUND", 400)
     prompt = _extract_last_user_message(request.messages)
-    translated = translate_user_input(prompt, enable_debug=debug)
+    settings = _settings(http_request)
+    with stage("api.chat_completion"):
+        translated = translate_user_input(
+            prompt,
+            enable_debug=debug,
+            search_backend=getattr(settings, "search_backend", "beam") if settings else "beam",
+            enable_ts3=getattr(settings, "ts3_enabled", False) if settings else False,
+            enable_index=getattr(settings, "indexing_enabled", False) if settings else False,
+        )
     completion_id = _stable_id("chatcmpl", request.model, prompt, translated.content)
     return ChatCompletionResponse(
         id=completion_id,
@@ -60,13 +75,22 @@ def chat_completions(
 
 @router.post("/v1/responses")
 def responses(
+    http_request: Request,
     request: ResponsesRequest,
     debug: bool = Query(False),
 ) -> ResponsesAPIResponse:
     if request.model != MODEL_ID:
         raise APIError("INVALID_REQUEST", f"Unknown model: {request.model}", "MODEL_NOT_FOUND", 400)
     prompt = _extract_prompt_from_responses_request(request)
-    translated = translate_user_input(prompt, enable_debug=debug)
+    settings = _settings(http_request)
+    with stage("api.responses"):
+        translated = translate_user_input(
+            prompt,
+            enable_debug=debug,
+            search_backend=getattr(settings, "search_backend", "beam") if settings else "beam",
+            enable_ts3=getattr(settings, "ts3_enabled", False) if settings else False,
+            enable_index=getattr(settings, "indexing_enabled", False) if settings else False,
+        )
     response_id = _stable_id("resp", request.model, prompt, translated.content)
     return ResponsesAPIResponse(
         id=response_id,

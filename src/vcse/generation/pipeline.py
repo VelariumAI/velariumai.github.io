@@ -19,6 +19,7 @@ from vcse.generation.templates import (
 )
 from vcse.index.retrieval import RetrievalConfig, SymbolicRetriever
 from vcse.memory.world_state import WorldStateMemory
+from vcse.perf import increment, stage
 
 
 @dataclass
@@ -51,71 +52,75 @@ class GenerationPipeline:
         enable_index: bool = False,
         top_k_rules: int = 20,
     ) -> GenerationResult:
-        missing = spec.validate()
-        if missing:
+        with stage("generation.pipeline"):
+            missing = spec.validate()
+            if missing:
+                return GenerationResult(
+                    status="NEEDS_CLARIFICATION",
+                    clarification_request=f"Missing required fields: {', '.join(sorted(missing))}",
+                    evaluation_reasons=["incomplete spec"],
+                )
+
+            templates = self._select_templates(spec, bundle)
+            index_stats: dict[str, Any] = {}
+            if enable_index:
+                templates, index_stats = self._filter_templates_by_index(
+                    spec, templates, top_k_rules=top_k_rules
+                )
+
+            if not templates:
+                return GenerationResult(
+                    status="INCONCLUSIVE_ARTIFACT",
+                    evaluation_reasons=["no matching templates"],
+                    template_stats={"templates_considered": 0, **index_stats},
+                )
+
+            candidates = self.candidate_generator.generate(spec, templates)
+            increment("generation.candidates", len(candidates))
+            evaluated: list[GeneratedArtifact] = []
+
+            for candidate in candidates:
+                eval_result = self.evaluator.evaluate(candidate, spec, memory)
+                candidate.constraints_satisfied = list(eval_result.constraints_satisfied)
+                candidate.violations = list(eval_result.violations)
+                candidate.status = eval_result.status
+                candidate.verifier_reasons = list(eval_result.reasons)
+
+                if eval_result.status == "FAILED_ARTIFACT":
+                    repaired = self.repairer.repair(candidate, eval_result, spec, templates)
+                    repaired_result = self.evaluator.evaluate(repaired, spec, memory)
+                    repaired.constraints_satisfied = list(repaired_result.constraints_satisfied)
+                    repaired.violations = list(repaired_result.violations)
+                    repaired.status = repaired_result.status
+                    repaired.verifier_reasons = list(repaired_result.reasons)
+                    candidate = repaired
+
+                evaluated.append(candidate)
+
+            ranked = sorted(evaluated, key=_rank_key)
+            best = ranked[0] if ranked else None
+
+            if best is None:
+                return GenerationResult(
+                    status="FAILED_ARTIFACT",
+                    candidates=[],
+                    evaluation_reasons=["no candidates generated"],
+                    template_stats={"templates_considered": len(templates), **index_stats},
+                )
+
+            clarification = None
+            if best.status == "NEEDS_CLARIFICATION":
+                clarification = "; ".join(best.verifier_reasons) or "Spec requires clarification"
+
             return GenerationResult(
-                status="NEEDS_CLARIFICATION",
-                clarification_request=f"Missing required fields: {', '.join(sorted(missing))}",
-                evaluation_reasons=["incomplete spec"],
-            )
-
-        templates = self._select_templates(spec, bundle)
-        index_stats: dict[str, Any] = {}
-        if enable_index:
-            templates, index_stats = self._filter_templates_by_index(spec, templates, top_k_rules=top_k_rules)
-
-        if not templates:
-            return GenerationResult(
-                status="INCONCLUSIVE_ARTIFACT",
-                evaluation_reasons=["no matching templates"],
-                template_stats={"templates_considered": 0, **index_stats},
-            )
-
-        candidates = self.candidate_generator.generate(spec, templates)
-        evaluated: list[GeneratedArtifact] = []
-
-        for candidate in candidates:
-            eval_result = self.evaluator.evaluate(candidate, spec, memory)
-            candidate.constraints_satisfied = list(eval_result.constraints_satisfied)
-            candidate.violations = list(eval_result.violations)
-            candidate.status = eval_result.status
-            candidate.verifier_reasons = list(eval_result.reasons)
-
-            if eval_result.status == "FAILED_ARTIFACT":
-                repaired = self.repairer.repair(candidate, eval_result, spec, templates)
-                repaired_result = self.evaluator.evaluate(repaired, spec, memory)
-                repaired.constraints_satisfied = list(repaired_result.constraints_satisfied)
-                repaired.violations = list(repaired_result.violations)
-                repaired.status = repaired_result.status
-                repaired.verifier_reasons = list(repaired_result.reasons)
-                candidate = repaired
-
-            evaluated.append(candidate)
-
-        ranked = sorted(evaluated, key=_rank_key)
-        best = ranked[0] if ranked else None
-
-        if best is None:
-            return GenerationResult(
-                status="FAILED_ARTIFACT",
-                candidates=[],
-                evaluation_reasons=["no candidates generated"],
+                status=best.status,
+                best_artifact=best,
+                candidates=ranked,
+                evaluation_reasons=list(best.verifier_reasons),
+                clarification_request=clarification,
+                search_stats={"candidate_count": len(ranked)},
                 template_stats={"templates_considered": len(templates), **index_stats},
             )
-
-        clarification = None
-        if best.status == "NEEDS_CLARIFICATION":
-            clarification = "; ".join(best.verifier_reasons) or "Spec requires clarification"
-
-        return GenerationResult(
-            status=best.status,
-            best_artifact=best,
-            candidates=ranked,
-            evaluation_reasons=list(best.verifier_reasons),
-            clarification_request=clarification,
-            search_stats={"candidate_count": len(ranked)},
-            template_stats={"templates_considered": len(templates), **index_stats},
-        )
 
     def _select_templates(
         self,

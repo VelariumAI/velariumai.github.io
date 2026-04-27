@@ -12,6 +12,7 @@ from vcse.interaction.response_modes import ResponseMode, render_response
 from vcse.interaction.session import Session
 from vcse.memory.relations import RelationSchema
 from vcse.memory.world_state import TruthStatus, WorldStateMemory
+from vcse.perf import increment, stage
 
 
 @dataclass(frozen=True)
@@ -67,103 +68,106 @@ def _run_ask(
     enable_ts3: bool,
     enable_index: bool,
 ) -> TranslationResult:
-    if _looks_ambiguous(text):
-        clarification = "What does that refer to?"
+    with stage("api.ask"):
+        if _looks_ambiguous(text):
+            clarification = "What does that refer to?"
+            return TranslationResult(
+                status="NEEDS_CLARIFICATION",
+                content=f"Additional information required: {clarification}",
+                answer=clarification,
+                proof_trace=[],
+                reasons=[clarification],
+                debug={"status": "NEEDS_CLARIFICATION"},
+            )
+
+        session = Session.create(enable_indexing=enable_index)
+        session.ingest(text)
+        increment("api.ask.ingested")
+        result = session.solve(enable_ts3=enable_ts3, search_backend=search_backend)
+
+        if result is None:
+            return TranslationResult(
+                status="INCONCLUSIVE",
+                content="Cannot determine with current information.",
+                answer=None,
+                proof_trace=[],
+                reasons=["no result"],
+                debug={"status": "INCONCLUSIVE"},
+            )
+
+        if hasattr(result, "user_message"):
+            message = getattr(result, "user_message", "Additional information required.")
+            return TranslationResult(
+                status="NEEDS_CLARIFICATION",
+                content=f"Additional information required: {message}",
+                answer=message,
+                proof_trace=[],
+                reasons=[message],
+                debug={"status": "NEEDS_CLARIFICATION"},
+            )
+
+        evaluation = result.evaluation
+        status = evaluation.status.value
+        answer = evaluation.answer
+        reasons = list(evaluation.reasons)
+        proof_trace = list(evaluation.proof_trace)
+        content = render_response(result, ResponseMode.SIMPLE, session.memory)
+
+        debug = {
+            "status": status,
+            "proof_trace": proof_trace,
+            "search_stats": result.stats.__dict__,
+            "ts3_stats": (result.ts3_analysis.__dict__ if result.ts3_analysis else None),
+            "selected_packs": (result.retrieval_stats or {}).get("selected_packs", []),
+            "selected_rules": (result.retrieval_stats or {}).get("selected_artifacts_count", 0),
+        }
         return TranslationResult(
-            status="NEEDS_CLARIFICATION",
-            content=f"Additional information required: {clarification}",
-            answer=clarification,
-            proof_trace=[],
-            reasons=[clarification],
-            debug={"status": "NEEDS_CLARIFICATION"},
+            status=status,
+            content=content,
+            answer=answer,
+            proof_trace=proof_trace,
+            reasons=reasons,
+            debug=debug,
         )
-
-    session = Session.create(enable_indexing=enable_index)
-    session.ingest(text)
-    result = session.solve(enable_ts3=enable_ts3, search_backend=search_backend)
-
-    if result is None:
-        return TranslationResult(
-            status="INCONCLUSIVE",
-            content="Cannot determine with current information.",
-            answer=None,
-            proof_trace=[],
-            reasons=["no result"],
-            debug={"status": "INCONCLUSIVE"},
-        )
-
-    if hasattr(result, "user_message"):
-        message = getattr(result, "user_message", "Additional information required.")
-        return TranslationResult(
-            status="NEEDS_CLARIFICATION",
-            content=f"Additional information required: {message}",
-            answer=message,
-            proof_trace=[],
-            reasons=[message],
-            debug={"status": "NEEDS_CLARIFICATION"},
-        )
-
-    evaluation = result.evaluation
-    status = evaluation.status.value
-    answer = evaluation.answer
-    reasons = list(evaluation.reasons)
-    proof_trace = list(evaluation.proof_trace)
-    content = render_response(result, ResponseMode.SIMPLE, session.memory)
-
-    debug = {
-        "status": status,
-        "proof_trace": proof_trace,
-        "search_stats": result.stats.__dict__,
-        "ts3_stats": (result.ts3_analysis.__dict__ if result.ts3_analysis else None),
-        "selected_packs": (result.retrieval_stats or {}).get("selected_packs", []),
-        "selected_rules": (result.retrieval_stats or {}).get("selected_artifacts_count", 0),
-    }
-    return TranslationResult(
-        status=status,
-        content=content,
-        answer=answer,
-        proof_trace=proof_trace,
-        reasons=reasons,
-        debug=debug,
-    )
 
 
 def _run_generate(text: str, enable_index: bool) -> TranslationResult:
-    payload = json.loads(text)
-    spec = spec_from_dict(payload)
-    memory = WorldStateMemory()
-    for fact in payload.get("memory_claims", []):
-        if not isinstance(fact, dict):
-            continue
-        subject = str(fact.get("subject", "")).strip()
-        relation = str(fact.get("relation", "")).strip()
-        obj = str(fact.get("object", "")).strip()
-        if subject and relation and obj:
-            if memory.get_relation_schema(relation) is None:
-                memory.add_relation_schema(RelationSchema(name=relation, transitive=(relation == "is_a")))
-            memory.add_claim(subject, relation, obj, TruthStatus.ASSERTED)
+    with stage("api.generate"):
+        payload = json.loads(text)
+        spec = spec_from_dict(payload)
+        memory = WorldStateMemory()
+        for fact in payload.get("memory_claims", []):
+            if not isinstance(fact, dict):
+                continue
+            subject = str(fact.get("subject", "")).strip()
+            relation = str(fact.get("relation", "")).strip()
+            obj = str(fact.get("object", "")).strip()
+            if subject and relation and obj:
+                if memory.get_relation_schema(relation) is None:
+                    memory.add_relation_schema(RelationSchema(name=relation, transitive=(relation == "is_a")))
+                memory.add_claim(subject, relation, obj, TruthStatus.ASSERTED)
 
-    result = VerifiedGenerator().generate(spec, memory, enable_index=enable_index)
-    best = result.best_artifact
-    answer = best.content if best is not None else None
-    status = result.status
-    content = _status_to_text(status, answer, list(result.evaluation_reasons))
-    debug = {
-        "status": status,
-        "proof_trace": [],
-        "search_stats": result.search_stats,
-        "ts3_stats": None,
-        "selected_packs": result.template_stats.get("selected_templates", []),
-        "selected_rules": result.template_stats.get("selected_templates_count", 0),
-    }
-    return TranslationResult(
-        status=status,
-        content=content,
-        answer=answer,
-        proof_trace=[],
-        reasons=list(result.evaluation_reasons),
-        debug=debug,
-    )
+        result = VerifiedGenerator().generate(spec, memory, enable_index=enable_index)
+        best = result.best_artifact
+        answer = best.content if best is not None else None
+        status = result.status
+        content = _status_to_text(status, answer, list(result.evaluation_reasons))
+        debug = {
+            "status": status,
+            "proof_trace": [],
+            "search_stats": result.search_stats,
+            "ts3_stats": None,
+            "selected_packs": result.template_stats.get("selected_templates", []),
+            "selected_rules": result.template_stats.get("selected_templates_count", 0),
+        }
+        return TranslationResult(
+            status=status,
+            content=content,
+            answer=answer,
+            proof_trace=[],
+            reasons=list(result.evaluation_reasons),
+            debug=debug,
+        )
 
 
 def _status_to_text(status: str, answer: Any | None, reasons: list[str]) -> str:
