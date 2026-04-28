@@ -58,3 +58,16 @@ def test_ask_output_unchanged_for_general_world_pack() -> None:
     result = _run_cli("ask", "What is the capital of France?", "--pack", "general_world")
     assert result.returncode == 0
     assert "Paris is the capital of France." in result.stdout
+
+
+def test_inverse_query_works_via_inference_for_general_world_pack() -> None:
+    result = _run_cli("ask", "What is Paris the capital of?", "--pack", "general_world")
+    assert result.returncode == 0
+    assert "France" in result.stdout
+
+
+def test_infer_inverse_cli_reports_inferred_claims() -> None:
+    result = _run_cli("infer", "inverse", "--pack", "general_world")
+    assert result.returncode == 0
+    assert "status: INFERENCE_COMPLETE" in result.stdout
+    assert "inferred_count:" in result.stdout
