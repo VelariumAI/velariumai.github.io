@@ -31,6 +31,7 @@ from vcse.compression.pack_optimizer import (
     save_compressed,
 )
 from vcse.compression.provenance import ProvenanceCompressor, ProvenanceRef
+from vcse.compression.runtime_index import CompressedRuntimeIndex
 
 __all__ = [
     # canonicalizer
@@ -48,6 +49,7 @@ __all__ = [
     # provenance
     "ProvenanceCompressor",
     "ProvenanceRef",
+    "CompressedRuntimeIndex",
     # graph
     "GraphIndex",
     # pack optimizer

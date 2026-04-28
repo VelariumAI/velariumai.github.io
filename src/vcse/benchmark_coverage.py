@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 from typing import Any
 
@@ -15,8 +16,11 @@ class CoverageBenchmarkError(ValueError):
 
 
 def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, Any]:
+    load_started = time.perf_counter()
     claims = _load_claims(pack_path)
     cases = _load_cases(benchmark_path)
+    load_time_ms = round((time.perf_counter() - load_started) * 1000, 3)
+    query_started = time.perf_counter()
     claim_map = {
         (str(claim.get("subject", "")), str(claim.get("relation", "")), str(claim.get("object", ""))): claim
         for claim in claims
@@ -56,6 +60,8 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
 
     total = len(cases)
     answered = verified + candidate
+    query_latency_ms = round((time.perf_counter() - query_started) * 1000, 3)
+    compression_metrics = _compression_metrics(pack_path)
     return {
         "status": "COVERAGE_COMPLETE" if incorrect == 0 else "COVERAGE_MISMATCH",
         "pack_path": str(pack_path),
@@ -70,6 +76,11 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
         "verified_rate": _rate(verified, total),
         "candidate_rate": _rate(candidate, total),
         "unknown_rate": _rate(unknown, total),
+        "compression_ratio": compression_metrics["compression_ratio"],
+        "compressed_size": compression_metrics["compressed_size"],
+        "uncompressed_size": compression_metrics["uncompressed_size"],
+        "load_time_ms": load_time_ms,
+        "query_latency_ms": query_latency_ms,
         "results": results,
     }
 
@@ -87,6 +98,11 @@ def format_coverage_text(summary: dict[str, Any]) -> str:
         f"verified_rate: {summary['verified_rate']}",
         f"candidate_rate: {summary['candidate_rate']}",
         f"unknown_rate: {summary['unknown_rate']}",
+        f"compression_ratio: {summary['compression_ratio']}",
+        f"compressed_size: {summary['compressed_size']}",
+        f"uncompressed_size: {summary['uncompressed_size']}",
+        f"load_time_ms: {summary['load_time_ms']}",
+        f"query_latency_ms: {summary['query_latency_ms']}",
     ]
     return "\n".join(lines)
 
@@ -139,3 +155,28 @@ def _load_cases(path: Path) -> list[dict[str, str]]:
 
 def _rate(numerator: int, denominator: int) -> float:
     return numerator / denominator if denominator else 0.0
+
+
+def _compression_metrics(pack_path: Path) -> dict[str, float | int]:
+    metrics_path = pack_path / "metrics.json"
+    if metrics_path.exists():
+        try:
+            payload = json.loads(metrics_path.read_text())
+            if isinstance(payload, dict):
+                uncompressed = int(payload.get("original_size_bytes", 0) or 0)
+                compressed = int(payload.get("total_compressed_size_bytes", 0) or payload.get("compressed_size_bytes", 0) or 0)
+                ratio = float(payload.get("compression_ratio", 0.0) or 0.0)
+                return {
+                    "compression_ratio": ratio,
+                    "compressed_size": compressed,
+                    "uncompressed_size": uncompressed,
+                }
+        except Exception:
+            pass
+    claims_path = pack_path / "claims.jsonl"
+    uncompressed = claims_path.stat().st_size if claims_path.exists() else 0
+    return {
+        "compression_ratio": 1.0 if uncompressed > 0 else 0.0,
+        "compressed_size": uncompressed,
+        "uncompressed_size": uncompressed,
+    }

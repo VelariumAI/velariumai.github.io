@@ -102,6 +102,27 @@ class PackIndex:
                 source_ids = sorted({str(item) for item in fallback if str(item).strip()})
 
         lifecycle_status = str(meta.get("lifecycle_status", "candidate")).strip() or "candidate"
+        metrics_path = pack_path / "metrics.json"
+        metrics_payload: dict[str, Any] = {}
+        if metrics_path.exists():
+            try:
+                loaded = json.loads(metrics_path.read_text())
+                if isinstance(loaded, dict):
+                    metrics_payload = loaded
+            except Exception:
+                metrics_payload = {}
+
+        uncompressed_size = int(
+            metrics_payload.get("original_size_bytes", 0) or meta.get("uncompressed_size", 0) or 0
+        )
+        compressed_size = int(
+            metrics_payload.get("total_compressed_size_bytes", 0) or meta.get("compressed_size", 0) or 0
+        )
+        ratio = (
+            float(metrics_payload.get("compression_ratio"))
+            if metrics_payload.get("compression_ratio") is not None
+            else float(meta.get("compression_ratio", 0.0) or 0.0)
+        )
         key = f"{pack_id}@{version}"
         last_updated = datetime.now(timezone.utc).isoformat()
         entry = {
@@ -116,6 +137,11 @@ class PackIndex:
             "last_updated": last_updated,
             "pack_path": str(pack_path),
             "stale": False,
+            "pack_hash": str(meta.get("pack_hash", "")),
+            "merkle_root": str(meta.get("merkle_root", "")),
+            "compression_ratio": ratio,
+            "compressed_size": compressed_size,
+            "uncompressed_size": uncompressed_size,
         }
         return key, entry
 

@@ -47,6 +47,14 @@ from vcse.packs import (
     PackRegistry,
     PackValidator,
 )
+from vcse.packs.integrity import (
+    compute_pack_hash,
+    diff_packs,
+    resolve_pack_path,
+    sign_pack_manifest,
+    verify_pack_integrity,
+    verify_pack_signature,
+)
 from vcse.perf import profile_result, profile_run
 from vcse.ledger import LedgerError, LedgerStore, build_integrity, export_ledger, verify_ledger, verify_pack_ledger
 from vcse.renderer.explanation import ExplanationRenderer
@@ -964,6 +972,11 @@ def run_pack_info(pack_id: str, version: str | None = None, json_output: bool = 
                 f"certified_count: {metadata.get('certified_count')}",
                 f"candidate_count: {metadata.get('candidate_count')}",
                 f"source_ids: {','.join(metadata.get('source_ids', []))}",
+                f"pack_hash: {metadata.get('pack_hash', '')}",
+                f"merkle_root: {metadata.get('merkle_root', '')}",
+                f"compression_ratio: {metadata.get('compression_ratio', 0)}",
+                f"compressed_size: {metadata.get('compressed_size', 0)}",
+                f"uncompressed_size: {metadata.get('uncompressed_size', 0)}",
                 f"pack_path: {metadata.get('pack_path')}",
                 f"last_updated: {metadata.get('last_updated')}",
             ]
@@ -1103,6 +1116,109 @@ def run_pack_create(name: str, base_dir: Path, json_output: bool = False) -> str
     if json_output:
         return json.dumps(payload, sort_keys=True)
     return "\n".join(["status: CREATED", f"path: {pack_dir}"])
+
+
+def run_pack_hash(pack_spec: str, json_output: bool = False) -> str:
+    path = resolve_pack_path(pack_spec)
+    result = compute_pack_hash(path)
+    payload = {
+        "status": "PACK_HASH",
+        "pack": pack_spec,
+        "path": str(path),
+        "pack_hash": result.pack_hash,
+        "algorithm": result.algorithm,
+    }
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(
+        [
+            "status: PACK_HASH",
+            f"pack: {pack_spec}",
+            f"path: {path}",
+            f"pack_hash: {result.pack_hash}",
+            f"algorithm: {result.algorithm}",
+        ]
+    )
+
+
+def run_pack_verify(pack_spec: str, json_output: bool = False) -> str:
+    path = resolve_pack_path(pack_spec)
+    result = verify_pack_integrity(path)
+    payload = {"pack": pack_spec, "path": str(path), **result}
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        f"status: {result.get('status', 'INVALID')}",
+        f"pack: {pack_spec}",
+        f"path: {path}",
+    ]
+    if result.get("reason"):
+        lines.append(f"reason: {result['reason']}")
+    if result.get("pack_hash"):
+        lines.append(f"pack_hash: {result['pack_hash']}")
+    if result.get("merkle_root"):
+        lines.append(f"merkle_root: {result['merkle_root']}")
+    return "\n".join(lines)
+
+
+def run_pack_diff(pack_a_spec: str, pack_b_spec: str, json_output: bool = False) -> str:
+    pack_a = resolve_pack_path(pack_a_spec)
+    pack_b = resolve_pack_path(pack_b_spec)
+    result = diff_packs(pack_a, pack_b)
+    payload = {
+        "status": "PACK_DIFF",
+        "pack_a": pack_a_spec,
+        "pack_b": pack_b_spec,
+        **result,
+    }
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(
+        [
+            "status: PACK_DIFF",
+            f"pack_a: {pack_a_spec}",
+            f"pack_b: {pack_b_spec}",
+            f"added: {len(result['added'])}",
+            f"removed: {len(result['removed'])}",
+            f"unchanged: {result['unchanged']}",
+        ]
+    )
+
+
+def run_pack_sign(pack_spec: str, json_output: bool = False) -> str:
+    path = resolve_pack_path(pack_spec)
+    result = sign_pack_manifest(path)
+    payload = {"status": "PACK_SIGNED", "pack": pack_spec, "path": str(path), **result}
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(
+        [
+            "status: PACK_SIGNED",
+            f"pack: {pack_spec}",
+            f"path: {path}",
+            f"pack_hash: {result.get('pack_hash', '')}",
+            f"merkle_root: {result.get('merkle_root', '')}",
+            f"algorithm: {result.get('algorithm', '')}",
+        ]
+    )
+
+
+def run_pack_verify_signature(pack_spec: str, json_output: bool = False) -> str:
+    path = resolve_pack_path(pack_spec)
+    result = verify_pack_signature(path)
+    payload = {"pack": pack_spec, "path": str(path), **result}
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        f"status: {result.get('status', 'INVALID')}",
+        f"pack: {pack_spec}",
+        f"path: {path}",
+    ]
+    if result.get("reason"):
+        lines.append(f"reason: {result['reason']}")
+    if result.get("algorithm"):
+        lines.append(f"algorithm: {result['algorithm']}")
+    return "\n".join(lines)
 
 
 def _load_claims_from_jsonl(path: Path) -> list[dict]:
@@ -1659,6 +1775,24 @@ def main(argv: list[str] | None = None) -> None:
     pack_create_parser.add_argument("name")
     pack_create_parser.add_argument("--path", required=True, type=Path)
     pack_create_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_hash_parser = pack_subparsers.add_parser("hash")
+    pack_hash_parser.add_argument("pack")
+    pack_hash_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_verify_parser = pack_subparsers.add_parser("verify")
+    pack_verify_parser.add_argument("pack")
+    pack_verify_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_verify_parser.add_argument("--strict", action="store_true")
+    pack_diff_parser = pack_subparsers.add_parser("diff")
+    pack_diff_parser.add_argument("pack_a")
+    pack_diff_parser.add_argument("pack_b")
+    pack_diff_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_sign_parser = pack_subparsers.add_parser("sign")
+    pack_sign_parser.add_argument("pack")
+    pack_sign_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_verify_sig_parser = pack_subparsers.add_parser("verify-signature")
+    pack_verify_sig_parser.add_argument("pack")
+    pack_verify_sig_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_verify_sig_parser.add_argument("--strict", action="store_true")
 
     trust_parser = subparsers.add_parser("trust")
     trust_subparsers = trust_parser.add_subparsers(dest="trust_command")
@@ -1983,6 +2117,37 @@ def main(argv: list[str] | None = None) -> None:
                 return
             if args.pack_command == "create":
                 print(run_pack_create(args.name, args.path, json_output=args.json_output))
+                return
+            if args.pack_command == "hash":
+                print(run_pack_hash(args.pack, json_output=args.json_output))
+                return
+            if args.pack_command == "verify":
+                text = run_pack_verify(args.pack, json_output=args.json_output)
+                print(text)
+                if args.strict:
+                    if args.json_output:
+                        payload = json.loads(text)
+                        if not payload.get("valid", False):
+                            raise SystemExit(2)
+                    elif "status: VALID" not in text:
+                        raise SystemExit(2)
+                return
+            if args.pack_command == "diff":
+                print(run_pack_diff(args.pack_a, args.pack_b, json_output=args.json_output))
+                return
+            if args.pack_command == "sign":
+                print(run_pack_sign(args.pack, json_output=args.json_output))
+                return
+            if args.pack_command == "verify-signature":
+                text = run_pack_verify_signature(args.pack, json_output=args.json_output)
+                print(text)
+                if args.strict:
+                    if args.json_output:
+                        payload = json.loads(text)
+                        if not payload.get("valid", False):
+                            raise SystemExit(2)
+                    elif "status: VALID" not in text:
+                        raise SystemExit(2)
                 return
         if args.command == "trust":
             if args.trust_command == "evaluate":

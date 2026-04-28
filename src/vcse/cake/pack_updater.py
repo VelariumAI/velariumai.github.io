@@ -11,6 +11,7 @@ from vcse.knowledge.pack_builder import KnowledgePackBuilder
 from vcse.knowledge.pack_model import KnowledgeClaim, KnowledgePack, KnowledgeProvenance
 from vcse.ledger.audit import build_integrity
 from vcse.packs.index import PackIndex
+from vcse.packs.integrity import update_pack_integrity_metadata
 from vcse.packs.lifecycle import PackLifecycleManager
 
 
@@ -105,6 +106,7 @@ class CakePackUpdater:
 
         integrity = build_integrity(pack_path)
         (pack_path / "integrity.json").write_text(json.dumps(integrity, indent=2))
+        update_pack_integrity_metadata(pack_path)
         PackIndex().update_entry(pack_path)
 
         return self.UpdateReport(
@@ -125,4 +127,5 @@ class CakePackUpdater:
         metadata = json.loads(metadata_path.read_text())
         metadata["lifecycle_status"] = "candidate"
         metadata_path.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
+        update_pack_integrity_metadata(pack_path)
         return len(claims)

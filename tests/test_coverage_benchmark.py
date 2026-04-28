@@ -37,6 +37,11 @@ def test_benchmark_coverage_text_and_json(tmp_path: Path) -> None:
     assert payload["status"] == "COVERAGE_COMPLETE"
     assert payload["total"] >= 500
     assert payload["incorrect"] == 0
+    assert "compression_ratio" in payload
+    assert "compressed_size" in payload
+    assert "uncompressed_size" in payload
+    assert "load_time_ms" in payload
+    assert "query_latency_ms" in payload
 
 
 def test_benchmark_coverage_missing_pack_reports_pack_not_found(tmp_path: Path) -> None:

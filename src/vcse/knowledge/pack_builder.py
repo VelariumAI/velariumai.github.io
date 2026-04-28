@@ -11,6 +11,7 @@ from vcse.knowledge.errors import KnowledgeError
 from vcse.knowledge.pack_model import KnowledgeClaim, KnowledgePack, KnowledgeProvenance
 from vcse.knowledge.registry import installed_pack_root
 from vcse.ledger import build_integrity
+from vcse.packs.integrity import update_pack_integrity_metadata
 
 
 class KnowledgePackBuilder:
@@ -32,6 +33,7 @@ class KnowledgePackBuilder:
         _write_json(root / "ledger_snapshot.json", [])
         _write_jsonl(root / "staleness.jsonl", [])
         _write_json(root / "integrity.json", build_integrity(root))
+        update_pack_integrity_metadata(root)
         return root
 
 

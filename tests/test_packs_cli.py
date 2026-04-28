@@ -68,3 +68,30 @@ def test_pack_cli_json_and_invalid_pack_errors(tmp_path: Path) -> None:
     missing = run_cli("pack", "info", "does.not.exist", pack_home=home)
     assert missing.returncode == 2
     assert "error_type: PACK_NOT_FOUND" in missing.stderr
+
+
+def test_pack_cli_hash_verify_diff_sign(tmp_path: Path) -> None:
+    home = tmp_path / "vcse_home"
+    pack_path = _pack_path("logic_basic")
+    install = run_cli("pack", "install", _pack_path("logic_basic"), pack_home=home)
+    assert install.returncode == 0
+
+    h = run_cli("pack", "hash", pack_path, pack_home=home)
+    assert h.returncode == 0
+    assert "status: PACK_HASH" in h.stdout
+
+    d = run_cli("pack", "diff", pack_path, pack_path, pack_home=home)
+    assert d.returncode == 0
+    assert "unchanged:" in d.stdout
+
+    s = run_cli("pack", "sign", pack_path, pack_home=home)
+    assert s.returncode == 0
+    assert "status: PACK_SIGNED" in s.stdout
+
+    v = run_cli("pack", "verify", pack_path, "--strict", pack_home=home)
+    assert v.returncode == 0
+    assert "status: VALID" in v.stdout
+
+    sv = run_cli("pack", "verify-signature", pack_path, "--strict", pack_home=home)
+    assert sv.returncode == 0
+    assert "status: VALID" in sv.stdout

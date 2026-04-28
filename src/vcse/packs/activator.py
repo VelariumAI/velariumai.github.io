@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from vcse.dsl import CapabilityBundle, DSLCompiler, DSLLoader, DSLValidator
+from vcse.compression.runtime_index import CompressedRuntimeIndex
 from vcse.memory.constraints import Constraint
 from vcse.packs.errors import PackError
 from vcse.packs.loader import load_manifest
@@ -67,18 +68,26 @@ class PackActivator:
                     raise PackError("INVALID_PACK", f"dsl validation failed for {manifest.id}: {'; '.join(validation.errors)}")
                 bundle = DSLCompiler.compile(document)
                 _merge_bundle(merged, bundle)
-            for rel_path in manifest.artifacts.get("claims", []):
-                for line in (root / rel_path).read_text().splitlines():
-                    if not line.strip():
-                        continue
-                    payload = json.loads(line)
-                    knowledge_claims.append(
-                        {
-                            "subject": str(payload.get("subject", "")),
-                            "relation": str(payload.get("relation", "")),
-                            "object": str(payload.get("object", "")),
-                        }
-                    )
+            compressed_claims_loaded = False
+            if (root / "intern_table.json").exists() and (root / "encoded_claims.jsonl").exists():
+                try:
+                    knowledge_claims.extend(CompressedRuntimeIndex(root).iter_claims())
+                    compressed_claims_loaded = True
+                except Exception:
+                    compressed_claims_loaded = False
+            if not compressed_claims_loaded:
+                for rel_path in manifest.artifacts.get("claims", []):
+                    for line in (root / rel_path).read_text().splitlines():
+                        if not line.strip():
+                            continue
+                        payload = json.loads(line)
+                        knowledge_claims.append(
+                            {
+                                "subject": str(payload.get("subject", "")),
+                                "relation": str(payload.get("relation", "")),
+                                "object": str(payload.get("object", "")),
+                            }
+                        )
             for rel_path in manifest.artifacts.get("constraints", []):
                 for line in (root / rel_path).read_text().splitlines():
                     if not line.strip():
