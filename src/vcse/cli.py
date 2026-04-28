@@ -11,6 +11,7 @@ from pathlib import Path
 
 from vcse.benchmark import BenchmarkCaseError, format_benchmark_text, run_benchmark
 from vcse.benchmark_coverage import CoverageBenchmarkError, format_coverage_text, run_coverage_benchmark
+from vcse.benchmark_inference_classification import InferenceType
 from vcse.config import load_settings
 from vcse.dsl import DSLCompiler, DSLLoader, DSLValidator, GLOBAL_REGISTRY
 from vcse.dsl.errors import DSLError
@@ -192,7 +193,8 @@ def run_ask(
     preload_constraints: list[Constraint] | None = None,
     allow_query_normalization: bool = True,
     explain_inferred: bool = True,
-) -> str:
+    return_resolution_type: bool = False,
+) -> str | tuple[str, InferenceType]:
     """Handle vcse ask command."""
     from vcse.interaction.session import Session, TurnRecord
     from vcse.interaction.response_modes import QueryType, ResponseMode, render_response
@@ -222,7 +224,7 @@ def run_ask(
             inferred_explanation=inferred_explanation if explain_inferred else None,
         )
 
-    def _run_existing() -> str:
+    def _run_existing() -> tuple[str, InferenceType]:
         session = Session.create(
             dsl_bundle=dsl_bundle,
             enable_indexing=enable_index,
@@ -234,9 +236,17 @@ def run_ask(
 
         session.ingest(text)
         result = session.solve(enable_ts3=enable_ts3, search_backend=search_backend)
-        return _render_result(session, result)
+        rendered = _render_result(session, result)
+        if result is None or hasattr(result, "user_message"):
+            return rendered, InferenceType.UNSUPPORTED
+        evaluation = getattr(result, "evaluation", None)
+        if evaluation is None or getattr(evaluation, "status", None) is None:
+            return rendered, InferenceType.UNKNOWN
+        if str(getattr(evaluation.status, "value", evaluation.status)) != "VERIFIED":
+            return rendered, InferenceType.UNKNOWN
+        return rendered, InferenceType.UNKNOWN
 
-    def _run_normalized() -> str | None:
+    def _run_normalized() -> tuple[str, InferenceType] | None:
         # Run only for direct user text input; skip when structured DSL bundle is provided.
         if not allow_query_normalization:
             return None
@@ -281,10 +291,10 @@ def run_ask(
             return None
         status_value = getattr(getattr(result, "evaluation", None), "status", None)
         if status_value is not None and str(getattr(status_value, "value", status_value)) != "VERIFIED":
-            return obj
-        return _render_result(session, result)
+            return obj, InferenceType.UNKNOWN
+        return _render_result(session, result), InferenceType.UNKNOWN
 
-    def _run_boolean_capital_check() -> str | None:
+    def _run_boolean_capital_check() -> tuple[str, InferenceType] | None:
         clean = text.strip()
         low = clean.lower()
         prefix = "is "
@@ -302,7 +312,7 @@ def run_ask(
             return None
         goal, inferred_explanation = goal_result
         if inferred_explanation is not None and explain_inferred:
-            return _render_inferred_boolean(goal, inferred_explanation)
+            return _render_inferred_boolean(goal, inferred_explanation), InferenceType.INVERSE
         g_subject, g_relation, g_object = goal
         session = Session.create(
             dsl_bundle=dsl_bundle,
@@ -329,9 +339,13 @@ def run_ask(
         result = session.solve(enable_ts3=enable_ts3, search_backend=search_backend)
         if result is None:
             return None
-        return _render_result(session, result)
+        rendered = _render_result(session, result)
+        status_value = getattr(getattr(result, "evaluation", None), "status", None)
+        if status_value is not None and str(getattr(status_value, "value", status_value)) == "VERIFIED":
+            return rendered, InferenceType.EXPLICIT
+        return rendered, InferenceType.UNKNOWN
 
-    def _run_inverse_capital_fact_lookup() -> tuple[str, InferenceExplanation | None] | None:
+    def _run_inverse_capital_fact_lookup() -> tuple[str, InferenceExplanation | None, InferenceType] | None:
         clean = text.strip()
         low = clean.lower()
         prefix = "what is "
@@ -350,7 +364,7 @@ def run_ask(
             }
         )
         if len(explicit_values) == 1:
-            return explicit_values[0], None
+            return explicit_values[0], None, InferenceType.EXPLICIT
         inferred_values = sorted(
             [
                 claim
@@ -361,10 +375,10 @@ def run_ask(
         )
         if len(inferred_values) == 1:
             inferred = inferred_values[0]
-            return inferred.object, build_inverse_explanation(inferred)
+            return inferred.object, build_inverse_explanation(inferred), InferenceType.INVERSE
         return None
 
-    def _run_continent_lookup() -> tuple[str, InferenceExplanation | None] | None:
+    def _run_continent_lookup() -> tuple[str, InferenceExplanation | None, InferenceType] | None:
         clean = text.strip()
         low = clean.lower()
         prefix = "what continent is "
@@ -383,7 +397,7 @@ def run_ask(
             }
         )
         if len(explicit_values) == 1:
-            return explicit_values[0], None
+            return explicit_values[0], None, InferenceType.EXPLICIT
         inferred_values = sorted(
             [
                 claim
@@ -394,22 +408,22 @@ def run_ask(
         )
         if len(inferred_values) == 1:
             inferred = inferred_values[0]
-            return inferred.object, build_transitive_explanation(inferred)
+            return inferred.object, build_transitive_explanation(inferred), InferenceType.TRANSITIVE
         return None
 
-    def _run() -> str:
+    def _run() -> tuple[str, InferenceType]:
         continent = _run_continent_lookup()
         if continent is not None:
-            answer, inferred_explanation = continent
+            answer, inferred_explanation, resolution_type = continent
             if inferred_explanation is None or not explain_inferred:
-                return answer
-            return _render_inferred_answer(answer, inferred_explanation)
+                return answer, resolution_type
+            return _render_inferred_answer(answer, inferred_explanation), resolution_type
         inverse_capital = _run_inverse_capital_fact_lookup()
         if inverse_capital is not None:
-            answer, inferred_explanation = inverse_capital
+            answer, inferred_explanation, resolution_type = inverse_capital
             if inferred_explanation is None or not explain_inferred:
-                return answer
-            return _render_inferred_answer(answer, inferred_explanation)
+                return answer, resolution_type
+            return _render_inferred_answer(answer, inferred_explanation), resolution_type
         boolean_capital = _run_boolean_capital_check()
         if boolean_capital is not None:
             return boolean_capital
@@ -419,10 +433,13 @@ def run_ask(
         return _run_existing()
 
     if not profile:
-        return _run()
+        output, resolution_type = _run()
+        if return_resolution_type:
+            return output, resolution_type
+        return output
 
     with profile_run() as (trace, holder):
-        output = _run()
+        output, resolution_type = _run()
     total_seconds = holder[0] if holder else 0.0
     result = profile_result(trace, total_seconds)
     lines = [output, "profile:", f"  total_seconds: {result.total_seconds:.6f}"]
@@ -434,7 +451,10 @@ def run_ask(
         lines.append("  counters:")
         for name, count in result.counters.items():
             lines.append(f"    {name}: {count}")
-    return "\n".join(lines)
+    profiled_output = "\n".join(lines)
+    if return_resolution_type:
+        return profiled_output, resolution_type
+    return profiled_output
 
 
 def _render_inferred_answer(

@@ -7,6 +7,9 @@ import time
 from pathlib import Path
 from typing import Any
 
+from vcse.benchmark_inference_classification import InferenceType, classify_resolution_for_claim
+from vcse.knowledge.pack_model import KnowledgeClaim
+
 
 class CoverageBenchmarkError(ValueError):
     def __init__(self, error_type: str, reason: str) -> None:
@@ -18,6 +21,7 @@ class CoverageBenchmarkError(ValueError):
 def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, Any]:
     load_started = time.perf_counter()
     claims = _load_claims(pack_path)
+    claim_models = _load_claim_models(claims)
     cases = _load_cases(benchmark_path)
     load_time_ms = round((time.perf_counter() - load_started) * 1000, 3)
     query_started = time.perf_counter()
@@ -31,6 +35,12 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
     candidate = 0
     unknown = 0
     incorrect = 0
+    explicit_answer_count = 0
+    inverse_inferred_count = 0
+    transitive_inferred_count = 0
+    unknown_count = 0
+    unsupported_query_count = 0
+    false_verified_count = 0
 
     for case in cases:
         key = (case["subject"], case["relation"], case["object"])
@@ -49,11 +59,32 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
         ok = observed == expected
         if not ok:
             incorrect += 1
+        if expected == "unknown" and observed in {"verified", "candidate"}:
+            false_verified_count += 1
+
+        resolution_type = classify_resolution_for_claim(
+            claim_models,
+            subject=case["subject"],
+            relation=case["relation"],
+            object_=case["object"],
+        )
+        if resolution_type == InferenceType.EXPLICIT:
+            explicit_answer_count += 1
+        elif resolution_type == InferenceType.INVERSE:
+            inverse_inferred_count += 1
+        elif resolution_type == InferenceType.TRANSITIVE:
+            transitive_inferred_count += 1
+        elif resolution_type == InferenceType.UNSUPPORTED:
+            unsupported_query_count += 1
+        else:
+            unknown_count += 1
+
         results.append(
             {
                 "id": case["id"],
                 "expected": expected,
                 "observed": observed,
+                "resolution_type": resolution_type.value,
                 "status": "PASS" if ok else "FAIL",
             }
         )
@@ -76,6 +107,13 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
         "verified_rate": _rate(verified, total),
         "candidate_rate": _rate(candidate, total),
         "unknown_rate": _rate(unknown, total),
+        "total_queries": total,
+        "explicit_answer_count": explicit_answer_count,
+        "inverse_inferred_count": inverse_inferred_count,
+        "transitive_inferred_count": transitive_inferred_count,
+        "unknown_count": unknown_count,
+        "unsupported_query_count": unsupported_query_count,
+        "false_verified_count": false_verified_count,
         "compression_ratio": compression_metrics["compression_ratio"],
         "compressed_size": compression_metrics["compressed_size"],
         "uncompressed_size": compression_metrics["uncompressed_size"],
@@ -89,12 +127,20 @@ def format_coverage_text(summary: dict[str, Any]) -> str:
     lines = [
         f"status: {summary['status']}",
         f"total: {summary['total']}",
+        f"total_queries: {summary['total_queries']}",
         f"answered: {summary['answered']}",
         f"verified: {summary['verified']}",
         f"candidate: {summary['candidate']}",
         f"unknown: {summary['unknown']}",
         f"incorrect: {summary['incorrect']}",
         f"coverage_rate: {summary['coverage_rate']}",
+        "inference_coverage:",
+        f"  explicit_answer_count: {summary['explicit_answer_count']}",
+        f"  inverse_inferred_count: {summary['inverse_inferred_count']}",
+        f"  transitive_inferred_count: {summary['transitive_inferred_count']}",
+        f"  unknown_count: {summary['unknown_count']}",
+        f"  unsupported_query_count: {summary['unsupported_query_count']}",
+        f"  false_verified_count: {summary['false_verified_count']}",
         f"verified_rate: {summary['verified_rate']}",
         f"candidate_rate: {summary['candidate_rate']}",
         f"unknown_rate: {summary['unknown_rate']}",
@@ -123,6 +169,10 @@ def _load_claims(pack_path: Path) -> list[dict[str, Any]]:
             raise CoverageBenchmarkError("MALFORMED_CLAIMS", f"claims.jsonl line {idx} must be an object")
         claims.append(row)
     return claims
+
+
+def _load_claim_models(claims: list[dict[str, Any]]) -> list[KnowledgeClaim]:
+    return [KnowledgeClaim.from_dict(row) for row in claims]
 
 
 def _load_cases(path: Path) -> list[dict[str, str]]:
