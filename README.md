@@ -362,3 +362,33 @@ Inspect inferred transitive claims:
 ```bash
 vcse infer transitive --pack general_world
 ```
+
+## Inference Explanations
+
+VCSE v3.5.0 adds deterministic explanation rendering for inferred answers.
+
+- Explanations are derived only from explicit claim provenance used by inference
+- No new inference rules are added
+- Reasoning behavior and correctness remain unchanged
+- Explanations are runtime-only and non-persistent
+- Explicit claim answers remain unchanged
+
+Example:
+
+```bash
+vcse ask "What continent is Paris in?" --pack general_world
+```
+
+Output:
+
+```text
+Paris is in the Europe region because:
+- Paris is in France.
+- France is part of Europe.
+```
+
+Disable explanation output for inferred answers:
+
+```bash
+vcse ask "What continent is Paris in?" --pack general_world --no-explain
+```
