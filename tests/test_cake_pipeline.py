@@ -36,6 +36,7 @@ def test_dry_run_does_not_write_pack(tmp_path):
         GENERAL_WORLD_CONFIG,
         dry_run=True,
         pack_output_dir=tmp_path,
+        snapshot_root=tmp_path / "snapshots",
     )
     # tmp_path should have no pack directories
     pack_dirs = [p for p in tmp_path.iterdir() if p.is_dir()]
@@ -47,6 +48,7 @@ def test_live_run_extracts_claims(tmp_path):
         GENERAL_WORLD_CONFIG,
         dry_run=False,
         pack_output_dir=tmp_path,
+        snapshot_root=tmp_path / "snapshots",
     )
     assert report.status in (CAKE_COMPLETE, "CAKE_PARTIAL")
     assert report.claims_extracted > 0
@@ -57,6 +59,7 @@ def test_live_run_paris_capital_of_france(tmp_path):
         GENERAL_WORLD_CONFIG,
         dry_run=False,
         pack_output_dir=tmp_path,
+        snapshot_root=tmp_path / "snapshots",
     )
     # Find wikidata_capitals pack
     pack_dirs = list(tmp_path.iterdir())
@@ -87,6 +90,10 @@ def test_report_has_all_required_fields(tmp_path):
     assert hasattr(report, "claims_extracted")
     assert hasattr(report, "claims_normalized")
     assert hasattr(report, "claims_ingested")
+    assert hasattr(report, "duplicates_detected")
+    assert hasattr(report, "claims_merged")
+    assert hasattr(report, "new_claims")
+    assert hasattr(report, "skipped_sources")
     assert hasattr(report, "trust_decisions")
     assert hasattr(report, "errors")
     assert hasattr(report, "warnings")
@@ -133,5 +140,27 @@ def test_report_serializes_to_dict(tmp_path):
     assert "status" in d
     assert "source_ids" in d
     assert "source_reports" in d
+    assert "duplicates_detected" in d
+    assert "claims_merged" in d
+    assert "new_claims" in d
+    assert "skipped_sources" in d
     # Must be JSON-serializable
     json.dumps(d)
+
+
+def test_second_run_marks_unchanged_source(tmp_path):
+    first = run_cake_pipeline(
+        GENERAL_WORLD_CONFIG,
+        dry_run=False,
+        pack_output_dir=tmp_path,
+        snapshot_root=tmp_path / "snapshots",
+    )
+    second = run_cake_pipeline(
+        GENERAL_WORLD_CONFIG,
+        dry_run=False,
+        pack_output_dir=tmp_path,
+        snapshot_root=tmp_path / "snapshots",
+    )
+    assert first.status in (CAKE_COMPLETE, "CAKE_PARTIAL")
+    assert second.skipped_sources >= 1
+    assert any(item.get("status") == "UNCHANGED" for item in second.source_reports)
