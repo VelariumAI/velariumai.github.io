@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from vcse.benchmark_inference_classification import InferenceType, classify_resolution_for_claim
+from vcse.inference.stability import InferenceStabilityTracker
 from vcse.knowledge.pack_model import KnowledgeClaim
 
 
@@ -41,6 +42,8 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
     unknown_count = 0
     unsupported_query_count = 0
     false_verified_count = 0
+    stability_threshold_used = 2
+    tracker = InferenceStabilityTracker()
 
     for case in cases:
         key = (case["subject"], case["relation"], case["object"])
@@ -76,8 +79,10 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
             explicit_answer_count += 1
         elif resolution_type == InferenceType.INVERSE:
             inverse_inferred_count += 1
+            tracker.record("|".join(key), InferenceType.INVERSE.value)
         elif resolution_type == InferenceType.TRANSITIVE:
             transitive_inferred_count += 1
+            tracker.record("|".join(key), InferenceType.TRANSITIVE.value)
         elif resolution_type == InferenceType.UNSUPPORTED:
             unsupported_query_count += 1
         else:
@@ -97,6 +102,7 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
     answered = verified + candidate
     query_latency_ms = round((time.perf_counter() - query_started) * 1000, 3)
     compression_metrics = _compression_metrics(pack_path)
+    stable_inferred_count = len(tracker.get_stable(stability_threshold_used))
     return {
         "status": "COVERAGE_COMPLETE" if incorrect == 0 else "COVERAGE_MISMATCH",
         "pack_path": str(pack_path),
@@ -118,6 +124,8 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
         "unknown_count": unknown_count,
         "unsupported_query_count": unsupported_query_count,
         "false_verified_count": false_verified_count,
+        "stable_inferred_count": stable_inferred_count,
+        "stability_threshold_used": stability_threshold_used,
         "compression_ratio": compression_metrics["compression_ratio"],
         "compressed_size": compression_metrics["compressed_size"],
         "uncompressed_size": compression_metrics["uncompressed_size"],
@@ -145,6 +153,8 @@ def format_coverage_text(summary: dict[str, Any]) -> str:
         f"  unknown_count: {summary['unknown_count']}",
         f"  unsupported_query_count: {summary['unsupported_query_count']}",
         f"  false_verified_count: {summary['false_verified_count']}",
+        f"  stable_inferred_count: {summary['stable_inferred_count']}",
+        f"  stability_threshold_used: {summary['stability_threshold_used']}",
         f"verified_rate: {summary['verified_rate']}",
         f"candidate_rate: {summary['candidate_rate']}",
         f"unknown_rate: {summary['unknown_rate']}",

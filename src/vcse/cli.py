@@ -11,7 +11,7 @@ from pathlib import Path
 
 from vcse.benchmark import BenchmarkCaseError, format_benchmark_text, run_benchmark
 from vcse.benchmark_coverage import CoverageBenchmarkError, format_coverage_text, run_coverage_benchmark
-from vcse.benchmark_inference_classification import InferenceType
+from vcse.benchmark_inference_classification import InferenceType, classify_resolution_for_claim
 from vcse.config import load_settings
 from vcse.dsl import DSLCompiler, DSLLoader, DSLValidator, GLOBAL_REGISTRY
 from vcse.dsl.errors import DSLError
@@ -33,6 +33,7 @@ from vcse.inference.explanation import (
 )
 from vcse.inference.inverse import infer_inverse_claims
 from vcse.inference.transitive import infer_transitive_claims
+from vcse.inference.stability import InferenceObservation, InferenceStabilityTracker
 from vcse.index import SymbolicRetriever
 from vcse.engine import CaseValidationError, build_search, state_from_case
 from vcse.ingestion.pipeline import IngestionError, ingest_file
@@ -1928,6 +1929,126 @@ def run_infer_transitive(pack_spec: str, json_output: bool = False) -> str:
     return "\n".join(lines)
 
 
+def _default_coverage_benchmark_path() -> Path:
+    return Path("benchmarks") / "general_knowledge.jsonl"
+
+
+def _collect_inference_observations(
+    *,
+    pack_spec: str,
+    benchmark_path: Path | None = None,
+) -> list[InferenceObservation]:
+    _, preload_claims, _ = resolve_runtime_inputs(dsl_path=None, pack_values=[pack_spec], packs_csv=None)
+    claim_models = _knowledge_claims_from_dict_claims(preload_claims)
+    tracker = InferenceStabilityTracker()
+    path = benchmark_path or _default_coverage_benchmark_path()
+    for line in path.read_text().splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        subject = str(row.get("subject", "")).strip()
+        relation = str(row.get("relation", "")).strip()
+        obj = str(row.get("object", "")).strip()
+        if not subject or not relation or not obj:
+            continue
+        resolution_type = classify_resolution_for_claim(
+            claim_models,
+            subject=subject,
+            relation=relation,
+            object_=obj,
+        )
+        if resolution_type in {InferenceType.INVERSE, InferenceType.TRANSITIVE}:
+            tracker.record("|".join([subject, relation, obj]), resolution_type.value)
+    return tracker.get_counts()
+
+
+def run_infer_stability(
+    pack_spec: str,
+    threshold: int = 2,
+    benchmark_path: Path | None = None,
+    json_output: bool = False,
+) -> str:
+    if threshold < 1:
+        raise ValueError("INVALID_THRESHOLD: --threshold must be >= 1")
+    observations = _collect_inference_observations(pack_spec=pack_spec, benchmark_path=benchmark_path)
+    stable = [item for item in observations if item.occurrences >= threshold]
+    inverse_total = sum(1 for item in observations if item.inference_type == InferenceType.INVERSE.value)
+    transitive_total = sum(1 for item in observations if item.inference_type == InferenceType.TRANSITIVE.value)
+    inverse_stable = sum(1 for item in stable if item.inference_type == InferenceType.INVERSE.value)
+    transitive_stable = sum(1 for item in stable if item.inference_type == InferenceType.TRANSITIVE.value)
+    if json_output:
+        payload = {
+            "status": "INFERENCE_STABILITY_COMPLETE",
+            "pack": pack_spec,
+            "benchmark_path": str(benchmark_path or _default_coverage_benchmark_path()),
+            "threshold": threshold,
+            "total_inferred_claims": len(observations),
+            "stable_inferred_claims": len(stable),
+            "inverse_inferred_count": inverse_total,
+            "transitive_inferred_count": transitive_total,
+            "stable_inverse_count": inverse_stable,
+            "stable_transitive_count": transitive_stable,
+        }
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        "status: INFERENCE_STABILITY_COMPLETE",
+        f"pack: {pack_spec}",
+        f"benchmark_path: {benchmark_path or _default_coverage_benchmark_path()}",
+        f"stability_threshold: {threshold}",
+        f"total_inferred_claims: {len(observations)}",
+        f"stable_inferred_claims: {len(stable)}",
+        "breakdown:",
+        f"  inverse: {inverse_total}",
+        f"  transitive: {transitive_total}",
+        f"  stable_inverse: {inverse_stable}",
+        f"  stable_transitive: {transitive_stable}",
+    ]
+    return "\n".join(lines)
+
+
+def run_infer_promote(
+    pack_spec: str,
+    threshold: int = 2,
+    benchmark_path: Path | None = None,
+    json_output: bool = False,
+) -> str:
+    if threshold < 1:
+        raise ValueError("INVALID_THRESHOLD: --threshold must be >= 1")
+    observations = _collect_inference_observations(pack_spec=pack_spec, benchmark_path=benchmark_path)
+    stable = [item for item in observations if item.occurrences >= threshold]
+    stable_sorted = sorted(stable, key=lambda item: (item.claim_key, item.inference_type))
+    if json_output:
+        payload = {
+            "status": "INFERENCE_PROMOTION_CANDIDATES",
+            "pack": pack_spec,
+            "benchmark_path": str(benchmark_path or _default_coverage_benchmark_path()),
+            "threshold": threshold,
+            "stable_inferred_count": len(stable_sorted),
+            "candidates": [
+                {
+                    "subject": item.claim_key.split("|", 2)[0],
+                    "relation": item.claim_key.split("|", 2)[1],
+                    "object": item.claim_key.split("|", 2)[2],
+                    "source_inference": item.inference_type,
+                    "occurrences": item.occurrences,
+                    "target_tier": "T0_CANDIDATE",
+                }
+                for item in stable_sorted
+            ],
+        }
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        f"Stable inferred claims (threshold={threshold}):",
+    ]
+    if not stable_sorted:
+        lines.append("- none")
+        return "\n".join(lines)
+    for item in stable_sorted:
+        subject, relation, obj = item.claim_key.split("|", 2)
+        lines.append(f"- {subject} {relation} {obj} ({item.inference_type})")
+    return "\n".join(lines)
+
+
 def _classify_query_type(text: str):
     from vcse.interaction.response_modes import QueryType
 
@@ -2232,6 +2353,16 @@ def main(argv: list[str] | None = None) -> None:
     infer_transitive_parser = infer_subparsers.add_parser("transitive")
     infer_transitive_parser.add_argument("--pack", required=True)
     infer_transitive_parser.add_argument("--json", action="store_true", dest="json_output")
+    infer_stability_parser = infer_subparsers.add_parser("stability")
+    infer_stability_parser.add_argument("--pack", required=True)
+    infer_stability_parser.add_argument("--threshold", type=int, default=2)
+    infer_stability_parser.add_argument("--benchmark", type=Path)
+    infer_stability_parser.add_argument("--json", action="store_true", dest="json_output")
+    infer_promote_parser = infer_subparsers.add_parser("promote")
+    infer_promote_parser.add_argument("--pack", required=True)
+    infer_promote_parser.add_argument("--threshold", type=int, default=2)
+    infer_promote_parser.add_argument("--benchmark", type=Path)
+    infer_promote_parser.add_argument("--json", action="store_true", dest="json_output")
 
     ledger_parser = subparsers.add_parser("ledger")
     ledger_subparsers = ledger_parser.add_subparsers(dest="ledger_command")
@@ -2622,6 +2753,26 @@ def main(argv: list[str] | None = None) -> None:
                 return
             if args.infer_command == "transitive":
                 print(run_infer_transitive(args.pack, json_output=args.json_output))
+                return
+            if args.infer_command == "stability":
+                print(
+                    run_infer_stability(
+                        args.pack,
+                        threshold=args.threshold,
+                        benchmark_path=args.benchmark,
+                        json_output=args.json_output,
+                    )
+                )
+                return
+            if args.infer_command == "promote":
+                print(
+                    run_infer_promote(
+                        args.pack,
+                        threshold=args.threshold,
+                        benchmark_path=args.benchmark,
+                        json_output=args.json_output,
+                    )
+                )
                 return
         if args.command == "ledger":
             if args.ledger_command == "verify":
