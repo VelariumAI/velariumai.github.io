@@ -25,6 +25,11 @@ from vcse.gauntlet import (
     render_gauntlet_summary,
 )
 from vcse.generation import GenerationError, VerifiedGenerator, spec_from_dict
+from vcse.inference.explanation import (
+    InferenceExplanation,
+    build_inverse_explanation,
+    build_transitive_explanation,
+)
 from vcse.inference.inverse import infer_inverse_claims
 from vcse.inference.transitive import infer_transitive_claims
 from vcse.index import SymbolicRetriever
@@ -186,6 +191,7 @@ def run_ask(
     preload_claims: list[dict[str, str]] | None = None,
     preload_constraints: list[Constraint] | None = None,
     allow_query_normalization: bool = True,
+    explain_inferred: bool = True,
 ) -> str:
     """Handle vcse ask command."""
     from vcse.interaction.session import Session, TurnRecord
@@ -195,7 +201,11 @@ def run_ask(
 
     query_type = _classify_query_type(text)
 
-    def _render_result(session: Session, result) -> str:
+    def _render_result(
+        session: Session,
+        result,
+        inferred_explanation: InferenceExplanation | None = None,
+    ) -> str:
         if result is None:
             return "No result."
         if hasattr(result, "user_message"):
@@ -209,6 +219,7 @@ def run_ask(
                 session.history[-1].runtime_bundle if session.history else dsl_bundle
             ),
             query_type=query_type,
+            inferred_explanation=inferred_explanation if explain_inferred else None,
         )
 
     def _run_existing() -> str:
@@ -286,9 +297,12 @@ def run_ask(
         obj = body[marker_index + len(marker):].strip()
         if not subject or not obj:
             return None
-        goal = _goal_from_boolean_capital_query(subject, obj, preload_claims or [])
-        if goal is None:
+        goal_result = _goal_from_boolean_capital_query(subject, obj, preload_claims or [])
+        if goal_result is None:
             return None
+        goal, inferred_explanation = goal_result
+        if inferred_explanation is not None and explain_inferred:
+            return _render_inferred_boolean(goal, inferred_explanation)
         g_subject, g_relation, g_object = goal
         session = Session.create(
             dsl_bundle=dsl_bundle,
@@ -317,7 +331,7 @@ def run_ask(
             return None
         return _render_result(session, result)
 
-    def _run_inverse_capital_fact_lookup() -> str | None:
+    def _run_inverse_capital_fact_lookup() -> tuple[str, InferenceExplanation | None] | None:
         clean = text.strip()
         low = clean.lower()
         prefix = "what is "
@@ -336,19 +350,21 @@ def run_ask(
             }
         )
         if len(explicit_values) == 1:
-            return explicit_values[0]
+            return explicit_values[0], None
         inferred_values = sorted(
-            {
-                claim.object
+            [
+                claim
                 for claim in infer_inverse_claims(explicit_claims)
                 if claim.subject.lower() == city.lower() and claim.relation.lower() == "capital_of"
-            }
+            ],
+            key=lambda claim: claim.key,
         )
         if len(inferred_values) == 1:
-            return inferred_values[0]
+            inferred = inferred_values[0]
+            return inferred.object, build_inverse_explanation(inferred)
         return None
 
-    def _run_continent_lookup() -> str | None:
+    def _run_continent_lookup() -> tuple[str, InferenceExplanation | None] | None:
         clean = text.strip()
         low = clean.lower()
         prefix = "what continent is "
@@ -367,25 +383,33 @@ def run_ask(
             }
         )
         if len(explicit_values) == 1:
-            return explicit_values[0]
+            return explicit_values[0], None
         inferred_values = sorted(
-            {
-                claim.object
+            [
+                claim
                 for claim in infer_transitive_claims(explicit_claims)
                 if claim.subject.lower() == subject.lower() and claim.relation.lower() == "located_in_region"
-            }
+            ],
+            key=lambda claim: claim.key,
         )
         if len(inferred_values) == 1:
-            return inferred_values[0]
+            inferred = inferred_values[0]
+            return inferred.object, build_transitive_explanation(inferred)
         return None
 
     def _run() -> str:
         continent = _run_continent_lookup()
         if continent is not None:
-            return continent
+            answer, inferred_explanation = continent
+            if inferred_explanation is None or not explain_inferred:
+                return answer
+            return _render_inferred_answer(answer, inferred_explanation)
         inverse_capital = _run_inverse_capital_fact_lookup()
         if inverse_capital is not None:
-            return inverse_capital
+            answer, inferred_explanation = inverse_capital
+            if inferred_explanation is None or not explain_inferred:
+                return answer
+            return _render_inferred_answer(answer, inferred_explanation)
         boolean_capital = _run_boolean_capital_check()
         if boolean_capital is not None:
             return boolean_capital
@@ -411,6 +435,45 @@ def run_ask(
         for name, count in result.counters.items():
             lines.append(f"    {name}: {count}")
     return "\n".join(lines)
+
+
+def _render_inferred_answer(
+    answer_object: str,
+    inferred_explanation: InferenceExplanation,
+) -> str:
+    from vcse.interaction.response_modes import QueryType, ResponseMode, render_response
+    from vcse.verifier.final_state import FinalStateEvaluation, FinalStatus
+
+    conclusion_subject, conclusion_relation, _ = inferred_explanation.conclusion
+    evaluation = FinalStateEvaluation(
+        status=FinalStatus.VERIFIED,
+        answer=f"{conclusion_subject} {conclusion_relation} {answer_object}",
+    )
+    return render_response(
+        evaluation,
+        ResponseMode.EXPLAIN,
+        query_type=QueryType.FACT,
+        inferred_explanation=inferred_explanation,
+    )
+
+
+def _render_inferred_boolean(
+    goal: tuple[str, str, str],
+    inferred_explanation: InferenceExplanation,
+) -> str:
+    from vcse.interaction.response_modes import QueryType, ResponseMode, render_response
+    from vcse.verifier.final_state import FinalStateEvaluation, FinalStatus
+
+    evaluation = FinalStateEvaluation(
+        status=FinalStatus.VERIFIED,
+        answer=" ".join(goal),
+    )
+    return render_response(
+        evaluation,
+        ResponseMode.EXPLAIN,
+        query_type=QueryType.BOOLEAN,
+        inferred_explanation=inferred_explanation,
+    )
 
 
 def _renderer_templates_from_bundle(dsl_bundle) -> dict[str, str]:
@@ -1703,7 +1766,7 @@ def _goal_from_boolean_capital_query(
     subject: str,
     obj: str,
     preload_claims: list[dict[str, str]],
-) -> tuple[str, str, str] | None:
+) -> tuple[tuple[str, str, str], InferenceExplanation | None] | None:
     subject_clean = subject.strip()
     obj_clean = obj.strip()
     if not subject_clean or not obj_clean:
@@ -1715,22 +1778,28 @@ def _goal_from_boolean_capital_query(
         r = str(claim.get("relation", "")).strip()
         o = str(claim.get("object", "")).strip()
         if s.lower() == subject_clean.lower() and r.lower() == "capital_of" and o.lower() == obj_clean.lower():
-            return s, r, o
+            return (s, r, o), None
         if s.lower() == obj_clean.lower() and r.lower() == "has_capital" and o.lower() == subject_clean.lower():
-            return s, r, o
+            return (s, r, o), None
     for claim in inferred_claims:
         if (
             claim.subject.lower() == subject_clean.lower()
             and claim.relation.lower() == "capital_of"
             and claim.object.lower() == obj_clean.lower()
         ):
-            return claim.subject, claim.relation, claim.object
+            return (
+                (claim.subject, claim.relation, claim.object),
+                build_inverse_explanation(claim),
+            )
         if (
             claim.subject.lower() == obj_clean.lower()
             and claim.relation.lower() == "has_capital"
             and claim.object.lower() == subject_clean.lower()
         ):
-            return claim.subject, claim.relation, claim.object
+            return (
+                (claim.subject, claim.relation, claim.object),
+                build_inverse_explanation(claim),
+            )
     return None
 
 
@@ -1988,6 +2057,7 @@ def main(argv: list[str] | None = None) -> None:
     ask_parser.add_argument("--top-k", type=int, dest="top_k_rules")
     ask_parser.add_argument("--top-k-packs", type=int, dest="top_k_packs")
     ask_parser.add_argument("--profile", action="store_true")
+    ask_parser.add_argument("--no-explain", action="store_true")
 
     normalize_parser = subparsers.add_parser("normalize")
     normalize_parser.add_argument("text", nargs="*", default=[])
@@ -2377,6 +2447,7 @@ def main(argv: list[str] | None = None) -> None:
                     preload_claims=preload_claims,
                     preload_constraints=preload_constraints,
                     allow_query_normalization=(args.dsl is None),
+                    explain_inferred=(not args.no_explain),
                 )
             )
             return

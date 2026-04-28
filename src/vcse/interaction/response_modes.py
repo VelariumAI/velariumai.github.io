@@ -3,9 +3,13 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import TYPE_CHECKING
 from vcse.memory.world_state import TruthStatus, WorldStateMemory
 from vcse.search.result import SearchResult
 from vcse.verifier.final_state import FinalStateEvaluation
+
+if TYPE_CHECKING:
+    from vcse.inference.explanation import InferenceExplanation
 
 
 class ResponseMode(Enum):
@@ -29,6 +33,7 @@ RELATION_DISPLAY_MAP = {
     "uses_currency": "uses",
     "language_of": "is a language of",
     "has_country_code": "has country code",
+    "located_in_country": "is in",
     "located_in_region": "is in the",
     "located_in_subregion": "is in the",
 }
@@ -43,6 +48,7 @@ def render_response(
     state: WorldStateMemory | None = None,
     renderer_templates: dict[str, str] | None = None,
     query_type: QueryType = QueryType.BOOLEAN,
+    inferred_explanation: "InferenceExplanation | None" = None,
 ) -> str:
     """Render evaluated result in the specified mode."""
     search_result = evaluation if isinstance(evaluation, SearchResult) else None
@@ -50,9 +56,20 @@ def render_response(
     render_state = search_result.state if search_result is not None else state
 
     if mode == ResponseMode.SIMPLE:
-        return _render_simple(final, renderer_templates=renderer_templates, query_type=query_type)
+        return _render_simple(
+            final,
+            renderer_templates=renderer_templates,
+            query_type=query_type,
+            inferred_explanation=inferred_explanation,
+        )
     elif mode == ResponseMode.EXPLAIN:
-        return _render_explain(final, render_state, renderer_templates=renderer_templates, query_type=query_type)
+        return _render_explain(
+            final,
+            render_state,
+            renderer_templates=renderer_templates,
+            query_type=query_type,
+            inferred_explanation=inferred_explanation,
+        )
     elif mode == ResponseMode.DEBUG:
         return _render_debug(final, search_result, render_state, renderer_templates=renderer_templates)
     else:  # STRICT
@@ -63,6 +80,7 @@ def _render_simple(
     evaluation: FinalStateEvaluation,
     renderer_templates: dict[str, str] | None = None,
     query_type: QueryType = QueryType.BOOLEAN,
+    inferred_explanation: "InferenceExplanation | None" = None,
 ) -> str:
     """Simple yes/no style response."""
     status = evaluation.status.value
@@ -73,6 +91,13 @@ def _render_simple(
     )
 
     if status == "VERIFIED":
+        if inferred_explanation is not None and answer is not None:
+            return _render_inferred_with_bullets(
+                answer=answer,
+                query_type=query_type,
+                explanation=inferred_explanation,
+                renderer_templates=renderer_templates,
+            )
         if query_type == QueryType.FACT:
             return f"{answer or 'verified'}."
         return f"Yes — {answer or 'verified'}."
@@ -177,6 +202,7 @@ def _render_explain(
     state: WorldStateMemory | None,
     renderer_templates: dict[str, str] | None = None,
     query_type: QueryType = QueryType.BOOLEAN,
+    inferred_explanation: "InferenceExplanation | None" = None,
 ) -> str:
     """Explain with reasoning."""
     status = evaluation.status.value
@@ -186,6 +212,13 @@ def _render_explain(
         renderer_templates=renderer_templates,
     )
 
+    if status == "VERIFIED" and inferred_explanation is not None and answer is not None:
+        return _render_inferred_with_bullets(
+            answer=answer,
+            query_type=query_type,
+            explanation=inferred_explanation,
+            renderer_templates=renderer_templates,
+        )
     if status == "VERIFIED" and evaluation.proof_trace:
         trace_steps = [
             _humanize_claim(step, include_article_for_is_a=True, renderer_templates=renderer_templates) or step
@@ -206,6 +239,28 @@ def _render_explain(
     elif status == "INCONCLUSIVE":
         return "Insufficient information to verify."
     return f"Status: {status}"
+
+
+def _render_inferred_with_bullets(
+    answer: str,
+    query_type: QueryType,
+    explanation: "InferenceExplanation",
+    renderer_templates: dict[str, str] | None = None,
+) -> str:
+    lines: list[str] = []
+    if query_type == QueryType.FACT:
+        lines.append(f"{answer} because:")
+    else:
+        lines.append(f"Yes — {answer} because:")
+    for step in explanation.steps:
+        canonical = f"{step.subject} {step.relation} {step.object}"
+        human_step = _humanize_claim(
+            canonical,
+            include_article_for_is_a=True,
+            renderer_templates=renderer_templates,
+        ) or canonical
+        lines.append(f"- {human_step}.")
+    return "\n".join(lines)
 
 
 def _render_debug(
