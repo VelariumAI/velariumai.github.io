@@ -1141,8 +1141,22 @@ def run_pack_hash(pack_spec: str, json_output: bool = False) -> str:
     )
 
 
-def run_pack_verify(pack_spec: str, json_output: bool = False) -> str:
+def run_pack_verify(
+    pack_spec: str,
+    json_output: bool = False,
+    write_artifacts: bool = False,
+    output_dir: Path | None = None,
+) -> str:
     path = resolve_pack_path(pack_spec)
+    if write_artifacts:
+        import shutil
+        from vcse.packs.integrity import build_manifest
+
+        manifest = build_manifest(path)
+        (path / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+        if output_dir is not None:
+            output_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path / "manifest.json", output_dir / "manifest.json")
     result = verify_pack_integrity(path)
     payload = {"pack": pack_spec, "path": str(path), **result}
     if json_output:
@@ -1185,9 +1199,14 @@ def run_pack_diff(pack_a_spec: str, pack_b_spec: str, json_output: bool = False)
     )
 
 
-def run_pack_sign(pack_spec: str, json_output: bool = False) -> str:
+def run_pack_sign(
+    pack_spec: str,
+    json_output: bool = False,
+    write_artifacts: bool = False,
+    output_dir: Path | None = None,
+) -> str:
     path = resolve_pack_path(pack_spec)
-    result = sign_pack_manifest(path)
+    result = sign_pack_manifest(path, write_artifacts=write_artifacts, output_dir=output_dir)
     payload = {"status": "PACK_SIGNED", "pack": pack_spec, "path": str(path), **result}
     if json_output:
         return json.dumps(payload, sort_keys=True)
@@ -1782,6 +1801,8 @@ def main(argv: list[str] | None = None) -> None:
     pack_verify_parser.add_argument("pack")
     pack_verify_parser.add_argument("--json", action="store_true", dest="json_output")
     pack_verify_parser.add_argument("--strict", action="store_true")
+    pack_verify_parser.add_argument("--write-artifacts", action="store_true")
+    pack_verify_parser.add_argument("--output-dir", type=Path)
     pack_diff_parser = pack_subparsers.add_parser("diff")
     pack_diff_parser.add_argument("pack_a")
     pack_diff_parser.add_argument("pack_b")
@@ -1789,6 +1810,8 @@ def main(argv: list[str] | None = None) -> None:
     pack_sign_parser = pack_subparsers.add_parser("sign")
     pack_sign_parser.add_argument("pack")
     pack_sign_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_sign_parser.add_argument("--write-artifacts", action="store_true")
+    pack_sign_parser.add_argument("--output-dir", type=Path)
     pack_verify_sig_parser = pack_subparsers.add_parser("verify-signature")
     pack_verify_sig_parser.add_argument("pack")
     pack_verify_sig_parser.add_argument("--json", action="store_true", dest="json_output")
@@ -2122,7 +2145,12 @@ def main(argv: list[str] | None = None) -> None:
                 print(run_pack_hash(args.pack, json_output=args.json_output))
                 return
             if args.pack_command == "verify":
-                text = run_pack_verify(args.pack, json_output=args.json_output)
+                text = run_pack_verify(
+                    args.pack,
+                    json_output=args.json_output,
+                    write_artifacts=args.write_artifacts,
+                    output_dir=args.output_dir,
+                )
                 print(text)
                 if args.strict:
                     if args.json_output:
@@ -2136,7 +2164,14 @@ def main(argv: list[str] | None = None) -> None:
                 print(run_pack_diff(args.pack_a, args.pack_b, json_output=args.json_output))
                 return
             if args.pack_command == "sign":
-                print(run_pack_sign(args.pack, json_output=args.json_output))
+                print(
+                    run_pack_sign(
+                        args.pack,
+                        json_output=args.json_output,
+                        write_artifacts=args.write_artifacts,
+                        output_dir=args.output_dir,
+                    )
+                )
                 return
             if args.pack_command == "verify-signature":
                 text = run_pack_verify_signature(args.pack, json_output=args.json_output)

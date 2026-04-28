@@ -41,6 +41,16 @@ On failure, CI uploads diagnostic artifacts when present:
 - `/tmp/cake_report.json`
 - `.pytest_cache`
 
+## Artifact Policy
+
+Example packs under `examples/packs/*` are immutable test fixtures.
+
+- Generated integrity artifacts are not tracked:
+  - `manifest.json`
+  - `pack_signature.json`
+- Runtime verification/signing should not mutate tracked example files by default.
+- If integrity artifacts are needed, generate them explicitly using CLI write flags and/or an output directory.
+
 ## Reproducing CI Locally
 
 Run from repository root:

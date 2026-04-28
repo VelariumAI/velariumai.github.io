@@ -90,6 +90,9 @@ jobs:
           print("coverage and telemetry checks passed")
           PY
 
+      - name: Enforce clean working tree
+        run: git diff --exit-code
+
       - name: Upload artifacts on failure
         if: failure()
         uses: actions/upload-artifact@v4

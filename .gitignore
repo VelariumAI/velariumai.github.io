@@ -7,3 +7,7 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+
+# VCSE generated integrity artifacts
+examples/packs/**/manifest.json
+examples/packs/**/pack_signature.json

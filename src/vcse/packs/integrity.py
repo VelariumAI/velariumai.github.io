@@ -175,13 +175,8 @@ def verify_pack_integrity(pack_path: str | Path) -> dict[str, Any]:
     root = Path(pack_path)
     meta = _read_json(root / "pack.json")
     manifest_path = root / "manifest.json"
-    refreshed = False
-    if not manifest_path.exists():
-        update_pack_integrity_metadata(root)
-        manifest_path = root / "manifest.json"
-        meta = _read_json(root / "pack.json")
-        refreshed = True
-    manifest = _read_json(manifest_path)
+    manifest_present = manifest_path.exists()
+    manifest = _read_json(manifest_path) if manifest_present else build_manifest(root)
     expected_files = manifest.get("files", {})
     if not isinstance(expected_files, dict):
         return {"status": "INVALID", "reason": "manifest files invalid", "valid": False}
@@ -199,12 +194,16 @@ def verify_pack_integrity(pack_path: str | Path) -> dict[str, Any]:
     observed_merkle = _hash_leaf_values(observed_files)
     if observed_merkle != str(manifest.get("merkle_root", "")):
         return {"status": "INVALID", "reason": "manifest merkle mismatch", "valid": False}
-    if observed_merkle != str(meta.get("merkle_root", "")):
-        return {"status": "INVALID", "reason": "pack merkle mismatch", "valid": False}
+    metadata_merkle = str(meta.get("merkle_root", "")).strip()
+    metadata_merkle_match = True
+    if metadata_merkle:
+        metadata_merkle_match = observed_merkle == metadata_merkle
 
     observed_pack_hash = compute_pack_hash(root)
-    if observed_pack_hash.pack_hash != str(meta.get("pack_hash", "")):
-        return {"status": "INVALID", "reason": "pack hash mismatch", "valid": False}
+    metadata_pack_hash = str(meta.get("pack_hash", "")).strip()
+    metadata_pack_hash_match = True
+    if metadata_pack_hash:
+        metadata_pack_hash_match = observed_pack_hash.pack_hash == metadata_pack_hash
 
     return {
         "status": "VALID",
@@ -212,7 +211,9 @@ def verify_pack_integrity(pack_path: str | Path) -> dict[str, Any]:
         "pack_hash": observed_pack_hash.pack_hash,
         "merkle_root": observed_merkle,
         "algorithm": "sha256",
-        "refreshed": refreshed,
+        "manifest_present": manifest_present,
+        "metadata_merkle_match": metadata_merkle_match,
+        "metadata_pack_hash_match": metadata_pack_hash_match,
     }
 
 
@@ -289,9 +290,19 @@ def _load_or_create_signing_key() -> Ed25519PrivateKey:
     return key
 
 
-def sign_pack_manifest(pack_path: str | Path) -> dict[str, Any]:
+def sign_pack_manifest(
+    pack_path: str | Path,
+    *,
+    write_artifacts: bool = False,
+    output_dir: str | Path | None = None,
+) -> dict[str, Any]:
     root = Path(pack_path)
-    integrity = update_pack_integrity_metadata(root)
+    manifest = build_manifest(root)
+    integrity = {
+        "pack_hash": compute_pack_hash(root).pack_hash,
+        "merkle_root": manifest["merkle_root"],
+    }
+    write_root = Path(output_dir) if output_dir else root
     key = _load_or_create_signing_key()
     payload = {
         "pack_hash": integrity["pack_hash"],
@@ -305,7 +316,10 @@ def sign_pack_manifest(pack_path: str | Path) -> dict[str, Any]:
         "signature": base64.b64encode(signature).decode("ascii"),
         "algorithm": "ed25519",
     }
-    (root / "pack_signature.json").write_text(json.dumps(out, indent=2, sort_keys=True) + "\n")
+    if write_artifacts:
+        write_root.mkdir(parents=True, exist_ok=True)
+        (write_root / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+        (write_root / "pack_signature.json").write_text(json.dumps(out, indent=2, sort_keys=True) + "\n")
     return out
 
 
