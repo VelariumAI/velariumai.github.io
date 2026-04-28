@@ -47,6 +47,15 @@ from vcse.perf import profile_result, profile_run
 from vcse.ledger import LedgerError, LedgerStore, build_integrity, export_ledger, verify_ledger, verify_pack_ledger
 from vcse.renderer.explanation import ExplanationRenderer
 from vcse.trust import TrustError, TrustPromoter, load_policy
+from vcse.compression.metrics import compute_metrics as compression_compute_metrics
+from vcse.compression import (
+    optimize_pack,
+    save_compressed,
+    load_compressed,
+    verify_integrity,
+    format_metrics,
+    CompressionError,
+)
 
 
 def build_logic_demo_state() -> WorldStateMemory:
@@ -1234,6 +1243,25 @@ def main(argv: list[str] | None = None) -> None:
     ledger_export_parser.add_argument("--output", required=True, type=Path)
     ledger_export_parser.add_argument("--json", action="store_true", dest="json_output")
 
+    compress_parser = subparsers.add_parser("compress")
+    compress_subparsers = compress_parser.add_subparsers(dest="compress_command")
+    compress_pack_parser = compress_subparsers.add_parser("pack")
+    compress_pack_parser.add_argument("target")
+    compress_pack_parser.add_argument("--output", required=True, type=Path)
+    compress_pack_parser.add_argument("--json", action="store_true", dest="json_output")
+    compress_stats_parser = compress_subparsers.add_parser("stats")
+    compress_stats_parser.add_argument("target")
+    compress_stats_parser.add_argument("--json", action="store_true", dest="json_output")
+    decompress_parser = subparsers.add_parser("decompress")
+    decompress_subparsers = decompress_parser.add_subparsers(dest="decompress_command")
+    decompress_pack_parser = decompress_subparsers.add_parser("pack")
+    decompress_pack_parser.add_argument("target")
+    decompress_pack_parser.add_argument("--output", required=True, type=Path)
+    decompress_pack_parser.add_argument("--json", action="store_true", dest="json_output")
+    decompress_verify_parser = decompress_subparsers.add_parser("verify")
+    decompress_verify_parser.add_argument("target")
+    decompress_verify_parser.add_argument("--json", action="store_true", dest="json_output")
+
     try:
         args = parser.parse_args(argv)
         settings = load_settings(args.config)
@@ -1453,6 +1481,56 @@ def main(argv: list[str] | None = None) -> None:
                 return
             if args.ledger_command == "export":
                 print(run_ledger_export(Path(args.target), args.output, json_output=args.json_output))
+                return
+        if args.command == "compress":
+            if args.compress_command == "pack":
+                try:
+                    pack = optimize_pack(Path(args.target))
+                    save_compressed(pack, args.output)
+                    msg = f"status: COMPRESSED\noutput: {args.output}\n"
+                    msg += f"original_claims: {pack.metrics.get('original_claims', 0)}\n"
+                    msg += f"compressed_claims: {pack.metrics.get('compressed_claims', 0)}\n"
+                    msg += f"unique_strings: {pack.metrics.get('unique_strings', 0)}\n"
+                    msg += f"original_size: {pack.metrics.get('original_size_bytes', 0)} bytes\n"
+                    msg += f"compressed_size: {pack.metrics.get('compressed_size_bytes', 0)} bytes\n"
+                    msg += f"compression_ratio: {pack.metrics.get('compression_ratio', 0)}\n"
+                    print(msg if not args.json_output else json.dumps({"status": "COMPRESSED", "output": str(args.output), "metrics": pack.metrics}))
+                except CompressionError as exc:
+                    print(f"status: ERROR\nerror_type: {exc.code}\nmessage: {exc.message}")
+                    raise SystemExit(2)
+                return
+            if args.compress_command == "stats":
+                try:
+                    metrics = compression_compute_metrics(Path(args.target))
+                    if not metrics:
+                        print("status: NO_METRICS\nmessage: not a compressed pack")
+                        return
+                    print(format_metrics(metrics) if not args.json_output else json.dumps({"status": "STATS", "metrics": metrics}))
+                except Exception as exc:
+                    print(f"status: ERROR\nmessage: {exc}")
+                    raise SystemExit(2)
+                return
+        if args.command == "decompress":
+            if args.decompress_command == "pack":
+                try:
+                    loaded = load_compressed(Path(args.target))
+                    save_compressed(loaded, args.output)
+                    print(f"status: DECOMPRESSED\noutput: {args.output}\nclaims: {len(loaded.original_claims)}")
+                except CompressionError as exc:
+                    print(f"status: ERROR\nerror_type: {exc.code}\nmessage: {exc.message}")
+                    raise SystemExit(2)
+                return
+            if args.decompress_command == "verify":
+                try:
+                    result = verify_integrity(Path(args.target))
+                    status_str = "status: VALID" if result.get("valid") else f"status: {result.get('status', 'INVALID')}"
+                    result_str = format_metrics(result) if not args.json_output else json.dumps(result)
+                    print(f"{status_str}\n{result_str}")
+                    if not result.get("valid"):
+                        raise SystemExit(2)
+                except CompressionError as exc:
+                    print(f"status: ERROR\nerror_type: {exc.code}\nmessage: {exc.message}")
+                    raise SystemExit(2)
                 return
         if args.command == "dsl":
             if args.dsl_command == "validate":
