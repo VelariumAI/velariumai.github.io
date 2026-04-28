@@ -8,6 +8,7 @@ import json
 import sys
 from contextlib import redirect_stdout
 from pathlib import Path
+from types import SimpleNamespace
 
 from vcse.benchmark import BenchmarkCaseError, format_benchmark_text, run_benchmark
 from vcse.benchmark_coverage import CoverageBenchmarkError, format_coverage_text, run_coverage_benchmark
@@ -34,6 +35,7 @@ from vcse.inference.explanation import (
 from vcse.inference.inverse import infer_inverse_claims
 from vcse.inference.transitive import infer_transitive_claims
 from vcse.inference.stability import InferenceObservation, InferenceStabilityTracker
+from vcse.inference.promotion import promote_stable_claims
 from vcse.index import SymbolicRetriever
 from vcse.engine import CaseValidationError, build_search, state_from_case
 from vcse.ingestion.pipeline import IngestionError, ingest_file
@@ -2011,41 +2013,166 @@ def run_infer_promote(
     threshold: int = 2,
     benchmark_path: Path | None = None,
     json_output: bool = False,
+    write_output: bool = False,
+    output_path: Path | None = None,
+    as_pack: str | None = None,
 ) -> str:
     if threshold < 1:
         raise ValueError("INVALID_THRESHOLD: --threshold must be >= 1")
+    if (output_path is not None or as_pack is not None) and not write_output:
+        raise ValueError("INVALID_PROMOTION_FLAGS: --output/--as-pack require --write")
     observations = _collect_inference_observations(pack_spec=pack_spec, benchmark_path=benchmark_path)
-    stable = [item for item in observations if item.occurrences >= threshold]
-    stable_sorted = sorted(stable, key=lambda item: (item.claim_key, item.inference_type))
+    _, preload_claims, _ = resolve_runtime_inputs(dsl_path=None, pack_values=[pack_spec], packs_csv=None)
+    claim_models = _knowledge_claims_from_dict_claims(preload_claims)
+    inverse_map = {claim.key: (claim.derived_from,) for claim in infer_inverse_claims(claim_models)}
+    transitive_map = {claim.key: tuple(claim.derived_from) for claim in infer_transitive_claims(claim_models)}
+
+    enriched: list[SimpleNamespace] = []
+    for item in observations:
+        if item.occurrences < threshold:
+            continue
+        if item.inference_type == InferenceType.INVERSE.value:
+            sources = inverse_map.get(item.claim_key, ())
+        elif item.inference_type == InferenceType.TRANSITIVE.value:
+            sources = transitive_map.get(item.claim_key, ())
+        else:
+            sources = ()
+        enriched.append(
+            SimpleNamespace(
+                claim_key=item.claim_key,
+                inference_type=item.inference_type,
+                occurrences=item.occurrences,
+                source_claims=tuple(sources),
+            )
+        )
+    stable_sorted = sorted(enriched, key=lambda item: (item.claim_key, item.inference_type))
+    promoted = promote_stable_claims(stable_sorted, threshold=threshold)
+
+    written_paths: list[str] = []
+    if write_output:
+        target = output_path or Path("promoted_claims.jsonl")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        lines = [
+            json.dumps(
+                {
+                    "subject": claim.subject,
+                    "relation": claim.relation,
+                    "object": claim.object,
+                    "source_claims": list(claim.source_claims),
+                    "inference_type": claim.inference_type,
+                    "promoted_at": claim.promoted_at,
+                },
+                sort_keys=True,
+            )
+            for claim in promoted
+        ]
+        target.write_text("\n".join(lines) + ("\n" if lines else ""))
+        written_paths.append(str(target))
+        if as_pack:
+            pack_dir = Path("examples") / "packs" / as_pack
+            pack_dir.mkdir(parents=True, exist_ok=True)
+            claims_lines = [
+                json.dumps(
+                    {
+                        "subject": claim.subject,
+                        "relation": claim.relation,
+                        "object": claim.object,
+                        "trust_tier": "T0_CANDIDATE",
+                        "source_ids": [],
+                        "created_at": claim.promoted_at,
+                        "provenance": {
+                            "source_type": "inference_promotion",
+                            "source_id": pack_spec,
+                            "location": "infer/promote",
+                            "evidence_text": f"{claim.inference_type} from {','.join(claim.source_claims)}",
+                            "confidence": 1.0,
+                            "trust_level": "candidate",
+                        },
+                        "qualifiers": {
+                            "inference_type": claim.inference_type,
+                            "derived_from": list(claim.source_claims),
+                        },
+                        "confidence": 1.0,
+                        "trust_flags": ["PROMOTED_FROM_INFERENCE"],
+                        "claim_hash": "",
+                        "certified_at": None,
+                        "supersedes": None,
+                    },
+                    sort_keys=True,
+                )
+                for claim in promoted
+            ]
+            (pack_dir / "claims.jsonl").write_text("\n".join(claims_lines) + ("\n" if claims_lines else ""))
+            provenance_lines = [
+                json.dumps(
+                    {
+                        "source_type": "inference_promotion",
+                        "source_id": pack_spec,
+                        "location": "infer/promote",
+                        "evidence_text": f"{claim.inference_type} from {','.join(claim.source_claims)}",
+                        "confidence": 1.0,
+                        "trust_level": "candidate",
+                        "inference_type": claim.inference_type,
+                        "derived_from": list(claim.source_claims),
+                        "promoted_at": claim.promoted_at,
+                    },
+                    sort_keys=True,
+                )
+                for claim in promoted
+            ]
+            (pack_dir / "provenance.jsonl").write_text("\n".join(provenance_lines) + ("\n" if provenance_lines else ""))
+            pack_payload = {
+                "id": as_pack,
+                "version": "0.1.0",
+                "domain": "general",
+                "lifecycle_status": "candidate",
+                "created_at": promoted[0].promoted_at if promoted else "",
+                "claim_count": len(promoted),
+                "provenance_count": len(promoted),
+                "constraint_count": 0,
+                "template_count": 0,
+                "conflict_count": 0,
+                "metrics": {
+                    "source_pack": pack_spec,
+                    "promotion_threshold": threshold,
+                },
+            }
+            (pack_dir / "pack.json").write_text(json.dumps(pack_payload, indent=2, sort_keys=True) + "\n")
+            written_paths.append(str(pack_dir))
+
     if json_output:
         payload = {
             "status": "INFERENCE_PROMOTION_CANDIDATES",
             "pack": pack_spec,
             "benchmark_path": str(benchmark_path or _default_coverage_benchmark_path()),
             "threshold": threshold,
-            "stable_inferred_count": len(stable_sorted),
+            "stable_inferred_count": len(promoted),
+            "write": write_output,
+            "written_paths": written_paths,
             "candidates": [
                 {
-                    "subject": item.claim_key.split("|", 2)[0],
-                    "relation": item.claim_key.split("|", 2)[1],
-                    "object": item.claim_key.split("|", 2)[2],
+                    "subject": item.subject,
+                    "relation": item.relation,
+                    "object": item.object,
+                    "source_claims": list(item.source_claims),
                     "source_inference": item.inference_type,
-                    "occurrences": item.occurrences,
                     "target_tier": "T0_CANDIDATE",
+                    "promoted_at": item.promoted_at,
                 }
-                for item in stable_sorted
+                for item in promoted
             ],
         }
         return json.dumps(payload, sort_keys=True)
     lines = [
         f"Stable inferred claims (threshold={threshold}):",
     ]
-    if not stable_sorted:
+    if not promoted:
         lines.append("- none")
         return "\n".join(lines)
-    for item in stable_sorted:
-        subject, relation, obj = item.claim_key.split("|", 2)
-        lines.append(f"- {subject} {relation} {obj} ({item.inference_type})")
+    for item in promoted:
+        lines.append(f"- {item.subject} {item.relation} {item.object} ({item.inference_type})")
+    if write_output:
+        lines.append(f"written: {', '.join(written_paths)}")
     return "\n".join(lines)
 
 
@@ -2362,6 +2489,9 @@ def main(argv: list[str] | None = None) -> None:
     infer_promote_parser.add_argument("--pack", required=True)
     infer_promote_parser.add_argument("--threshold", type=int, default=2)
     infer_promote_parser.add_argument("--benchmark", type=Path)
+    infer_promote_parser.add_argument("--write", action="store_true", dest="write_output")
+    infer_promote_parser.add_argument("--output", type=Path)
+    infer_promote_parser.add_argument("--as-pack")
     infer_promote_parser.add_argument("--json", action="store_true", dest="json_output")
 
     ledger_parser = subparsers.add_parser("ledger")
@@ -2771,6 +2901,9 @@ def main(argv: list[str] | None = None) -> None:
                         threshold=args.threshold,
                         benchmark_path=args.benchmark,
                         json_output=args.json_output,
+                        write_output=args.write_output,
+                        output_path=args.output,
+                        as_pack=args.as_pack,
                     )
                 )
                 return
