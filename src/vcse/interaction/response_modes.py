@@ -15,6 +15,10 @@ class ResponseMode(Enum):
     DEBUG = "debug"
     STRICT = "strict"
 
+class QueryType(Enum):
+    FACT = "FACT"
+    BOOLEAN = "BOOLEAN"
+
 
 RELATION_DISPLAY_MAP = {
     "is_a": "is",
@@ -33,6 +37,7 @@ def render_response(
     mode: ResponseMode,
     state: WorldStateMemory | None = None,
     renderer_templates: dict[str, str] | None = None,
+    query_type: QueryType = QueryType.BOOLEAN,
 ) -> str:
     """Render evaluated result in the specified mode."""
     search_result = evaluation if isinstance(evaluation, SearchResult) else None
@@ -40,9 +45,9 @@ def render_response(
     render_state = search_result.state if search_result is not None else state
 
     if mode == ResponseMode.SIMPLE:
-        return _render_simple(final, renderer_templates=renderer_templates)
+        return _render_simple(final, renderer_templates=renderer_templates, query_type=query_type)
     elif mode == ResponseMode.EXPLAIN:
-        return _render_explain(final, render_state, renderer_templates=renderer_templates)
+        return _render_explain(final, render_state, renderer_templates=renderer_templates, query_type=query_type)
     elif mode == ResponseMode.DEBUG:
         return _render_debug(final, search_result, render_state, renderer_templates=renderer_templates)
     else:  # STRICT
@@ -52,6 +57,7 @@ def render_response(
 def _render_simple(
     evaluation: FinalStateEvaluation,
     renderer_templates: dict[str, str] | None = None,
+    query_type: QueryType = QueryType.BOOLEAN,
 ) -> str:
     """Simple yes/no style response."""
     status = evaluation.status.value
@@ -62,6 +68,8 @@ def _render_simple(
     )
 
     if status == "VERIFIED":
+        if query_type == QueryType.FACT:
+            return f"{answer or 'verified'}."
         return f"Yes — {answer or 'verified'}."
     elif status == "CONTRADICTORY":
         return "Contradiction detected."
@@ -146,6 +154,7 @@ def _render_explain(
     evaluation: FinalStateEvaluation,
     state: WorldStateMemory | None,
     renderer_templates: dict[str, str] | None = None,
+    query_type: QueryType = QueryType.BOOLEAN,
 ) -> str:
     """Explain with reasoning."""
     status = evaluation.status.value
@@ -156,10 +165,15 @@ def _render_explain(
     )
 
     if status == "VERIFIED" and evaluation.proof_trace:
-        trace = " → ".join(
+        trace_steps = [
             _humanize_claim(step, include_article_for_is_a=True, renderer_templates=renderer_templates) or step
             for step in evaluation.proof_trace[:3]
-        )
+        ]
+        trace = " → ".join(trace_steps)
+        if query_type == QueryType.FACT:
+            return f"{answer}."
+        if len(trace_steps) == 1 and answer is not None and trace_steps[0] == answer:
+            return f"Yes — {answer}."
         return f"Yes — {answer} because {trace}."
     elif status == "CONTRADICTORY":
         reasons = "; ".join(evaluation.reasons[:2])

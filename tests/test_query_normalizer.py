@@ -61,7 +61,7 @@ def test_query_normalizer_near_matches_fail() -> None:
 def test_ask_uses_normalizer_for_capital_and_falls_back_for_non_pattern() -> None:
     capital = run_cli("ask", "What is the capital of France?", "--pack", "general_world")
     assert capital.returncode == 0
-    assert "Paris is the capital of France" in capital.stdout
+    assert capital.stdout.strip() == "Paris is the capital of France."
     assert "has_capital" not in capital.stdout
 
     fallback = run_cli("ask", "Tell me about France")
@@ -78,3 +78,16 @@ def test_socrates_rendering_still_human_readable() -> None:
     result = run_cli("ask", "All men are mortal. Socrates is a man. Can Socrates die?")
     assert result.returncode == 0
     assert "Socrates is mortal" in result.stdout
+
+
+def test_fact_question_omits_yes_prefix() -> None:
+    result = run_cli("ask", "What is the capital of France?", "--pack", "general_world")
+    assert result.returncode == 0
+    assert result.stdout.strip() == "Paris is the capital of France."
+    assert "Yes —" not in result.stdout
+
+
+def test_boolean_question_keeps_yes_prefix() -> None:
+    result = run_cli("ask", "Is Paris the capital of France?", "--pack", "general_world")
+    assert result.returncode == 0
+    assert "Yes —" in result.stdout

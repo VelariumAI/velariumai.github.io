@@ -177,9 +177,11 @@ def run_ask(
 ) -> str:
     """Handle vcse ask command."""
     from vcse.interaction.session import Session, TurnRecord
-    from vcse.interaction.response_modes import ResponseMode, render_response
+    from vcse.interaction.response_modes import QueryType, ResponseMode, render_response
     from vcse.interaction.frames import FrameParseResult, FrameStatus, ClaimFrame, GoalFrame
     from vcse.interaction.query_normalizer import normalize_query
+
+    query_type = _classify_query_type(text)
 
     def _render_result(session: Session, result) -> str:
         if result is None:
@@ -194,6 +196,7 @@ def run_ask(
             renderer_templates=_renderer_templates_from_bundle(
                 session.history[-1].runtime_bundle if session.history else dsl_bundle
             ),
+            query_type=query_type,
         )
 
     def _run_existing() -> str:
@@ -258,7 +261,54 @@ def run_ask(
             return obj
         return _render_result(session, result)
 
+    def _run_boolean_capital_check() -> str | None:
+        clean = text.strip()
+        low = clean.lower()
+        prefix = "is "
+        marker = " the capital of "
+        if not (low.startswith(prefix) and low.endswith("?") and marker in low):
+            return None
+        body = clean[:-1]
+        marker_index = low.find(marker)
+        subject = body[len(prefix):marker_index].strip()
+        obj = body[marker_index + len(marker):].strip()
+        if not subject or not obj:
+            return None
+        goal = _goal_from_boolean_capital_query(subject, obj, preload_claims or [])
+        if goal is None:
+            return None
+        g_subject, g_relation, g_object = goal
+        session = Session.create(
+            dsl_bundle=dsl_bundle,
+            enable_indexing=enable_index,
+            top_k_rules=top_k_rules,
+            top_k_packs=top_k_packs,
+        )
+        session.mode = mode
+        _apply_preloaded_knowledge(session.memory, preload_claims or [], preload_constraints or [])
+        session.history.append(
+            TurnRecord(
+                timestamp="",
+                user_input=text,
+                frames=FrameParseResult(
+                    frames=[
+                        ClaimFrame(subject=g_subject, relation=g_relation, object=g_object, source_text=text),
+                        GoalFrame(subject=g_subject, relation=g_relation, object=g_object, source_text=text),
+                    ],
+                    status=FrameStatus.PARSED,
+                    confidence=1.0,
+                ),
+            )
+        )
+        result = session.solve(enable_ts3=enable_ts3, search_backend=search_backend)
+        if result is None:
+            return None
+        return _render_result(session, result)
+
     def _run() -> str:
+        boolean_capital = _run_boolean_capital_check()
+        if boolean_capital is not None:
+            return boolean_capital
         normalized_output = _run_normalized()
         if normalized_output is not None:
             return normalized_output
@@ -1317,6 +1367,37 @@ def _goal_from_normalized_query(
             return None
 
     return None
+
+
+def _goal_from_boolean_capital_query(
+    subject: str,
+    obj: str,
+    preload_claims: list[dict[str, str]],
+) -> tuple[str, str, str] | None:
+    subject_clean = subject.strip()
+    obj_clean = obj.strip()
+    if not subject_clean or not obj_clean:
+        return None
+    for claim in preload_claims:
+        s = str(claim.get("subject", "")).strip()
+        r = str(claim.get("relation", "")).strip()
+        o = str(claim.get("object", "")).strip()
+        if s.lower() == subject_clean.lower() and r.lower() == "capital_of" and o.lower() == obj_clean.lower():
+            return s, r, o
+        if s.lower() == obj_clean.lower() and r.lower() == "has_capital" and o.lower() == subject_clean.lower():
+            return s, r, o
+    return None
+
+
+def _classify_query_type(text: str):
+    from vcse.interaction.response_modes import QueryType
+
+    clean = text.strip().lower()
+    if clean.startswith(("what ", "who ", "where ", "when ", "which ", "how ")):
+        return QueryType.FACT
+    if clean.startswith(("is ", "are ", "can ", "could ", "would ", "should ", "does ", "do ", "did ")):
+        return QueryType.BOOLEAN
+    return QueryType.BOOLEAN
 
 
 def resolve_pack_activation(pack_values: list[str] | None, packs_csv: str | None):
