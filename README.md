@@ -345,3 +345,20 @@ Inspect inferred inverse claims:
 ```bash
 vcse infer inverse --pack general_world
 ```
+
+## Transitive Location Inference
+
+VCSE v3.4.0 adds bounded two-hop transitive inference for location/containment.
+
+- Approved chains only:
+  - `located_in_country + part_of -> located_in_region`
+  - `located_in_country + located_in_region -> located_in_region`
+- Max inference depth is fixed at 2
+- Explicit claims still win over inferred claims
+- Inferred claims are runtime-only and non-persistent
+
+Inspect inferred transitive claims:
+
+```bash
+vcse infer transitive --pack general_world
+```
