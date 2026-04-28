@@ -76,6 +76,9 @@ vcse gauntlet benchmarks/gauntlet/ --pack vrm.logic.basic
 Gauntlet runs can include activated packs to validate pack-extended runtime
 behavior without changing verifier authority.
 
+Gauntlet remains a release gate for trust promotion workflows: any false
+`VERIFIED` remains critical even when trust/index/TS3 layers are enabled.
+
 Exit codes:
 
 - `0` pass

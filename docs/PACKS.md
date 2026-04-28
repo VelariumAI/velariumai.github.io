@@ -88,3 +88,15 @@ No remote fetching is performed in v2.2.0.
 - hash integrity status
 
 Audit is read-only and does not install or mutate packs.
+
+## Trust Metadata
+
+Trusted packs may include:
+
+- `trust_report.json`
+- `ledger_snapshot.json`
+- `integrity.json`
+- `conflicts.jsonl`
+- `staleness.jsonl`
+
+Missing trust files are warnings for compatibility with older packs.

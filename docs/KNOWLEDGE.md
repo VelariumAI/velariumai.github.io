@@ -79,3 +79,7 @@ Installing a pack is local and deterministic. Existing installed packs are not o
 
 For pack manifests, dependency handling, install/list/info/audit, and runtime
 activation, see [docs/PACKS.md](PACKS.md).
+
+For trust tiers, cross-source validation, conflict/staleness handling, and
+immutable certification history, see [docs/TRUST.md](TRUST.md) and
+[docs/LEDGER.md](LEDGER.md).

@@ -1,0 +1,9 @@
+{
+  "official_government": {"trust_score": 0.95},
+  "standards_body": {"trust_score": 0.9},
+  "academic_reference": {"trust_score": 0.85},
+  "wikidata": {"trust_score": 0.8},
+  "wikipedia": {"trust_score": 0.7},
+  "local_file": {"trust_score": 0.5},
+  "unknown": {"trust_score": 0.2}
+}

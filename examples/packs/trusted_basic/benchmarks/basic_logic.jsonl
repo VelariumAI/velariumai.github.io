@@ -1,0 +1,1 @@
+{"id":"trusted_pack_logic_001","input":"All men are mortal. Socrates is a man. Can Socrates die?","expected_status":"VERIFIED","expected_answer":"Socrates is_a Mortal"}

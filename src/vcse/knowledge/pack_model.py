@@ -46,6 +46,13 @@ class KnowledgeClaim:
     provenance: KnowledgeProvenance
     qualifiers: dict[str, str] = field(default_factory=dict)
     confidence: float = 0.9
+    trust_tier: str = "T0_CANDIDATE"
+    trust_flags: list[str] = field(default_factory=list)
+    source_ids: list[str] = field(default_factory=list)
+    claim_hash: str = ""
+    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    certified_at: str | None = None
+    supersedes: str | None = None
 
     @property
     def key(self) -> str:
@@ -58,6 +65,13 @@ class KnowledgeClaim:
             "object": self.object,
             "qualifiers": dict(sorted(self.qualifiers.items())),
             "confidence": self.confidence,
+            "trust_tier": self.trust_tier,
+            "trust_flags": list(self.trust_flags),
+            "source_ids": list(self.source_ids),
+            "claim_hash": self.claim_hash,
+            "created_at": self.created_at,
+            "certified_at": self.certified_at,
+            "supersedes": self.supersedes,
             "provenance": self.provenance.to_dict(),
         }
 
@@ -69,6 +83,17 @@ class KnowledgeClaim:
             object=str(payload["object"]),
             qualifiers={str(k): str(v) for k, v in payload.get("qualifiers", {}).items()},
             confidence=float(payload.get("confidence", 0.9)),
+            trust_tier=str(payload.get("trust_tier", "T0_CANDIDATE")),
+            trust_flags=[str(item) for item in payload.get("trust_flags", [])],
+            source_ids=[str(item) for item in payload.get("source_ids", [])],
+            claim_hash=str(payload.get("claim_hash", "")),
+            created_at=str(payload.get("created_at", datetime.now(timezone.utc).isoformat())),
+            certified_at=(
+                str(payload.get("certified_at"))
+                if payload.get("certified_at") is not None
+                else None
+            ),
+            supersedes=(str(payload.get("supersedes")) if payload.get("supersedes") is not None else None),
             provenance=KnowledgeProvenance.from_dict(payload.get("provenance", {})),
         )
 

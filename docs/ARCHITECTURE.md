@@ -10,6 +10,8 @@ Input JSON / CLI demo
   -> optional DSL bundle (synonyms/patterns/rules/templates)
   -> optional generation template bundle for `vcse generate`
   -> optional capability pack activation (`--pack` / `--packs`)
+  -> optional trust tier evaluation + promotion policy
+  -> optional immutable ledger append + verification
   -> optional symbolic index + capability retrieval (token/BM25)
   -> deterministic parser
   -> WorldStateMemory
@@ -47,6 +49,10 @@ Input JSON / CLI demo
   relevant artifacts/packs using symbolic tokens and BM25-style scoring.
 - Packs: installable local capability modules with manifest validation,
   dependency resolution, deterministic activation, and audit support.
+- Trust: deterministic tiering, cross-source support checks, conflict scoring,
+  and staleness analysis for claim lifecycle management.
+- Ledger: append-only hash-chain event history plus Merkle integrity snapshots
+  for tamper-evident auditing.
 - Verifiers: judge claims, constraints, contradictions, and goal satisfaction.
 - Renderer: prints evaluated state with no inference or decision logic.
 

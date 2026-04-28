@@ -10,6 +10,7 @@ from typing import Any
 from vcse.knowledge.errors import KnowledgeError
 from vcse.knowledge.pack_model import KnowledgeClaim, KnowledgePack, KnowledgeProvenance
 from vcse.knowledge.registry import installed_pack_root
+from vcse.ledger import build_integrity
 
 
 class KnowledgePackBuilder:
@@ -27,6 +28,10 @@ class KnowledgePackBuilder:
         _write_jsonl(root / "provenance.jsonl", [item.to_dict() for item in provenance])
         _write_jsonl(root / "conflicts.jsonl", [item.to_dict() for item in pack.conflicts])
         _write_json(root / "metrics.json", pack.metrics)
+        _write_json(root / "trust_report.json", {"decisions": [], "conflicts": [], "staleness": []})
+        _write_json(root / "ledger_snapshot.json", [])
+        _write_jsonl(root / "staleness.jsonl", [])
+        _write_json(root / "integrity.json", build_integrity(root))
         return root
 
 

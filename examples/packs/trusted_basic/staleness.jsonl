@@ -1,0 +1,2 @@
+{"age_days": 7, "claim_id": "claim:2", "freshness_days": 365, "reason": "fresh", "stale": false}
+{"age_days": 8, "claim_id": "claim:1", "freshness_days": 365, "reason": "fresh", "stale": false}

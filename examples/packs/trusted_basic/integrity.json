@@ -1,0 +1,10 @@
+{
+  "artifact_hashes": {
+    "claims.jsonl": "1644fff727cbd802a9f3d4654751bf34e1b822a44d30b1d19ce16c932e34ffb7",
+    "dsl/basic_logic.json": "05b17095f7e8d63c9dccf07eb00e64443131ffe820f19e9236c089c042c1183b",
+    "pack.json": "a6e25baeb5ecc19c5d1d8d7ae4dd9181605a000c5de5906d1a9bad8d99b7f120",
+    "provenance.jsonl": "8008844d0a0c7fe8db3cebf9a54016ed871185299ee395e899c8d8083dbb3790"
+  },
+  "generated_at": "2026-04-28T00:20:19.094297+00:00",
+  "merkle_root": "b01645d8ae9cc67ad179fbb70f73704b8e47d83ea75aaea020a85c368a34ca44"
+}

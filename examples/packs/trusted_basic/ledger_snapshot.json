@@ -1,0 +1,42 @@
+[
+  {
+    "claim_id": "claim:2",
+    "event_hash": "2b1de28243b8a273659918944b4c044ba471a96c9ba14805acec0393b48533d8",
+    "event_id": "0a076e97-fe14-4a9c-b5e8-df8879befeec",
+    "event_type": "TRUST_PROMOTED",
+    "pack_id": null,
+    "payload": {
+      "blocking_issues": [
+        "insufficient independent source support or conflicts present"
+      ],
+      "current_tier": "T0_CANDIDATE",
+      "reasons": [
+        "provenance present",
+        "source trust >= threshold (0.85)"
+      ],
+      "recommended_tier": "T2_SOURCE_TRUSTED"
+    },
+    "previous_hash": "GENESIS",
+    "timestamp": "2026-04-28T00:20:19.093378+00:00"
+  },
+  {
+    "claim_id": "claim:1",
+    "event_hash": "11b8cf429b104d094f5581804dcadd6a4d0405906184b132fd94d36bf5e0fbb7",
+    "event_id": "e4c16912-dc7e-4f41-b64b-b507a11e7f95",
+    "event_type": "TRUST_PROMOTED",
+    "pack_id": null,
+    "payload": {
+      "blocking_issues": [
+        "insufficient independent source support or conflicts present"
+      ],
+      "current_tier": "T0_CANDIDATE",
+      "reasons": [
+        "provenance present",
+        "source trust >= threshold (0.9)"
+      ],
+      "recommended_tier": "T2_SOURCE_TRUSTED"
+    },
+    "previous_hash": "2b1de28243b8a273659918944b4c044ba471a96c9ba14805acec0393b48533d8",
+    "timestamp": "2026-04-28T00:20:19.093987+00:00"
+  }
+]

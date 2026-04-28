@@ -44,7 +44,9 @@ from vcse.packs import (
     PackValidator,
 )
 from vcse.perf import profile_result, profile_run
+from vcse.ledger import LedgerError, LedgerStore, build_integrity, export_ledger, verify_ledger, verify_pack_ledger
 from vcse.renderer.explanation import ExplanationRenderer
+from vcse.trust import TrustError, TrustPromoter, load_policy
 
 
 def build_logic_demo_state() -> WorldStateMemory:
@@ -814,6 +816,189 @@ def run_pack_audit(target: str, json_output: bool = False) -> str:
     )
 
 
+def _load_claims_from_jsonl(path: Path) -> list[dict]:
+    claims: list[dict] = []
+    for idx, line in enumerate(path.read_text().splitlines(), start=1):
+        if not line.strip():
+            continue
+        payload = json.loads(line)
+        payload.setdefault("claim_id", f"claim:{idx}")
+        payload.setdefault("source_id", payload.get("provenance", {}).get("source_id", "unknown"))
+        claims.append(payload)
+    return claims
+
+
+def _claims_from_source_or_pack(target: Path) -> tuple[list[dict], Path]:
+    if target.is_dir():
+        claims_path = target / "claims.jsonl"
+        if not claims_path.exists():
+            raise TrustError("MISSING_CLAIMS", f"missing claims.jsonl in {target}")
+        return _load_claims_from_jsonl(claims_path), target
+    if target.suffix.lower() == ".jsonl":
+        return _load_claims_from_jsonl(target), target.parent
+    raise TrustError("UNSUPPORTED_INPUT", f"expected pack dir or .jsonl file: {target}")
+
+
+def run_trust_evaluate(target: Path, policy_path: str | None = None, json_output: bool = False) -> str:
+    claims, _ = _claims_from_source_or_pack(target)
+    report = TrustPromoter(policy=load_policy(policy_path)).evaluate_claims(claims)
+    payload = report.to_dict()
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(
+        [
+            "status: TRUST_EVALUATED",
+            f"claims: {len(payload['decisions'])}",
+            f"conflicts: {len(payload['conflicts'])}",
+            f"stale_flags: {sum(1 for item in payload['staleness'] if item.get('stale'))}",
+        ]
+    )
+
+
+def run_trust_promote(
+    pack_path: Path,
+    policy_path: str | None = None,
+    strict: bool = False,
+    output_path: Path | None = None,
+    json_output: bool = False,
+) -> str:
+    report = TrustPromoter(policy=load_policy(policy_path)).promote(pack_path)
+    payload = report.to_dict()
+    integrity_payload = build_integrity(pack_path)
+    (pack_path / "integrity.json").write_text(json.dumps(integrity_payload, indent=2, sort_keys=True) + "\n")
+    if output_path is not None:
+        output_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    blockers = sum(len(item["blocking_issues"]) for item in payload["decisions"])
+    if strict and blockers > 0:
+        raise TrustError("TRUST_PROMOTION_BLOCKED", "strict mode blocked promotion due to unresolved issues")
+    if json_output:
+        return json.dumps(
+            {
+                "status": "TRUST_PROMOTED",
+                "decisions": payload["decisions"],
+                "conflicts": payload["conflicts"],
+                "staleness": payload["staleness"],
+                "integrity": integrity_payload,
+            },
+            sort_keys=True,
+        )
+    lines = [
+        "status: TRUST_PROMOTED",
+        f"decisions: {len(payload['decisions'])}",
+        f"conflicts: {len(payload['conflicts'])}",
+        f"stale_flags: {sum(1 for item in payload['staleness'] if item.get('stale'))}",
+        f"blocking_issues: {blockers}",
+    ]
+    if output_path is not None:
+        lines.append(f"output: {output_path}")
+    return "\n".join(lines)
+
+
+def run_trust_stats(pack_path: Path, json_output: bool = False) -> str:
+    trust_path = pack_path / "trust_report.json"
+    if not trust_path.exists():
+        raise TrustError("MISSING_TRUST_REPORT", f"missing trust_report.json in {pack_path}")
+    payload = json.loads(trust_path.read_text())
+    decisions = list(payload.get("decisions", []))
+    conflicts = list(payload.get("conflicts", []))
+    stale = [item for item in payload.get("staleness", []) if item.get("stale")]
+    certified = [item for item in decisions if item.get("recommended_tier") in {"T4_VERIFIER_CONSISTENT", "T5_CERTIFIED"}]
+    stats = {
+        "total_claims": len(decisions),
+        "certified_like_claims": len(certified),
+        "conflicts": len(conflicts),
+        "stale_claims": len(stale),
+    }
+    if json_output:
+        return json.dumps(stats, sort_keys=True)
+    return "\n".join(
+        [
+            "status: TRUST_STATS",
+            f"total_claims: {stats['total_claims']}",
+            f"certified_like_claims: {stats['certified_like_claims']}",
+            f"conflicts: {stats['conflicts']}",
+            f"stale_claims: {stats['stale_claims']}",
+        ]
+    )
+
+
+def run_trust_conflicts(pack_path: Path, json_output: bool = False) -> str:
+    conflicts_path = pack_path / "conflicts.jsonl"
+    if not conflicts_path.exists():
+        raise TrustError("MISSING_CONFLICTS", f"missing conflicts.jsonl in {pack_path}")
+    rows = [json.loads(line) for line in conflicts_path.read_text().splitlines() if line.strip()]
+    if json_output:
+        return json.dumps({"conflicts": rows}, sort_keys=True)
+    lines = ["status: TRUST_CONFLICTS", f"count: {len(rows)}"]
+    if rows:
+        lines.append("items:")
+        for row in rows:
+            lines.append(f"  - {row.get('conflict_type')}: {row.get('explanation')}")
+    return "\n".join(lines)
+
+
+def run_trust_stale(pack_path: Path, json_output: bool = False) -> str:
+    stale_path = pack_path / "staleness.jsonl"
+    if not stale_path.exists():
+        raise TrustError("MISSING_STALENESS", f"missing staleness.jsonl in {pack_path}")
+    rows = [json.loads(line) for line in stale_path.read_text().splitlines() if line.strip()]
+    stale_rows = [item for item in rows if item.get("stale")]
+    if json_output:
+        return json.dumps({"staleness": rows, "stale_count": len(stale_rows)}, sort_keys=True)
+    return "\n".join(
+        [
+            "status: TRUST_STALE",
+            f"total: {len(rows)}",
+            f"stale: {len(stale_rows)}",
+        ]
+    )
+
+
+def run_ledger_verify(target: Path, json_output: bool = False) -> str:
+    if target.is_dir():
+        payload = verify_pack_ledger(target)
+    else:
+        payload = verify_ledger(target)
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        f"status: {'LEDGER_OK' if payload.get('ok') else 'LEDGER_INVALID'}",
+        f"errors: {len(payload.get('errors', []))}",
+    ]
+    if payload.get("errors"):
+        lines.append("details:")
+        for item in payload["errors"]:
+            lines.append(f"  - {item}")
+    return "\n".join(lines)
+
+
+def run_ledger_inspect(target: Path, token: str, json_output: bool = False) -> str:
+    path = target if target.is_file() else (target / "ledger_snapshot.json")
+    record = LedgerStore(path).inspect(token)
+    if record is None:
+        raise TrustError("NOT_FOUND", f"no matching event/claim found for {token}")
+    if json_output:
+        return json.dumps(record, sort_keys=True)
+    return "\n".join(
+        [
+            "status: LEDGER_RECORD",
+            f"event_id: {record.get('event_id')}",
+            f"event_type: {record.get('event_type')}",
+            f"claim_id: {record.get('claim_id')}",
+            f"pack_id: {record.get('pack_id')}",
+        ]
+    )
+
+
+def run_ledger_export(target: Path, output: Path, json_output: bool = False) -> str:
+    source = target if target.is_file() else (target / "ledger_snapshot.json")
+    exported = export_ledger(source, output)
+    payload = {"status": "LEDGER_EXPORTED", "output": str(exported)}
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(["status: LEDGER_EXPORTED", f"output: {exported}"])
+
+
 def _merge_runtime_bundle(primary, secondary):
     if primary is None:
         return secondary
@@ -1012,6 +1197,43 @@ def main(argv: list[str] | None = None) -> None:
     pack_audit_parser.add_argument("target")
     pack_audit_parser.add_argument("--json", action="store_true", dest="json_output")
 
+    trust_parser = subparsers.add_parser("trust")
+    trust_subparsers = trust_parser.add_subparsers(dest="trust_command")
+    trust_eval_parser = trust_subparsers.add_parser("evaluate")
+    trust_eval_parser.add_argument("target")
+    trust_eval_parser.add_argument("--json", action="store_true", dest="json_output")
+    trust_eval_parser.add_argument("--policy")
+    trust_promote_parser = trust_subparsers.add_parser("promote")
+    trust_promote_parser.add_argument("target")
+    trust_promote_parser.add_argument("--json", action="store_true", dest="json_output")
+    trust_promote_parser.add_argument("--policy")
+    trust_promote_parser.add_argument("--strict", action="store_true")
+    trust_promote_parser.add_argument("--output", type=Path)
+    trust_stats_parser = trust_subparsers.add_parser("stats")
+    trust_stats_parser.add_argument("target")
+    trust_stats_parser.add_argument("--json", action="store_true", dest="json_output")
+    trust_conflicts_parser = trust_subparsers.add_parser("conflicts")
+    trust_conflicts_parser.add_argument("target")
+    trust_conflicts_parser.add_argument("--json", action="store_true", dest="json_output")
+    trust_stale_parser = trust_subparsers.add_parser("stale")
+    trust_stale_parser.add_argument("target")
+    trust_stale_parser.add_argument("--json", action="store_true", dest="json_output")
+
+    ledger_parser = subparsers.add_parser("ledger")
+    ledger_subparsers = ledger_parser.add_subparsers(dest="ledger_command")
+    ledger_verify_parser = ledger_subparsers.add_parser("verify")
+    ledger_verify_parser.add_argument("target")
+    ledger_verify_parser.add_argument("--json", action="store_true", dest="json_output")
+    ledger_verify_parser.add_argument("--strict", action="store_true")
+    ledger_inspect_parser = ledger_subparsers.add_parser("inspect")
+    ledger_inspect_parser.add_argument("token")
+    ledger_inspect_parser.add_argument("--target", default=".")
+    ledger_inspect_parser.add_argument("--json", action="store_true", dest="json_output")
+    ledger_export_parser = ledger_subparsers.add_parser("export")
+    ledger_export_parser.add_argument("target")
+    ledger_export_parser.add_argument("--output", required=True, type=Path)
+    ledger_export_parser.add_argument("--json", action="store_true", dest="json_output")
+
     try:
         args = parser.parse_args(argv)
         settings = load_settings(args.config)
@@ -1191,6 +1413,47 @@ def main(argv: list[str] | None = None) -> None:
             if args.pack_command == "audit":
                 print(run_pack_audit(args.target, json_output=args.json_output))
                 return
+        if args.command == "trust":
+            if args.trust_command == "evaluate":
+                print(run_trust_evaluate(Path(args.target), policy_path=args.policy, json_output=args.json_output))
+                return
+            if args.trust_command == "promote":
+                print(
+                    run_trust_promote(
+                        Path(args.target),
+                        policy_path=args.policy,
+                        strict=args.strict,
+                        output_path=args.output,
+                        json_output=args.json_output,
+                    )
+                )
+                return
+            if args.trust_command == "stats":
+                print(run_trust_stats(Path(args.target), json_output=args.json_output))
+                return
+            if args.trust_command == "conflicts":
+                print(run_trust_conflicts(Path(args.target), json_output=args.json_output))
+                return
+            if args.trust_command == "stale":
+                print(run_trust_stale(Path(args.target), json_output=args.json_output))
+                return
+        if args.command == "ledger":
+            if args.ledger_command == "verify":
+                text = run_ledger_verify(Path(args.target), json_output=args.json_output)
+                print(text)
+                if args.strict and args.json_output:
+                    payload = json.loads(text)
+                    if not payload.get("ok", False):
+                        raise SystemExit(2)
+                if args.strict and not args.json_output and "status: LEDGER_INVALID" in text:
+                    raise SystemExit(2)
+                return
+            if args.ledger_command == "inspect":
+                print(run_ledger_inspect(Path(args.target), args.token, json_output=args.json_output))
+                return
+            if args.ledger_command == "export":
+                print(run_ledger_export(Path(args.target), args.output, json_output=args.json_output))
+                return
         if args.command == "dsl":
             if args.dsl_command == "validate":
                 document = DSLLoader.load(args.path)
@@ -1273,6 +1536,8 @@ def main(argv: list[str] | None = None) -> None:
         GauntletError,
         KnowledgeError,
         PackError,
+        TrustError,
+        LedgerError,
     ) as exc:
         error_type = getattr(exc, "error_type", None)
         reason = getattr(exc, "reason", None)

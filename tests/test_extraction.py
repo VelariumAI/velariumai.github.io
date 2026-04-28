@@ -32,4 +32,9 @@ def test_structured_extraction_is_deterministic(tmp_path: Path) -> None:
     first = KnowledgeExtractor().extract(source)
     second = KnowledgeExtractor().extract(source)
 
-    assert [claim.to_dict() for claim in first.claims] == [claim.to_dict() for claim in second.claims]
+    def strip_timestamps(claim: dict) -> dict:
+        return {k: v for k, v in claim.items() if k not in ("created_at", "certified_at", "claim_hash")}
+
+    assert [strip_timestamps(claim.to_dict()) for claim in first.claims] == [
+        strip_timestamps(claim.to_dict()) for claim in second.claims
+    ]

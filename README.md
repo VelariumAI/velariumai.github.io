@@ -65,6 +65,9 @@ vcse serve
 vcse pack validate examples/packs/logic_basic
 vcse pack install examples/packs/logic_basic
 vcse ask "Can Socrates die?" --pack vrm.logic.basic
+vcse trust evaluate examples/trust/cross_supported_claims.jsonl
+vcse trust promote examples/packs/trusted_basic
+vcse ledger verify examples/packs/trusted_basic
 ```
 
 Example JSON input:
@@ -195,6 +198,26 @@ vcse ask "Can Socrates perish?" --packs vrm.logic.basic,vrm.mortality.basic --in
 ```
 
 See [docs/PACKS.md](docs/PACKS.md).
+
+## Trust and Ledger
+
+VCSE 2.3.0 adds trust tiering and immutable ledger support for auditable
+knowledge certification.
+
+- Ingest broadly, certify selectively
+- Conflicted/stale knowledge is quarantined, not deleted
+- Ledger is append-only and tamper-evident
+- SHA-256 hash chain + Merkle pack integrity snapshots
+- This is not a blockchain network
+
+```bash
+vcse trust evaluate examples/trust/cross_supported_claims.jsonl
+vcse trust promote examples/packs/trusted_basic
+vcse trust stats examples/packs/trusted_basic
+vcse ledger verify examples/packs/trusted_basic --strict
+```
+
+See [docs/TRUST.md](docs/TRUST.md) and [docs/LEDGER.md](docs/LEDGER.md).
 
 ## Symbolic Indexing
 

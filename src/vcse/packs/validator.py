@@ -66,6 +66,7 @@ class PackValidator:
         errors.extend(_validate_gauntlet(root, manifest))
         errors.extend(_validate_forbidden_content(root, manifest))
         errors.extend(_validate_conflict_metadata(root, manifest))
+        warnings.extend(_validate_trust_metadata_warnings(root, manifest))
 
         return PackValidationResult(
             passed=(len(errors) == 0),
@@ -304,3 +305,18 @@ def _is_legacy_pack(root: Path, manifest: PackManifest) -> bool:
     if not _is_legacy_manifest(manifest):
         return False
     return (root / "claims.jsonl").exists() or (root / "provenance.jsonl").exists()
+
+
+def _validate_trust_metadata_warnings(root: Path, manifest: PackManifest) -> list[str]:
+    expected = (
+        "trust_report.json",
+        "ledger_snapshot.json",
+        "integrity.json",
+        "conflicts.jsonl",
+        "staleness.jsonl",
+    )
+    warnings: list[str] = []
+    for rel in expected:
+        if not (root / rel).exists():
+            warnings.append(f"missing optional trust metadata: {rel}")
+    return warnings

@@ -1,0 +1,2 @@
+{"claim_id":"claim:1","subject":"x","relation":"equals","object":"3","source_id":"local_file","created_at":"2026-04-20T00:00:00+00:00"}
+{"claim_id":"claim:2","subject":"x","relation":"equals","object":"4","source_id":"local_file","created_at":"2026-04-20T00:00:00+00:00"}
