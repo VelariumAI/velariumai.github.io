@@ -10,8 +10,9 @@ from vcse.semantic.region_builder import build_regions
 
 
 class RuntimeRegionIndex:
-    def __init__(self, claims: list[KnowledgeClaim]):
-        self._regions = build_regions(claims)
+    def __init__(self, claims: list[KnowledgeClaim], canonicalize: bool = False):
+        self._canonicalize = canonicalize
+        self._regions = build_regions(claims, canonicalize=canonicalize)
         self._by_relation: dict[str, list[SemanticRegion]] = defaultdict(list)
         self._by_subject: dict[str, list[SemanticRegion]] = defaultdict(list)
 
@@ -36,6 +37,12 @@ class RuntimeRegionIndex:
         if not matches:
             raise KeyError(f"region not found for relation: {relation_key}")
         return matches[0]
+
+    def get_canonical_region(self, relation: str) -> SemanticRegion:
+        from vcse.semantic.relation_ontology import canonicalize_relation
+
+        canonical_relation = canonicalize_relation(relation)
+        return self.get_region_by_relation(canonical_relation)
 
     def get_regions_for_subject(self, subject: str) -> list[SemanticRegion]:
         return list(self._by_subject.get(subject.strip(), []))

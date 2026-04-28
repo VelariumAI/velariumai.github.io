@@ -7,6 +7,7 @@ from collections import defaultdict
 
 from vcse.knowledge.pack_model import KnowledgeClaim
 from vcse.semantic.region import SemanticRegion
+from vcse.semantic.relation_ontology import canonicalize_relation
 
 
 def _subject_group_key(subject: str) -> str | None:
@@ -40,10 +41,12 @@ def _region_id(seed: str) -> str:
     return hashlib.sha256(seed.encode("utf-8")).hexdigest()[:16]
 
 
-def build_regions(claims: list[KnowledgeClaim]) -> list[SemanticRegion]:
+def build_regions(claims: list[KnowledgeClaim], canonicalize: bool = False) -> list[SemanticRegion]:
     grouped: dict[tuple[str, str | None], list[KnowledgeClaim]] = defaultdict(list)
     for claim in claims:
         relation = claim.relation.strip()
+        if canonicalize:
+            relation = canonicalize_relation(relation)
         grouped[(relation, _secondary_group_key(claim))].append(claim)
 
     regions: list[SemanticRegion] = []

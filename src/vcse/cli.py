@@ -1033,9 +1033,9 @@ def _load_pack_claim_models(pack_spec: str) -> tuple[list[KnowledgeClaim], Path]
     return claims, pack_path
 
 
-def run_region_list(pack_spec: str, json_output: bool = False) -> str:
+def run_region_list(pack_spec: str, json_output: bool = False, canonicalize: bool = False) -> str:
     claims, _ = _load_pack_claim_models(pack_spec)
-    regions = sorted(RuntimeRegionIndex(claims).regions, key=lambda item: item.region_id)
+    regions = sorted(RuntimeRegionIndex(claims, canonicalize=canonicalize).regions, key=lambda item: item.region_id)
     if json_output:
         payload = [
             {
@@ -1888,13 +1888,14 @@ def main(argv: list[str] | None = None) -> None:
     region_subparsers = region_parser.add_subparsers(dest="region_command")
     region_list_parser = region_subparsers.add_parser(
         "list",
-        help="List semantic regions (grouped by exact relation, no inverse merging).",
+        help="List semantic regions (exact relation by default; use --canonical to merge inverses).",
     )
     region_list_parser.add_argument("--pack", required=True, dest="pack_spec")
     region_list_parser.add_argument("--json", action="store_true", dest="json_output")
+    region_list_parser.add_argument("--canonical", action="store_true", dest="canonicalize")
     region_info_parser = region_subparsers.add_parser(
         "info",
-        help="Inspect one semantic region (grouped by exact relation, no inverse merging).",
+        help="Inspect one semantic region by region id.",
     )
     region_info_parser.add_argument("region_id")
     region_info_parser.add_argument("--pack", required=True, dest="pack_spec")
@@ -2269,7 +2270,13 @@ def main(argv: list[str] | None = None) -> None:
                 return
         if args.command == "region":
             if args.region_command == "list":
-                print(run_region_list(args.pack_spec, json_output=args.json_output))
+                print(
+                    run_region_list(
+                        args.pack_spec,
+                        json_output=args.json_output,
+                        canonicalize=args.canonicalize,
+                    )
+                )
                 return
             if args.region_command == "info":
                 print(run_region_info(args.region_id, args.pack_spec, json_output=args.json_output))
