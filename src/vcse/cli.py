@@ -30,14 +30,19 @@ from vcse.ingestion.pipeline import IngestionError, ingest_file
 from vcse.knowledge import (
     KnowledgePipeline,
     Source,
-    install_pack,
-    list_installed_packs,
-    pack_stats,
 )
 from vcse.knowledge.errors import KnowledgeError
 from vcse.memory.constraints import Constraint
 from vcse.memory.relations import RelationSchema
 from vcse.memory.world_state import TruthStatus, WorldStateMemory
+from vcse.packs import (
+    PackActivator,
+    PackAuditor,
+    PackError,
+    PackInstaller,
+    PackRegistry,
+    PackValidator,
+)
 from vcse.perf import profile_result, profile_run
 from vcse.renderer.explanation import ExplanationRenderer
 
@@ -122,6 +127,8 @@ def run_ask(
     top_k_rules: int = 20,
     top_k_packs: int = 5,
     profile: bool = False,
+    preload_claims: list[dict[str, str]] | None = None,
+    preload_constraints: list[Constraint] | None = None,
 ) -> str:
     """Handle vcse ask command."""
     from vcse.interaction.session import Session
@@ -135,6 +142,7 @@ def run_ask(
             top_k_packs=top_k_packs,
         )
         session.mode = mode
+        _apply_preloaded_knowledge(session.memory, preload_claims or [], preload_constraints or [])
 
         session.ingest(text)
         result = session.solve(enable_ts3=enable_ts3, search_backend=search_backend)
@@ -184,6 +192,24 @@ def _renderer_templates_from_bundle(dsl_bundle) -> dict[str, str]:
         if relation and template:
             mapping[relation] = template
     return mapping
+
+
+def _apply_preloaded_knowledge(
+    memory: WorldStateMemory,
+    claims: list[dict[str, str]],
+    constraints: list[Constraint],
+) -> None:
+    for claim in claims:
+        subject = str(claim.get("subject", "")).strip()
+        relation = str(claim.get("relation", "")).strip()
+        obj = str(claim.get("object", "")).strip()
+        if not subject or not relation or not obj:
+            continue
+        if memory.get_relation_schema(relation) is None:
+            memory.add_relation_schema(RelationSchema(name=relation, transitive=(relation == "is_a")))
+        memory.add_claim(subject, relation, obj, TruthStatus.ASSERTED, source="pack")
+    for constraint in constraints:
+        memory.add_constraint(constraint)
 
 
 def run_normalize(text: str) -> str:
@@ -393,6 +419,8 @@ def run_generate(
     dsl_bundle=None,
     output_path: Path | None = None,
     profile: bool = False,
+    preload_claims: list[dict[str, str]] | None = None,
+    preload_constraints: list[Constraint] | None = None,
 ) -> str:
     def _run() -> str:
         try:
@@ -408,6 +436,7 @@ def run_generate(
 
         spec = spec_from_dict(payload)
         memory = WorldStateMemory()
+        _apply_preloaded_knowledge(memory, preload_claims or [], preload_constraints or [])
         for fact in payload.get("memory_claims", []):
             if not isinstance(fact, dict):
                 continue
@@ -656,6 +685,7 @@ def run_knowledge_build(path: Path, pack_name: str, domain: str = "general") -> 
 
 
 def run_knowledge_stats(path: Path) -> str:
+    from vcse.knowledge.pack_builder import pack_stats
     stats = pack_stats(path)
     return "\n".join(
         [
@@ -670,20 +700,167 @@ def run_knowledge_stats(path: Path) -> str:
     )
 
 
-def run_pack_install(path: Path) -> str:
-    destination = install_pack(path)
-    return "\n".join(["status: INSTALLED", f"path: {destination}"])
-
-
-def run_pack_list() -> str:
-    names = list_installed_packs()
+def run_pack_list(json_output: bool = False) -> str:
+    registry = PackRegistry()
+    items = registry.list()
+    if json_output:
+        return json.dumps({"packs": items}, sort_keys=True)
     lines = ["packs:"]
-    if not names:
+    if not items:
         lines.append("  - none")
     else:
-        for name in names:
-            lines.append(f"  - {name}")
+        for item in items:
+            lines.append(
+                f"  - {item.get('id')}@{item.get('version')} domain={item.get('domain')} path={item.get('install_path')}"
+            )
     return "\n".join(lines)
+
+
+def run_pack_validate(path: Path, json_output: bool = False) -> str:
+    validation = PackValidator().validate(path)
+    payload = {
+        "passed": validation.passed,
+        "errors": validation.errors,
+        "warnings": validation.warnings,
+        "artifact_count": validation.artifact_count,
+        "benchmark_count": validation.benchmark_count,
+        "gauntlet_count": validation.gauntlet_count,
+        "manifest": validation.manifest.to_dict() if validation.manifest else None,
+    }
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        f"status: {'VALID' if validation.passed else 'INVALID'}",
+        f"artifact_count: {validation.artifact_count}",
+        f"benchmark_count: {validation.benchmark_count}",
+        f"gauntlet_count: {validation.gauntlet_count}",
+    ]
+    if validation.errors:
+        lines.append("errors:")
+        for error in validation.errors:
+            lines.append(f"  - {error}")
+    if validation.warnings:
+        lines.append("warnings:")
+        for warning in validation.warnings:
+            lines.append(f"  - {warning}")
+    return "\n".join(lines)
+
+
+def run_pack_install(path: Path, force: bool = False, json_output: bool = False) -> str:
+    result = PackInstaller().install(path, force=force)
+    payload = {
+        "status": "INSTALLED",
+        "pack_id": result.pack_id,
+        "version": result.version,
+        "install_path": str(result.install_path),
+    }
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        "status: INSTALLED",
+        f"pack: {result.pack_id}@{result.version}",
+        f"path: {result.install_path}",
+    ]
+    if result.validation.warnings:
+        lines.append("warnings:")
+        for warning in result.validation.warnings:
+            lines.append(f"  - {warning}")
+    return "\n".join(lines)
+
+
+def run_pack_uninstall(pack_id: str, version: str | None = None, json_output: bool = False) -> str:
+    removed = PackInstaller().uninstall(pack_id, version)
+    payload = {"status": "UNINSTALLED", "removed": removed}
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(["status: UNINSTALLED", f"removed: {removed}"])
+
+
+def run_pack_info(pack_id: str, version: str | None = None, json_output: bool = False) -> str:
+    record = PackInstaller().get_pack(pack_id, version)
+    if json_output:
+        return json.dumps(record, sort_keys=True)
+    return "\n".join(
+        [
+            "status: PACK_INFO",
+            f"id: {record.get('id')}",
+            f"name: {record.get('name')}",
+            f"version: {record.get('version')}",
+            f"domain: {record.get('domain')}",
+            f"install_path: {record.get('install_path')}",
+        ]
+    )
+
+
+def run_pack_audit(target: str, json_output: bool = False) -> str:
+    report = PackAuditor().audit(target)
+    payload = report.to_dict()
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(
+        [
+            "status: PACK_AUDIT",
+            f"claims_count: {report.claims_count}",
+            f"constraints_count: {report.constraints_count}",
+            f"templates_count: {report.templates_count}",
+            f"dsl_artifacts_count: {report.dsl_artifacts_count}",
+            f"provenance_coverage_percent: {report.provenance_coverage_percent}",
+            f"contradiction_count: {report.contradiction_count}",
+            f"benchmark_status: {report.benchmark_status}",
+            f"gauntlet_status: {report.gauntlet_status}",
+            f"dependency_status: {report.dependency_status}",
+            f"hash_integrity_status: {report.hash_integrity_status}",
+        ]
+    )
+
+
+def _merge_runtime_bundle(primary, secondary):
+    if primary is None:
+        return secondary
+    if secondary is None:
+        return primary
+    from vcse.dsl.schema import CapabilityBundle
+
+    merged = CapabilityBundle(name="runtime_merged", version="1.0.0")
+    for bundle in (primary, secondary):
+        merged.synonyms.extend(bundle.synonyms)
+        merged.parser_patterns.extend(bundle.parser_patterns)
+        merged.relation_schemas.extend(bundle.relation_schemas)
+        merged.ingestion_templates.extend(bundle.ingestion_templates)
+        merged.generation_templates.extend(bundle.generation_templates)
+        merged.proposer_rules.extend(bundle.proposer_rules)
+        merged.clarification_rules.extend(bundle.clarification_rules)
+        merged.renderer_templates.extend(bundle.renderer_templates)
+        merged.verifier_stubs.extend(bundle.verifier_stubs)
+        merged.warnings.extend(bundle.warnings)
+    return merged
+
+
+def resolve_pack_activation(pack_values: list[str] | None, packs_csv: str | None):
+    specs: list[str] = []
+    for value in pack_values or []:
+        clean = value.strip()
+        if clean:
+            specs.append(clean)
+    if packs_csv:
+        specs.extend(item.strip() for item in packs_csv.split(",") if item.strip())
+    if not specs:
+        return None
+    return PackActivator().activate(specs)
+
+
+def resolve_runtime_inputs(
+    *,
+    dsl_path: str | None,
+    pack_values: list[str] | None,
+    packs_csv: str | None,
+):
+    dsl_bundle = load_dsl_bundle(dsl_path) if dsl_path else None
+    activation = resolve_pack_activation(pack_values, packs_csv)
+    if activation is None:
+        return dsl_bundle, [], []
+    merged_bundle = _merge_runtime_bundle(dsl_bundle, activation.dsl_bundle)
+    return merged_bundle, list(activation.knowledge_claims), list(activation.constraints)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -706,6 +883,8 @@ def main(argv: list[str] | None = None) -> None:
     benchmark_parser.add_argument("--ts3", action="store_true")
     benchmark_parser.add_argument("--search")
     benchmark_parser.add_argument("--dsl")
+    benchmark_parser.add_argument("--pack", action="append", dest="pack_values")
+    benchmark_parser.add_argument("--packs")
     benchmark_parser.add_argument("--index", action="store_true")
     benchmark_parser.add_argument("--top-k", type=int, dest="top_k_rules")
     benchmark_parser.add_argument("--top-k-packs", type=int, dest="top_k_packs")
@@ -718,12 +897,16 @@ def main(argv: list[str] | None = None) -> None:
     ingest_parser.add_argument("--output-memory", type=Path)
     ingest_parser.add_argument("--export-pack", type=Path)
     ingest_parser.add_argument("--dsl")
+    ingest_parser.add_argument("--pack", action="append", dest="pack_values")
+    ingest_parser.add_argument("--packs")
 
     generate_parser = subparsers.add_parser("generate")
     generate_parser.add_argument("spec")
     generate_parser.add_argument("--debug", action="store_true")
     generate_parser.add_argument("--index", action="store_true")
     generate_parser.add_argument("--dsl")
+    generate_parser.add_argument("--pack", action="append", dest="pack_values")
+    generate_parser.add_argument("--packs")
     generate_parser.add_argument("--top-k", type=int, dest="top_k_rules")
     generate_parser.add_argument("--output", type=Path)
     generate_parser.add_argument("--profile", action="store_true")
@@ -743,6 +926,8 @@ def main(argv: list[str] | None = None) -> None:
     gauntlet_parser.add_argument("--top-k", type=int, dest="top_k_rules")
     gauntlet_parser.add_argument("--top-k-packs", type=int, dest="top_k_packs")
     gauntlet_parser.add_argument("--dsl")
+    gauntlet_parser.add_argument("--pack", action="append", dest="pack_values")
+    gauntlet_parser.add_argument("--packs")
     gauntlet_parser.add_argument("--profile", action="store_true")
 
     # New interaction commands
@@ -752,6 +937,8 @@ def main(argv: list[str] | None = None) -> None:
     ask_parser.add_argument("--ts3", action="store_true")
     ask_parser.add_argument("--search")
     ask_parser.add_argument("--dsl")
+    ask_parser.add_argument("--pack", action="append", dest="pack_values")
+    ask_parser.add_argument("--packs")
     ask_parser.add_argument("--index", action="store_true")
     ask_parser.add_argument("--top-k", type=int, dest="top_k_rules")
     ask_parser.add_argument("--top-k-packs", type=int, dest="top_k_packs")
@@ -804,9 +991,26 @@ def main(argv: list[str] | None = None) -> None:
 
     pack_parser = subparsers.add_parser("pack")
     pack_subparsers = pack_parser.add_subparsers(dest="pack_command")
+    pack_validate_parser = pack_subparsers.add_parser("validate")
+    pack_validate_parser.add_argument("pack_path")
+    pack_validate_parser.add_argument("--json", action="store_true", dest="json_output")
     pack_install_parser = pack_subparsers.add_parser("install")
     pack_install_parser.add_argument("pack_path")
-    pack_subparsers.add_parser("list")
+    pack_install_parser.add_argument("--force", action="store_true")
+    pack_install_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_uninstall_parser = pack_subparsers.add_parser("uninstall")
+    pack_uninstall_parser.add_argument("pack_id")
+    pack_uninstall_parser.add_argument("--version")
+    pack_uninstall_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_list_parser = pack_subparsers.add_parser("list")
+    pack_list_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_info_parser = pack_subparsers.add_parser("info")
+    pack_info_parser.add_argument("pack_id")
+    pack_info_parser.add_argument("--version")
+    pack_info_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_audit_parser = pack_subparsers.add_parser("audit")
+    pack_audit_parser.add_argument("target")
+    pack_audit_parser.add_argument("--json", action="store_true", dest="json_output")
 
     try:
         args = parser.parse_args(argv)
@@ -821,7 +1025,11 @@ def main(argv: list[str] | None = None) -> None:
             top_k_rules = args.top_k_rules if args.top_k_rules is not None else settings.top_k_rules
             top_k_packs = args.top_k_packs if args.top_k_packs is not None else settings.top_k_packs
             validate_index_args(top_k_rules, top_k_packs)
-            dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
+            dsl_bundle, _, _ = resolve_runtime_inputs(
+                dsl_path=args.dsl,
+                pack_values=args.pack_values,
+                packs_csv=args.packs,
+            )
             summary = run_benchmark(
                 Path(args.path),
                 enable_ts3=args.ts3,
@@ -839,7 +1047,11 @@ def main(argv: list[str] | None = None) -> None:
                 raise SystemExit(1)
             return
         if args.command == "ingest":
-            dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
+            dsl_bundle, _, _ = resolve_runtime_inputs(
+                dsl_path=args.dsl,
+                pack_values=args.pack_values,
+                packs_csv=args.packs,
+            )
             print(
                 run_ingest(
                     Path(args.path),
@@ -855,7 +1067,11 @@ def main(argv: list[str] | None = None) -> None:
         if args.command == "generate":
             top_k_rules = args.top_k_rules if args.top_k_rules is not None else settings.top_k_rules
             validate_index_args(top_k_rules, 1)
-            dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
+            dsl_bundle, preload_claims, preload_constraints = resolve_runtime_inputs(
+                dsl_path=args.dsl,
+                pack_values=args.pack_values,
+                packs_csv=args.packs,
+            )
             mode = "debug" if args.debug else "strict"
             print(
                 run_generate(
@@ -866,6 +1082,8 @@ def main(argv: list[str] | None = None) -> None:
                     dsl_bundle=dsl_bundle,
                     output_path=args.output,
                     profile=args.profile,
+                    preload_claims=preload_claims,
+                    preload_constraints=preload_constraints,
                 )
             )
             return
@@ -878,7 +1096,11 @@ def main(argv: list[str] | None = None) -> None:
             top_k_rules = args.top_k_rules if args.top_k_rules is not None else settings.top_k_rules
             top_k_packs = args.top_k_packs if args.top_k_packs is not None else settings.top_k_packs
             validate_index_args(top_k_rules, top_k_packs)
-            dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
+            dsl_bundle, _, _ = resolve_runtime_inputs(
+                dsl_path=args.dsl,
+                pack_values=args.pack_values,
+                packs_csv=args.packs,
+            )
             text, exit_code = run_gauntlet(
                 Path(args.path),
                 search_backend=args.search or settings.search_backend,
@@ -898,7 +1120,11 @@ def main(argv: list[str] | None = None) -> None:
             top_k_rules = args.top_k_rules if args.top_k_rules is not None else settings.top_k_rules
             top_k_packs = args.top_k_packs if args.top_k_packs is not None else settings.top_k_packs
             validate_index_args(top_k_rules, top_k_packs)
-            dsl_bundle = load_dsl_bundle(args.dsl) if args.dsl else None
+            dsl_bundle, preload_claims, preload_constraints = resolve_runtime_inputs(
+                dsl_path=args.dsl,
+                pack_values=args.pack_values,
+                packs_csv=args.packs,
+            )
             text = " ".join(args.text) if args.text else ""
             print(
                 run_ask(
@@ -911,6 +1137,8 @@ def main(argv: list[str] | None = None) -> None:
                     top_k_rules=top_k_rules,
                     top_k_packs=top_k_packs,
                     profile=args.profile,
+                    preload_claims=preload_claims,
+                    preload_constraints=preload_constraints,
                 )
             )
             return
@@ -932,11 +1160,36 @@ def main(argv: list[str] | None = None) -> None:
                 print(run_knowledge_stats(Path(args.pack)))
                 return
         if args.command == "pack":
+            if args.pack_command == "validate":
+                text = run_pack_validate(Path(args.pack_path), json_output=args.json_output)
+                print(text)
+                if "status: INVALID" in text and not args.json_output:
+                    raise SystemExit(2)
+                if args.json_output:
+                    payload = json.loads(text)
+                    if not payload.get("passed", False):
+                        raise SystemExit(2)
+                return
             if args.pack_command == "install":
-                print(run_pack_install(Path(args.pack_path)))
+                print(run_pack_install(Path(args.pack_path), force=args.force, json_output=args.json_output))
+                return
+            if args.pack_command == "uninstall":
+                print(
+                    run_pack_uninstall(
+                        args.pack_id,
+                        version=args.version,
+                        json_output=args.json_output,
+                    )
+                )
                 return
             if args.pack_command == "list":
-                print(run_pack_list())
+                print(run_pack_list(json_output=args.json_output))
+                return
+            if args.pack_command == "info":
+                print(run_pack_info(args.pack_id, version=args.version, json_output=args.json_output))
+                return
+            if args.pack_command == "audit":
+                print(run_pack_audit(args.target, json_output=args.json_output))
                 return
         if args.command == "dsl":
             if args.dsl_command == "validate":
@@ -1019,6 +1272,7 @@ def main(argv: list[str] | None = None) -> None:
         GenerationError,
         GauntletError,
         KnowledgeError,
+        PackError,
     ) as exc:
         error_type = getattr(exc, "error_type", None)
         reason = getattr(exc, "reason", None)

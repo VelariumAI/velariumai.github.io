@@ -62,6 +62,9 @@ vcse ask "Can Socrates perish?" --dsl examples/dsl/mortality.json --index
 vcse generate examples/generation/contractor_policy_spec.json
 vcse gauntlet benchmarks/gauntlet/
 vcse serve
+vcse pack validate examples/packs/logic_basic
+vcse pack install examples/packs/logic_basic
+vcse ask "Can Socrates die?" --pack vrm.logic.basic
 ```
 
 Example JSON input:
@@ -174,6 +177,24 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 ```
 
 See [docs/API.md](docs/API.md).
+
+## Capability Packs
+
+VCSE 2.2.0 adds installable capability packs for modular VRM extension.
+
+- Validate before install
+- Local registry and local dependency resolution
+- Deterministic activation per command
+- No arbitrary code execution
+
+```bash
+vcse pack validate examples/packs/logic_basic
+vcse pack install examples/packs/logic_basic
+vcse pack list
+vcse ask "Can Socrates perish?" --packs vrm.logic.basic,vrm.mortality.basic --index
+```
+
+See [docs/PACKS.md](docs/PACKS.md).
 
 ## Symbolic Indexing
 

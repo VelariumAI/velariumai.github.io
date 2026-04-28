@@ -1,0 +1,26 @@
+{
+  "id": "vrm.mortality.basic",
+  "name": "Mortality Synonym Pack",
+  "version": "1.0.0",
+  "description": "Synonyms and mappings for mortality language",
+  "domain": "logic",
+  "authors": ["VRM-AI"],
+  "license": "MIT",
+  "created_at": "2026-04-27T00:00:00Z",
+  "vcse_min_version": "2.2.0",
+  "dependencies": [
+    {"id": "vrm.logic.basic", "version": ">=1.0.0,<2.0.0"}
+  ],
+  "artifacts": {
+    "dsl": ["dsl/mortality.json"],
+    "provenance": ["provenance.jsonl"]
+  },
+  "benchmarks": ["benchmarks/mortality.jsonl"],
+  "gauntlet_cases": ["gauntlet/mortality.jsonl"],
+  "provenance": ["provenance.jsonl"],
+  "integrity": {
+    "hash_algorithm": "sha256",
+    "manifest_hash": "",
+    "artifact_hashes": {}
+  }
+}

@@ -76,3 +76,6 @@ vcse pack list
 ```
 
 Installing a pack is local and deterministic. Existing installed packs are not overwritten.
+
+For pack manifests, dependency handling, install/list/info/audit, and runtime
+activation, see [docs/PACKS.md](PACKS.md).

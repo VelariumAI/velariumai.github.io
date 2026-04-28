@@ -1,0 +1,1 @@
+{"id":"pack_gauntlet_policy_001","category":"policy","input":"Employees must be background checked.","mode":"ask","expected_status":"INCONCLUSIVE","failure_if":["VERIFIED"]}

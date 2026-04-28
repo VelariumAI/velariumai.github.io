@@ -1,0 +1,2 @@
+{"subject":"Socrates","relation":"is_a","object":"man"}
+{"subject":"man","relation":"is_a","object":"mortal"}

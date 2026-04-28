@@ -73,6 +73,9 @@ vcse benchmark benchmarks/mixed_cases.jsonl --dsl examples/dsl/basic_logic.json
 vcse generate examples/generation/contractor_policy_spec.json --dsl examples/dsl/generation_policy.json
 ```
 
+DSL artifacts can also be shipped and activated through capability packs. See
+[docs/PACKS.md](PACKS.md).
+
 ## Compilation Output
 
 `vcse dsl compile` produces a deterministic capability bundle containing:

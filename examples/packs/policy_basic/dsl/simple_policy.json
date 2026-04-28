@@ -1,0 +1,42 @@
+{
+  "name": "simple_policy",
+  "version": "1.0.0",
+  "description": "Policy ingestion rules",
+  "artifacts": [
+    {
+      "id": "rel_requires",
+      "type": "relation_schema",
+      "version": "1.0.0",
+      "description": "requires relation",
+      "enabled": true,
+      "priority": 10,
+      "name": "requires",
+      "properties": []
+    },
+    {
+      "id": "tmpl_requires",
+      "type": "ingestion_template",
+      "version": "1.0.0",
+      "description": "must/required templates",
+      "enabled": true,
+      "priority": 20,
+      "patterns": ["{subject} must be {requirement}", "{subject} requires {requirement}"],
+      "output": {
+        "frame_type": "claim",
+        "relation": "requires",
+        "subject": "{subject}",
+        "object": "{requirement}"
+      }
+    },
+    {
+      "id": "render_requires",
+      "type": "renderer_template",
+      "version": "1.0.0",
+      "description": "requires formatter",
+      "enabled": true,
+      "priority": 30,
+      "relation": "requires",
+      "template": "{subject} requires {object}"
+    }
+  ]
+}

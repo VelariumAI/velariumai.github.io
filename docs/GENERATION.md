@@ -53,3 +53,6 @@ Generation templates can come from built-ins or DSL `generation_template`
 artifacts. Templates render deterministic fields and constraints only.
 
 They do not execute code, reason, or decide truth.
+
+Generation templates may be delivered through capability packs and activated
+with `--pack` / `--packs`. See [docs/PACKS.md](PACKS.md).

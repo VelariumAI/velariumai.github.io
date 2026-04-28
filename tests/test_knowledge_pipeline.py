@@ -12,6 +12,8 @@ def run_cli(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[
     env = os.environ.copy()
     src_path = str(Path(__file__).resolve().parents[1] / "src")
     env["PYTHONPATH"] = src_path + os.pathsep + env.get("PYTHONPATH", "")
+    home_root = cwd if cwd is not None else Path.cwd()
+    env["VCSE_PACK_HOME"] = str(home_root / ".vcse_test_home")
     return subprocess.run(
         [sys.executable, "-m", "vcse.cli", *args],
         cwd=cwd,

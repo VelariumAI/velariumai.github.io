@@ -70,7 +70,11 @@ If `false_verified_count > 0`, overall status is `FAILED`.
 vcse gauntlet benchmarks/gauntlet/
 vcse gauntlet benchmarks/gauntlet/ --json
 vcse gauntlet benchmarks/gauntlet/ --search mcts --ts3 --index
+vcse gauntlet benchmarks/gauntlet/ --pack vrm.logic.basic
 ```
+
+Gauntlet runs can include activated packs to validate pack-extended runtime
+behavior without changing verifier authority.
 
 Exit codes:
 

@@ -9,6 +9,7 @@ Input JSON / CLI demo
   -> optional ingestion adapters/templates/provenance
   -> optional DSL bundle (synonyms/patterns/rules/templates)
   -> optional generation template bundle for `vcse generate`
+  -> optional capability pack activation (`--pack` / `--packs`)
   -> optional symbolic index + capability retrieval (token/BM25)
   -> deterministic parser
   -> WorldStateMemory
@@ -44,6 +45,8 @@ Input JSON / CLI demo
   absorption, novelty, and contradiction-risk diagnostics.
 - Symbolic Indexing: optional deterministic retrieval layer that selects
   relevant artifacts/packs using symbolic tokens and BM25-style scoring.
+- Packs: installable local capability modules with manifest validation,
+  dependency resolution, deterministic activation, and audit support.
 - Verifiers: judge claims, constraints, contradictions, and goal satisfaction.
 - Renderer: prints evaluated state with no inference or decision logic.
 

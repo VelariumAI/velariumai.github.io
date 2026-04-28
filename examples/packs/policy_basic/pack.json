@@ -1,0 +1,25 @@
+{
+  "id": "vrm.policy.basic",
+  "name": "Basic Policy Pack",
+  "version": "1.0.0",
+  "description": "Policy relation schemas and templates",
+  "domain": "policy",
+  "authors": ["VRM-AI"],
+  "license": "MIT",
+  "created_at": "2026-04-27T00:00:00Z",
+  "vcse_min_version": "2.2.0",
+  "dependencies": [],
+  "artifacts": {
+    "dsl": ["dsl/simple_policy.json", "dsl/generation_policy.json"],
+    "templates": ["templates.json"],
+    "provenance": ["provenance.jsonl"]
+  },
+  "benchmarks": ["benchmarks/policy.jsonl"],
+  "gauntlet_cases": ["gauntlet/policy.jsonl"],
+  "provenance": ["provenance.jsonl"],
+  "integrity": {
+    "hash_algorithm": "sha256",
+    "manifest_hash": "",
+    "artifact_hashes": {}
+  }
+}
