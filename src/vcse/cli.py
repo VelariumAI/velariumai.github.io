@@ -35,7 +35,7 @@ from vcse.inference.explanation import (
 from vcse.inference.inverse import infer_inverse_claims
 from vcse.inference.transitive import infer_transitive_claims
 from vcse.inference.stability import InferenceObservation, InferenceStabilityTracker
-from vcse.inference.promotion import promote_stable_claims
+from vcse.inference.promotion import build_pack_from_promoted_claims, promote_stable_claims
 from vcse.index import SymbolicRetriever
 from vcse.engine import CaseValidationError, build_search, state_from_case
 from vcse.ingestion.pipeline import IngestionError, ingest_file
@@ -1082,6 +1082,126 @@ def run_pack_validate(path: Path, json_output: bool = False) -> str:
     return "\n".join(lines)
 
 
+def _resolve_pack_reference(ref: str) -> Path:
+    candidate = Path(ref)
+    if candidate.exists():
+        return candidate
+    try:
+        return resolve_pack_path(ref)
+    except (PackError, PackIndexError):
+        pass
+    fallback = Path("examples") / "packs" / ref
+    if fallback.exists():
+        return fallback
+    raise PackError("PACK_NOT_FOUND", f"pack not found: {ref}")
+
+
+def run_pack_review(pack_ref: str, json_output: bool = False) -> str:
+    pack_path = _resolve_pack_reference(pack_ref)
+    claims_path = pack_path / "claims.jsonl"
+    if not claims_path.exists():
+        raise PackError("PACK_NOT_FOUND", f"missing claims.jsonl in {pack_path}")
+    claims = [json.loads(line) for line in claims_path.read_text().splitlines() if line.strip()]
+    inference_breakdown: dict[str, int] = {}
+    for claim in claims:
+        inference_type = str(claim.get("qualifiers", {}).get("inference_type", "unknown"))
+        inference_breakdown[inference_type] = inference_breakdown.get(inference_type, 0) + 1
+    sample = sorted(
+        [
+            {
+                "subject": str(item.get("subject", "")),
+                "relation": str(item.get("relation", "")),
+                "object": str(item.get("object", "")),
+            }
+            for item in claims
+        ],
+        key=lambda row: (row["subject"], row["relation"], row["object"]),
+    )[:5]
+    payload = {
+        "status": "PACK_REVIEW",
+        "pack": pack_ref,
+        "pack_path": str(pack_path),
+        "claim_count": len(claims),
+        "inference_type_breakdown": dict(sorted(inference_breakdown.items())),
+        "sample_claims": sample,
+    }
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        "status: PACK_REVIEW",
+        f"pack: {pack_ref}",
+        f"pack_path: {pack_path}",
+        f"claim_count: {len(claims)}",
+        "inference_type_breakdown:",
+    ]
+    for key, count in sorted(inference_breakdown.items()):
+        lines.append(f"  - {key}: {count}")
+    lines.append("sample_claims:")
+    for row in sample:
+        lines.append(f"  - {row['subject']} {row['relation']} {row['object']}")
+    if not sample:
+        lines.append("  - none")
+    return "\n".join(lines)
+
+
+def run_pack_validate_review(pack_ref: str, json_output: bool = False) -> str:
+    direct_path = Path(pack_ref)
+    if direct_path.exists():
+        return run_pack_validate(direct_path, json_output=json_output)
+
+    pack_path = _resolve_pack_reference(pack_ref)
+    claims_path = pack_path / "claims.jsonl"
+    provenance_path = pack_path / "provenance.jsonl"
+    if not claims_path.exists():
+        raise PackError("PACK_NOT_FOUND", f"missing claims.jsonl in {pack_path}")
+    if not provenance_path.exists():
+        raise PackError("PACK_NOT_FOUND", f"missing provenance.jsonl in {pack_path}")
+
+    claims = [json.loads(line) for line in claims_path.read_text().splitlines() if line.strip()]
+    provenance_rows = [json.loads(line) for line in provenance_path.read_text().splitlines() if line.strip()]
+    errors: list[str] = []
+    seen_keys: set[str] = set()
+    for idx, claim in enumerate(claims):
+        key = "|".join([str(claim.get("subject", "")), str(claim.get("relation", "")), str(claim.get("object", ""))])
+        if key in seen_keys:
+            errors.append(f"duplicate claim at line {idx + 1}: {key}")
+        seen_keys.add(key)
+        if not isinstance(claim.get("provenance"), dict):
+            errors.append(f"missing provenance object at line {idx + 1}")
+            continue
+        prov = claim["provenance"]
+        required = ["source_type", "source_id", "location", "evidence_text", "confidence", "trust_level"]
+        missing = [field for field in required if not str(prov.get(field, "")).strip()]
+        if missing:
+            errors.append(f"incomplete provenance at line {idx + 1}: missing {','.join(missing)}")
+    if len(provenance_rows) != len(claims):
+        errors.append("provenance.jsonl length must match claims.jsonl length")
+
+    payload = {
+        "status": "VALID" if not errors else "INVALID",
+        "pack": pack_ref,
+        "pack_path": str(pack_path),
+        "passed": not errors,
+        "errors": errors,
+        "claim_count": len(claims),
+        "provenance_count": len(provenance_rows),
+    }
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        f"status: {'VALID' if not errors else 'INVALID'}",
+        f"pack: {pack_ref}",
+        f"pack_path: {pack_path}",
+        f"claim_count: {len(claims)}",
+        f"provenance_count: {len(provenance_rows)}",
+    ]
+    if errors:
+        lines.append("errors:")
+        for error in errors:
+            lines.append(f"  - {error}")
+    return "\n".join(lines)
+
+
 def run_pack_install(path: Path, force: bool = False, json_output: bool = False) -> str:
     result = PackInstaller().install(path, force=force)
     payload = {
@@ -2019,8 +2139,8 @@ def run_infer_promote(
 ) -> str:
     if threshold < 1:
         raise ValueError("INVALID_THRESHOLD: --threshold must be >= 1")
-    if (output_path is not None or as_pack is not None) and not write_output:
-        raise ValueError("INVALID_PROMOTION_FLAGS: --output/--as-pack require --write")
+    if output_path is not None and not write_output:
+        raise ValueError("INVALID_PROMOTION_FLAGS: --output requires --write")
     observations = _collect_inference_observations(pack_spec=pack_spec, benchmark_path=benchmark_path)
     _, preload_claims, _ = resolve_runtime_inputs(dsl_path=None, pack_values=[pack_spec], packs_csv=None)
     claim_models = _knowledge_claims_from_dict_claims(preload_claims)
@@ -2049,7 +2169,8 @@ def run_infer_promote(
     promoted = promote_stable_claims(stable_sorted, threshold=threshold)
 
     written_paths: list[str] = []
-    if write_output:
+    should_write = write_output or (as_pack is not None)
+    if should_write:
         target = output_path or Path("promoted_claims.jsonl")
         target.parent.mkdir(parents=True, exist_ok=True)
         lines = [
@@ -2069,76 +2190,13 @@ def run_infer_promote(
         target.write_text("\n".join(lines) + ("\n" if lines else ""))
         written_paths.append(str(target))
         if as_pack:
-            pack_dir = Path("examples") / "packs" / as_pack
-            pack_dir.mkdir(parents=True, exist_ok=True)
-            claims_lines = [
-                json.dumps(
-                    {
-                        "subject": claim.subject,
-                        "relation": claim.relation,
-                        "object": claim.object,
-                        "trust_tier": "T0_CANDIDATE",
-                        "source_ids": [],
-                        "created_at": claim.promoted_at,
-                        "provenance": {
-                            "source_type": "inference_promotion",
-                            "source_id": pack_spec,
-                            "location": "infer/promote",
-                            "evidence_text": f"{claim.inference_type} from {','.join(claim.source_claims)}",
-                            "confidence": 1.0,
-                            "trust_level": "candidate",
-                        },
-                        "qualifiers": {
-                            "inference_type": claim.inference_type,
-                            "derived_from": list(claim.source_claims),
-                        },
-                        "confidence": 1.0,
-                        "trust_flags": ["PROMOTED_FROM_INFERENCE"],
-                        "claim_hash": "",
-                        "certified_at": None,
-                        "supersedes": None,
-                    },
-                    sort_keys=True,
-                )
-                for claim in promoted
-            ]
-            (pack_dir / "claims.jsonl").write_text("\n".join(claims_lines) + ("\n" if claims_lines else ""))
-            provenance_lines = [
-                json.dumps(
-                    {
-                        "source_type": "inference_promotion",
-                        "source_id": pack_spec,
-                        "location": "infer/promote",
-                        "evidence_text": f"{claim.inference_type} from {','.join(claim.source_claims)}",
-                        "confidence": 1.0,
-                        "trust_level": "candidate",
-                        "inference_type": claim.inference_type,
-                        "derived_from": list(claim.source_claims),
-                        "promoted_at": claim.promoted_at,
-                    },
-                    sort_keys=True,
-                )
-                for claim in promoted
-            ]
-            (pack_dir / "provenance.jsonl").write_text("\n".join(provenance_lines) + ("\n" if provenance_lines else ""))
-            pack_payload = {
-                "id": as_pack,
-                "version": "0.1.0",
-                "domain": "general",
-                "lifecycle_status": "candidate",
-                "created_at": promoted[0].promoted_at if promoted else "",
-                "claim_count": len(promoted),
-                "provenance_count": len(promoted),
-                "constraint_count": 0,
-                "template_count": 0,
-                "conflict_count": 0,
-                "metrics": {
-                    "source_pack": pack_spec,
-                    "promotion_threshold": threshold,
-                },
-            }
-            (pack_dir / "pack.json").write_text(json.dumps(pack_payload, indent=2, sort_keys=True) + "\n")
-            written_paths.append(str(pack_dir))
+            build_result = build_pack_from_promoted_claims(
+                promoted_claims=promoted,
+                pack_id=as_pack,
+                source_pack=pack_spec,
+                threshold=threshold,
+            )
+            written_paths.append(str(build_result.pack_dir))
 
     if json_output:
         payload = {
@@ -2147,7 +2205,7 @@ def run_infer_promote(
             "benchmark_path": str(benchmark_path or _default_coverage_benchmark_path()),
             "threshold": threshold,
             "stable_inferred_count": len(promoted),
-            "write": write_output,
+            "write": should_write,
             "written_paths": written_paths,
             "candidates": [
                 {
@@ -2171,7 +2229,7 @@ def run_infer_promote(
         return "\n".join(lines)
     for item in promoted:
         lines.append(f"- {item.subject} {item.relation} {item.object} ({item.inference_type})")
-    if write_output:
+    if should_write:
         lines.append(f"written: {', '.join(written_paths)}")
     return "\n".join(lines)
 
@@ -2375,8 +2433,11 @@ def main(argv: list[str] | None = None) -> None:
     pack_parser = subparsers.add_parser("pack")
     pack_subparsers = pack_parser.add_subparsers(dest="pack_command")
     pack_validate_parser = pack_subparsers.add_parser("validate")
-    pack_validate_parser.add_argument("pack_path")
+    pack_validate_parser.add_argument("pack_ref")
     pack_validate_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_review_parser = pack_subparsers.add_parser("review")
+    pack_review_parser.add_argument("pack_ref")
+    pack_review_parser.add_argument("--json", action="store_true", dest="json_output")
     pack_install_parser = pack_subparsers.add_parser("install")
     pack_install_parser.add_argument("pack_path")
     pack_install_parser.add_argument("--force", action="store_true")
@@ -2751,7 +2812,7 @@ def main(argv: list[str] | None = None) -> None:
                 return
         if args.command == "pack":
             if args.pack_command == "validate":
-                text = run_pack_validate(Path(args.pack_path), json_output=args.json_output)
+                text = run_pack_validate_review(args.pack_ref, json_output=args.json_output)
                 print(text)
                 if "status: INVALID" in text and not args.json_output:
                     raise SystemExit(2)
@@ -2759,6 +2820,9 @@ def main(argv: list[str] | None = None) -> None:
                     payload = json.loads(text)
                     if not payload.get("passed", False):
                         raise SystemExit(2)
+                return
+            if args.pack_command == "review":
+                print(run_pack_review(args.pack_ref, json_output=args.json_output))
                 return
             if args.pack_command == "install":
                 print(run_pack_install(Path(args.pack_path), force=args.force, json_output=args.json_output))
