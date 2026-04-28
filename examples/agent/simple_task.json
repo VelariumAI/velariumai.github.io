@@ -1,0 +1,16 @@
+{
+  "id": "agent_simple_001",
+  "description": "Can Socrates die?",
+  "inputs": {
+    "facts": [
+      {"subject": "socrates", "relation": "is_a", "object": "man"},
+      {"subject": "man", "relation": "is_a", "object": "mortal"}
+    ]
+  },
+  "goal": {
+    "subject": "socrates",
+    "relation": "is_a",
+    "object": "mortal"
+  },
+  "created_at": "2026-04-27T00:00:00Z"
+}

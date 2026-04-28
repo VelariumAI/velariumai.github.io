@@ -1,0 +1,14 @@
+{
+  "string_to_id": {
+    "socrates": 0,
+    "is_a": 1,
+    "man": 2,
+    "mortal": 3
+  },
+  "id_to_string": {
+    "0": "socrates",
+    "1": "is_a",
+    "2": "man",
+    "3": "mortal"
+  }
+}

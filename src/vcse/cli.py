@@ -56,6 +56,15 @@ from vcse.compression import (
     format_metrics,
     CompressionError,
 )
+from vcse.agent import (
+    AgentError,
+    ExecutionError,
+    Plan,
+    Task,
+    run_task,
+    plan_task,
+    ExecutionState,
+)
 
 
 def build_logic_demo_state() -> WorldStateMemory:
@@ -1262,6 +1271,19 @@ def main(argv: list[str] | None = None) -> None:
     decompress_verify_parser.add_argument("target")
     decompress_verify_parser.add_argument("--json", action="store_true", dest="json_output")
 
+    agent_parser = subparsers.add_parser("agent")
+    agent_subparsers = agent_parser.add_subparsers(dest="agent_command")
+    agent_run_parser = agent_subparsers.add_parser("run")
+    agent_run_parser.add_argument("task_file", type=Path)
+    agent_run_parser.add_argument("--json", action="store_true", dest="json_output")
+    agent_run_parser.add_argument("--debug", action="store_true")
+    agent_plan_parser = agent_subparsers.add_parser("plan")
+    agent_plan_parser.add_argument("task_file", type=Path)
+    agent_plan_parser.add_argument("--json", action="store_true", dest="json_output")
+    agent_status_parser = agent_subparsers.add_parser("status")
+    agent_status_parser.add_argument("task_id")
+    agent_status_parser.add_argument("--json", action="store_true", dest="json_output")
+
     try:
         args = parser.parse_args(argv)
         settings = load_settings(args.config)
@@ -1531,6 +1553,57 @@ def main(argv: list[str] | None = None) -> None:
                 except CompressionError as exc:
                     print(f"status: ERROR\nerror_type: {exc.code}\nmessage: {exc.message}")
                     raise SystemExit(2)
+                return
+        if args.command == "agent":
+            import json as _json
+            if args.agent_command == "run":
+                try:
+                    task_data = _json.loads(Path(args.task_file).read_text())
+                    task_obj = Task.from_dict(task_data)
+                    _, plan, state = run_task(task_obj)
+                    print(f"status: {state.status.value}")
+                    print(f"task_id: {state.task_id}")
+                    print(f"completed_steps: {len(state.completed_steps)}")
+                    print(f"results: {_json.dumps(state.results, sort_keys=True)}")
+                    if args.json_output:
+                        print(_json.dumps({
+                            "status": state.status.value,
+                            "task_id": state.task_id,
+                            "completed_steps": len(state.completed_steps),
+                            "results": state.results,
+                            "plan_steps": len(plan.steps),
+                        }))
+                except AgentError as exc:
+                    print(f"status: ERROR\nerror_type: {exc.code}\nmessage: {exc.message}")
+                    raise SystemExit(2)
+                except Exception as exc:
+                    print(f"status: ERROR\nmessage: {exc}")
+                    raise SystemExit(2)
+                return
+            if args.agent_command == "plan":
+                try:
+                    task_data = _json.loads(Path(args.task_file).read_text())
+                    task_obj = Task.from_dict(task_data)
+                    plan = plan_task(task_obj)
+                    print(f"status: PLAN_CREATED")
+                    print(f"task_id: {plan.task_id}")
+                    print(f"step_count: {len(plan.steps)}")
+                    for i, step in enumerate(plan.steps):
+                        print(f"  step_{i}: type={step.type} tool={step.tool_name}")
+                    if args.json_output:
+                        print(_json.dumps(plan.to_dict(), sort_keys=True))
+                except AgentError as exc:
+                    print(f"status: ERROR\nerror_type: {exc.code}\nmessage: {exc.message}")
+                    raise SystemExit(2)
+                except Exception as exc:
+                    print(f"status: ERROR\nmessage: {exc}")
+                    raise SystemExit(2)
+                return
+            if args.agent_command == "status":
+                # Status lookup by task_id — for now report not found (state not persisted)
+                print(f"status: UNKNOWN")
+                print(f"task_id: {args.task_id}")
+                print(f"message: task state not persisted (in-memory only)")
                 return
         if args.command == "dsl":
             if args.dsl_command == "validate":
