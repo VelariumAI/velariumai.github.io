@@ -25,6 +25,7 @@ from vcse.gauntlet import (
     render_gauntlet_summary,
 )
 from vcse.generation import GenerationError, VerifiedGenerator, spec_from_dict
+from vcse.inference.inverse import infer_inverse_claims
 from vcse.index import SymbolicRetriever
 from vcse.engine import CaseValidationError, build_search, state_from_case
 from vcse.ingestion.pipeline import IngestionError, ingest_file
@@ -315,7 +316,41 @@ def run_ask(
             return None
         return _render_result(session, result)
 
+    def _run_inverse_capital_fact_lookup() -> str | None:
+        clean = text.strip()
+        low = clean.lower()
+        prefix = "what is "
+        suffix = " the capital of?"
+        if not (low.startswith(prefix) and low.endswith(suffix)):
+            return None
+        city = clean[len(prefix):len(clean) - len(suffix)].strip()
+        if not city:
+            return None
+        explicit_claims = _knowledge_claims_from_dict_claims(preload_claims or [])
+        explicit_values = sorted(
+            {
+                claim.object
+                for claim in explicit_claims
+                if claim.subject.lower() == city.lower() and claim.relation.lower() == "capital_of"
+            }
+        )
+        if len(explicit_values) == 1:
+            return explicit_values[0]
+        inferred_values = sorted(
+            {
+                claim.object
+                for claim in infer_inverse_claims(explicit_claims)
+                if claim.subject.lower() == city.lower() and claim.relation.lower() == "capital_of"
+            }
+        )
+        if len(inferred_values) == 1:
+            return inferred_values[0]
+        return None
+
     def _run() -> str:
+        inverse_capital = _run_inverse_capital_fact_lookup()
+        if inverse_capital is not None:
+            return inverse_capital
         boolean_capital = _run_boolean_capital_check()
         if boolean_capital is not None:
             return boolean_capital
@@ -1522,41 +1557,58 @@ def _goal_from_normalized_query(
     if not subject_clean:
         return None
 
-    index: dict[tuple[str, str], set[str]] = {}
+    explicit_index: dict[tuple[str, str], set[str]] = {}
     for claim in preload_claims:
         s = str(claim.get("subject", "")).strip()
         r = str(claim.get("relation", "")).strip()
         o = str(claim.get("object", "")).strip()
         if not s or not r or not o:
             continue
-        index.setdefault((s.lower(), r.lower()), set()).add(o)
+        explicit_index.setdefault((s.lower(), r.lower()), set()).add(o)
+
+    inferred_index: dict[tuple[str, str], set[str]] = {}
+    explicit_knowledge_claims = _knowledge_claims_from_dict_claims(preload_claims)
+    for inferred_claim in infer_inverse_claims(explicit_knowledge_claims):
+        inferred_index.setdefault((inferred_claim.subject.lower(), inferred_claim.relation.lower()), set()).add(
+            inferred_claim.object
+        )
+
+    def _values(subject_key: str, relation_key: str) -> list[str]:
+        explicit = sorted(explicit_index.get((subject_key, relation_key), set()))
+        if explicit:
+            return explicit
+        return sorted(inferred_index.get((subject_key, relation_key), set()))
 
     if relation == "capital_of":
-        values = sorted(index.get((subject_clean.lower(), "has_capital"), set()))
-        if len(values) != 1:
-            return None
-        return subject_clean, "has_capital", values[0]
+        values = _values(subject_clean.lower(), "has_capital")
+        if len(values) == 1:
+            return subject_clean, "has_capital", values[0]
+        inferred_values = sorted(inferred_index.get((subject_clean.lower(), "capital_of"), set()))
+        if len(inferred_values) == 1:
+            country = inferred_values[0]
+            return country, "has_capital", subject_clean
+        return None
 
     if relation == "located_in_country":
-        values = sorted(index.get((subject_clean.lower(), "located_in_country"), set()))
+        values = _values(subject_clean.lower(), "located_in_country")
         if len(values) == 1:
             return subject_clean, "located_in_country", values[0]
-        values = sorted(index.get((subject_clean.lower(), "capital_of"), set()))
+        values = _values(subject_clean.lower(), "capital_of")
         if len(values) == 1:
             return subject_clean, "capital_of", values[0]
         return None
 
     if relation == "part_of":
-        values = sorted(index.get((subject_clean.lower(), "part_of"), set()))
+        values = _values(subject_clean.lower(), "part_of")
         if len(values) == 1:
             return subject_clean, "part_of", values[0]
-        values = sorted(index.get((subject_clean.lower(), "located_in_continent"), set()))
+        values = _values(subject_clean.lower(), "located_in_continent")
         if len(values) == 1:
             return subject_clean, "located_in_continent", values[0]
         return None
 
     if relation == "uses_currency":
-        values = sorted(index.get((subject_clean.lower(), "uses_currency"), set()))
+        values = _values(subject_clean.lower(), "uses_currency")
         if len(values) == 1:
             return subject_clean, "uses_currency", values[0]
         return None
@@ -1575,25 +1627,25 @@ def _goal_from_normalized_query(
         return None
 
     if relation == "has_country_code":
-        values = sorted(index.get((subject_clean.lower(), "has_country_code"), set()))
+        values = _values(subject_clean.lower(), "has_country_code")
         if len(values) == 1:
             return subject_clean, "has_country_code", values[0]
         return None
 
     if relation == "located_in_region":
-        values = sorted(index.get((subject_clean.lower(), "located_in_region"), set()))
+        values = _values(subject_clean.lower(), "located_in_region")
         if len(values) == 1:
             return subject_clean, "located_in_region", values[0]
         return None
 
     if relation == "located_in_subregion":
-        values = sorted(index.get((subject_clean.lower(), "located_in_subregion"), set()))
+        values = _values(subject_clean.lower(), "located_in_subregion")
         if len(values) == 1:
             return subject_clean, "located_in_subregion", values[0]
         return None
 
     if relation == "instance_of" and obj is not None:
-        values = {item.lower(): item for item in sorted(index.get((subject_clean.lower(), "instance_of"), set()))}
+        values = {item.lower(): item for item in _values(subject_clean.lower(), "instance_of")}
         if obj == "City":
             if "city" in values:
                 return subject_clean, "instance_of", values["city"]
@@ -1617,6 +1669,8 @@ def _goal_from_boolean_capital_query(
     obj_clean = obj.strip()
     if not subject_clean or not obj_clean:
         return None
+    explicit_knowledge_claims = _knowledge_claims_from_dict_claims(preload_claims)
+    inferred_claims = infer_inverse_claims(explicit_knowledge_claims)
     for claim in preload_claims:
         s = str(claim.get("subject", "")).strip()
         r = str(claim.get("relation", "")).strip()
@@ -1625,7 +1679,85 @@ def _goal_from_boolean_capital_query(
             return s, r, o
         if s.lower() == obj_clean.lower() and r.lower() == "has_capital" and o.lower() == subject_clean.lower():
             return s, r, o
+    for claim in inferred_claims:
+        if (
+            claim.subject.lower() == subject_clean.lower()
+            and claim.relation.lower() == "capital_of"
+            and claim.object.lower() == obj_clean.lower()
+        ):
+            return claim.subject, claim.relation, claim.object
+        if (
+            claim.subject.lower() == obj_clean.lower()
+            and claim.relation.lower() == "has_capital"
+            and claim.object.lower() == subject_clean.lower()
+        ):
+            return claim.subject, claim.relation, claim.object
     return None
+
+
+def _knowledge_claims_from_dict_claims(claims: list[dict[str, str]]) -> list[KnowledgeClaim]:
+    from vcse.knowledge.pack_model import KnowledgeProvenance
+
+    converted: list[KnowledgeClaim] = []
+    for claim in claims:
+        subject = str(claim.get("subject", "")).strip()
+        relation = str(claim.get("relation", "")).strip()
+        obj = str(claim.get("object", "")).strip()
+        if not subject or not relation or not obj:
+            continue
+        converted.append(
+            KnowledgeClaim(
+                subject=subject,
+                relation=relation,
+                object=obj,
+                provenance=KnowledgeProvenance(
+                    source_id="runtime",
+                    source_type="runtime",
+                    location="runtime",
+                    evidence_text="runtime claim",
+                ),
+            )
+        )
+    return converted
+
+
+def run_infer_inverse(pack_spec: str, json_output: bool = False) -> str:
+    dsl_bundle, preload_claims, _ = resolve_runtime_inputs(dsl_path=None, pack_values=[pack_spec], packs_csv=None)
+    _ = dsl_bundle  # for symmetry with runtime loading; inference uses claims only
+    inferred = infer_inverse_claims(_knowledge_claims_from_dict_claims(preload_claims))
+    if json_output:
+        payload = {
+            "status": "INFERENCE_COMPLETE",
+            "pack": pack_spec,
+            "inferred_count": len(inferred),
+            "sample": [
+                {
+                    "subject": claim.subject,
+                    "relation": claim.relation,
+                    "object": claim.object,
+                    "derived_from": claim.derived_from,
+                    "rule": claim.rule,
+                    "trust_tier": claim.trust_tier,
+                }
+                for claim in inferred[:10]
+            ],
+        }
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        "status: INFERENCE_COMPLETE",
+        f"pack: {pack_spec}",
+        f"inferred_count: {len(inferred)}",
+        "sample:",
+    ]
+    if inferred:
+        for claim in inferred[:10]:
+            lines.append(
+                f"  - {claim.subject} {claim.relation} {claim.object} "
+                f"(derived_from={claim.derived_from}, rule={claim.rule}, trust_tier={claim.trust_tier})"
+            )
+    else:
+        lines.append("  - none")
+    return "\n".join(lines)
 
 
 def _classify_query_type(text: str):
@@ -1922,6 +2054,12 @@ def main(argv: list[str] | None = None) -> None:
     trust_stale_parser = trust_subparsers.add_parser("stale")
     trust_stale_parser.add_argument("target")
     trust_stale_parser.add_argument("--json", action="store_true", dest="json_output")
+
+    infer_parser = subparsers.add_parser("infer")
+    infer_subparsers = infer_parser.add_subparsers(dest="infer_command")
+    infer_inverse_parser = infer_subparsers.add_parser("inverse")
+    infer_inverse_parser.add_argument("--pack", required=True)
+    infer_inverse_parser.add_argument("--json", action="store_true", dest="json_output")
 
     ledger_parser = subparsers.add_parser("ledger")
     ledger_subparsers = ledger_parser.add_subparsers(dest="ledger_command")
@@ -2304,6 +2442,10 @@ def main(argv: list[str] | None = None) -> None:
                 return
             if args.trust_command == "stale":
                 print(run_trust_stale(Path(args.target), json_output=args.json_output))
+                return
+        if args.command == "infer":
+            if args.infer_command == "inverse":
+                print(run_infer_inverse(args.pack, json_output=args.json_output))
                 return
         if args.command == "ledger":
             if args.ledger_command == "verify":
