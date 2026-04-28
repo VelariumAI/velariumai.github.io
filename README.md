@@ -331,3 +331,17 @@ vcse pack list
 ```
 
 See [docs/KNOWLEDGE.md](docs/KNOWLEDGE.md) for the source, validation, conflict, and pack format.
+
+## Inverse Inference
+
+VCSE v3.3.0 adds deterministic inverse-relation inference as a read-only query fallback.
+
+- Uses ontology inverse definitions only (example: `has_capital -> capital_of`)
+- Checks explicit claims first, then inferred inverses
+- Does not write inferred claims into packs
+
+Inspect inferred inverse claims:
+
+```bash
+vcse infer inverse --pack general_world
+```
