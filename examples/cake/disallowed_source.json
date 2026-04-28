@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "description": "disallowed domain test",
+  "sources": [
+    {
+      "id": "disallowed",
+      "source_type": "http_static",
+      "format": "json",
+      "path_or_url": "https://evil.com/data.json"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0",
+  "description": "malformed — missing format field",
+  "sources": [
+    {"id": "bad_source", "source_type": "local_file", "path_or_url": "data.json"}
+  ]
+}
