@@ -4,6 +4,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+from vcse.benchmark_inference_classification import InferenceType
+from vcse.benchmark_coverage import run_coverage_benchmark
+from vcse.cli import run_ask
+
 
 def run_cli(*args: str, pack_home: Path) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
@@ -37,6 +41,13 @@ def test_benchmark_coverage_text_and_json(tmp_path: Path) -> None:
     assert payload["status"] == "COVERAGE_COMPLETE"
     assert payload["total"] >= 500
     assert payload["incorrect"] == 0
+    assert "explicit_answer_count" in payload
+    assert "inverse_inferred_count" in payload
+    assert "transitive_inferred_count" in payload
+    assert "unknown_count" in payload
+    assert "unsupported_query_count" in payload
+    assert "total_queries" in payload
+    assert "false_verified_count" in payload
     assert "compression_ratio" in payload
     assert "compressed_size" in payload
     assert "uncompressed_size" in payload
@@ -61,3 +72,146 @@ def test_general_knowledge_benchmark_ids_are_unique() -> None:
         ids.append(row["id"])
     assert len(ids) >= 500
     assert len(ids) == len(set(ids))
+
+
+def test_coverage_classification_counts_and_totals(tmp_path: Path) -> None:
+    pack_path = tmp_path / "pack"
+    pack_path.mkdir(parents=True)
+    claims = [
+        {
+            "subject": "France",
+            "relation": "has_capital",
+            "object": "Paris",
+            "provenance": {
+                "source_id": "s",
+                "source_type": "test",
+                "location": "unit",
+                "evidence_text": "e",
+            },
+            "trust_tier": "T3_CANDIDATE",
+        },
+        {
+            "subject": "Paris",
+            "relation": "located_in_country",
+            "object": "France",
+            "provenance": {
+                "source_id": "s",
+                "source_type": "test",
+                "location": "unit",
+                "evidence_text": "e",
+            },
+            "trust_tier": "T3_CANDIDATE",
+        },
+        {
+            "subject": "France",
+            "relation": "part_of",
+            "object": "Europe",
+            "provenance": {
+                "source_id": "s",
+                "source_type": "test",
+                "location": "unit",
+                "evidence_text": "e",
+            },
+            "trust_tier": "T3_CANDIDATE",
+        },
+    ]
+    (pack_path / "claims.jsonl").write_text("\n".join(json.dumps(row) for row in claims) + "\n")
+
+    benchmark_path = tmp_path / "bench.jsonl"
+    cases = [
+        {"id": "explicit", "subject": "France", "relation": "has_capital", "object": "Paris", "expected": "candidate"},
+        {"id": "inverse", "subject": "Paris", "relation": "capital_of", "object": "France", "expected": "unknown"},
+        {"id": "transitive", "subject": "Paris", "relation": "located_in_region", "object": "Europe", "expected": "unknown"},
+    ]
+    benchmark_path.write_text("\n".join(json.dumps(row) for row in cases) + "\n")
+
+    summary = run_coverage_benchmark(pack_path=pack_path, benchmark_path=benchmark_path)
+    assert summary["explicit_answer_count"] == 1
+    assert summary["inverse_inferred_count"] == 1
+    assert summary["transitive_inferred_count"] == 1
+    assert summary["unknown_count"] == 0
+    assert summary["unsupported_query_count"] == 0
+    assert summary["total_queries"] == 3
+    assert (
+        summary["explicit_answer_count"]
+        + summary["inverse_inferred_count"]
+        + summary["transitive_inferred_count"]
+        + summary["unknown_count"]
+        + summary["unsupported_query_count"]
+    ) == summary["total_queries"]
+
+
+def test_coverage_classification_deterministic(tmp_path: Path) -> None:
+    pack_path = tmp_path / "pack"
+    pack_path.mkdir(parents=True)
+    claim = {
+        "subject": "France",
+        "relation": "has_capital",
+        "object": "Paris",
+        "provenance": {
+            "source_id": "s",
+            "source_type": "test",
+            "location": "unit",
+            "evidence_text": "e",
+        },
+        "trust_tier": "T3_CANDIDATE",
+    }
+    (pack_path / "claims.jsonl").write_text(json.dumps(claim) + "\n")
+    benchmark_path = tmp_path / "bench.jsonl"
+    benchmark_case = {
+        "id": "inverse",
+        "subject": "Paris",
+        "relation": "capital_of",
+        "object": "France",
+        "expected": "unknown",
+    }
+    benchmark_path.write_text(json.dumps(benchmark_case) + "\n")
+
+    first = run_coverage_benchmark(pack_path=pack_path, benchmark_path=benchmark_path)
+    second = run_coverage_benchmark(pack_path=pack_path, benchmark_path=benchmark_path)
+    assert first["explicit_answer_count"] == second["explicit_answer_count"]
+    assert first["inverse_inferred_count"] == second["inverse_inferred_count"]
+    assert first["transitive_inferred_count"] == second["transitive_inferred_count"]
+    assert first["unknown_count"] == second["unknown_count"]
+    assert first["unsupported_query_count"] == second["unsupported_query_count"]
+
+
+def test_coverage_rate_unchanged_for_general_world(tmp_path: Path) -> None:
+    home = tmp_path / "vcse_home"
+    repo_root = Path(__file__).resolve().parents[1]
+    indexed = run_cli("pack", "index", "--dirs", str(repo_root / "examples" / "packs"), pack_home=home)
+    assert indexed.returncode == 0
+
+    raw = run_cli("benchmark", "coverage", "--pack", "general_world", "--json", pack_home=home)
+    assert raw.returncode == 0
+    payload = json.loads(raw.stdout)
+    assert payload["coverage_rate"] == 1.0
+
+
+def test_run_ask_resolution_type_classification() -> None:
+    claims = [
+        {"subject": "France", "relation": "has_capital", "object": "Paris"},
+        {"subject": "Paris", "relation": "located_in_country", "object": "France"},
+        {"subject": "France", "relation": "part_of", "object": "Europe"},
+    ]
+    explicit = run_ask(
+        "What is the capital of France?",
+        preload_claims=claims,
+        return_resolution_type=True,
+    )
+    inverse = run_ask(
+        "What is Paris the capital of?",
+        preload_claims=claims,
+        return_resolution_type=True,
+    )
+    transitive = run_ask(
+        "What continent is Paris in?",
+        preload_claims=claims,
+        return_resolution_type=True,
+    )
+    assert isinstance(explicit, tuple)
+    assert isinstance(inverse, tuple)
+    assert isinstance(transitive, tuple)
+    assert explicit[1] == InferenceType.UNKNOWN
+    assert inverse[1] == InferenceType.INVERSE
+    assert transitive[1] == InferenceType.TRANSITIVE
