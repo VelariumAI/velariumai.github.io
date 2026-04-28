@@ -36,11 +36,11 @@ Input
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Semantic Regions (v3.1)
+## Semantic Regions (v3.2)
 
-- Deterministic grouping by relation
-- Inverse relations currently treated independently
-- Full ontology normalization planned for v3.2
+- Deterministic grouping by relation (default behavior unchanged)
+- Optional canonical grouping for inverse-relation pairs (for example, `has_capital`/`capital_of`)
+- Canonical mode is opt-in via `vcse region list --canonical`
 
 
 ## Install

@@ -28,3 +28,22 @@ Example:
 These produce separate regions.
 
 This is intentional. Semantic normalization (including inverse relation merging) is deferred to v3.2.
+
+
+## v3.2 Relation Ontology (Opt-in Canonicalization)
+
+- Canonicalization is deterministic and optional.
+- Default behavior is unchanged: relation strings are grouped exactly as written.
+- Canonical mode merges inverse relations via ontology mapping.
+
+Current ontology entries:
+
+- `has_capital` canonicalizes to `has_capital`
+- `capital_of` canonicalizes to `has_capital`
+
+CLI behavior:
+
+- `vcse region list --pack <pack>` keeps v3.1 exact-relation grouping.
+- `vcse region list --pack <pack> --canonical` enables canonical grouping.
+
+This layer does not mutate packs and does not change `ask()` behavior.
