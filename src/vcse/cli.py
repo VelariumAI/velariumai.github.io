@@ -132,6 +132,25 @@ def render_error(error_type: str, reason: str) -> str:
     )
 
 
+def render_report_summary_from_dict(data: dict) -> str:
+    lines = [
+        f"status: {data.get('status', 'UNKNOWN')}",
+        f"run_id: {data.get('run_id', '')}",
+        f"timestamp: {data.get('timestamp', '')}",
+        f"sources_processed: {len(data.get('source_ids', []))}",
+        f"claims_extracted: {data.get('claims_extracted', 0)}",
+        f"claims_ingested: {data.get('claims_ingested', 0)}",
+        f"trust_decisions: {data.get('trust_decisions', 0)}",
+        f"dry_run: {data.get('dry_run', False)}",
+    ]
+    errors = data.get("errors", [])
+    if errors:
+        lines.append("errors:")
+        for e in errors:
+            lines.append(f"  - {e}")
+    return "\n".join(lines)
+
+
 def run_case_file(path: Path) -> str:
     state = load_case_file(path)
     result = build_search().run(state)
@@ -1315,6 +1334,24 @@ def main(argv: list[str] | None = None) -> None:
     ws_tasks_parser.add_argument("id")
     ws_tasks_parser.add_argument("--json", action="store_true", dest="json_output")
 
+    # CAKE subparser
+    cake_parser = subparsers.add_parser("cake", help="Controlled Acquisition of Knowledge Engine")
+    cake_subparsers = cake_parser.add_subparsers(dest="cake_command")
+
+    cake_validate_parser = cake_subparsers.add_parser("validate", help="Validate a CAKE source config")
+    cake_validate_parser.add_argument("--source", required=True, help="Path to source config JSON")
+
+    cake_run_parser = cake_subparsers.add_parser("run", help="Run CAKE acquisition pipeline")
+    cake_run_parser.add_argument("--source", required=True, help="Path to source config JSON")
+    cake_run_parser.add_argument("--dry-run", action="store_true", dest="dry_run", help="Validate and extract without writing")
+    cake_run_parser.add_argument("--limit", type=int, default=None, help="Max items to fetch per source")
+    cake_run_parser.add_argument("--allow-http", action="store_true", dest="allow_http", help="Enable HTTP transport (off by default)")
+    cake_run_parser.add_argument("--transport", choices=["file", "http"], default="file", help="Transport type (default: file)")
+    cake_run_parser.add_argument("--allow-partial", action="store_true", dest="allow_partial", help="Continue on per-source failure")
+
+    cake_report_parser = cake_subparsers.add_parser("report", help="Display a CAKE run report")
+    cake_report_parser.add_argument("report_file", help="Path to a CakeRunReport JSON file")
+
     try:
         args = parser.parse_args(argv)
         settings = load_settings(args.config)
@@ -1822,6 +1859,49 @@ def main(argv: list[str] | None = None) -> None:
                     raise SystemExit(2)
                 return
                 return
+        if args.command == "cake":
+            from vcse.cake import (
+                CakeConfigError,
+                CakePipelineError,
+                CakeTransportError,
+                load_source_config,
+                render_report,
+                render_report_summary,
+                run_cake_pipeline,
+            )
+            if args.cake_command == "validate":
+                config = load_source_config(args.source)
+                print(f"status: VALID")
+                print(f"sources: {len(config.sources)}")
+                for src in config.sources:
+                    enabled = "enabled" if src.enabled else "disabled"
+                    print(f"  - {src.id} ({src.source_type}/{src.format}) [{enabled}]")
+                return
+            if args.cake_command == "run":
+                report = run_cake_pipeline(
+                    args.source,
+                    limit=args.limit,
+                    dry_run=args.dry_run,
+                    allow_http=args.allow_http,
+                    transport_type=args.transport,
+                    allow_partial=args.allow_partial,
+                )
+                print(render_report(report))
+                if report.status == "CAKE_FAILED":
+                    raise SystemExit(2)
+                return
+            if args.cake_command == "report":
+                import json as _json
+                from pathlib import Path as _Path
+                report_path = _Path(args.report_file)
+                if not report_path.exists():
+                    print(render_error("FILE_NOT_FOUND", f"report file not found: {report_path}"), file=sys.stderr)
+                    raise SystemExit(2)
+                data = _json.loads(report_path.read_text())
+                print(render_report_summary_from_dict(data))
+                return
+            cake_parser.print_help()
+            return
         if args.command == "dsl":
             if args.dsl_command == "validate":
                 document = DSLLoader.load(args.path)
