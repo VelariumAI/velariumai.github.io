@@ -45,7 +45,17 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
     for case in cases:
         key = (case["subject"], case["relation"], case["object"])
         hit = claim_map.get(key)
-        if hit is None:
+        resolution_type = classify_resolution_for_claim(
+            claim_models,
+            subject=case["subject"],
+            relation=case["relation"],
+            object_=case["object"],
+        )
+
+        if hit is None and resolution_type in {InferenceType.INVERSE, InferenceType.TRANSITIVE}:
+            observed = "candidate"
+            candidate += 1
+        elif hit is None:
             observed = "unknown"
             unknown += 1
         elif str(hit.get("trust_tier", "")) == "T5_CERTIFIED":
@@ -62,12 +72,6 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
         if expected == "unknown" and observed in {"verified", "candidate"}:
             false_verified_count += 1
 
-        resolution_type = classify_resolution_for_claim(
-            claim_models,
-            subject=case["subject"],
-            relation=case["relation"],
-            object_=case["object"],
-        )
         if resolution_type == InferenceType.EXPLICIT:
             explicit_answer_count += 1
         elif resolution_type == InferenceType.INVERSE:
