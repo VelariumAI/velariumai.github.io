@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install hatch
+      - name: Verify tag matches pyproject version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG=$(python -c "import tomllib; d=tomllib.load(open('pyproject.toml','rb')); print(d['project']['version'])")
+          echo "Tag version: $TAG"
+          echo "Package version: $PKG"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "ERROR: tag $TAG does not match pyproject.toml version $PKG" >&2
+            exit 1
+          fi
+      - name: Build wheel + sdist
+        run: hatch build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Generate changelog from conventional commits
+        id: changelog
+        run: |
+          PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREV" ]; then
+            LOG=$(git log --pretty=format:"- %s (%h)" | head -50)
+          else
+            LOG=$(git log --pretty=format:"- %s (%h)" "$PREV"..HEAD)
+          fi
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo "$LOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          body: |
+            ## What's Changed
+            ${{ steps.changelog.outputs.CHANGELOG }}
+
+            ## Installation
+            ```bash
+            pip install vcse==${{ github.ref_name }}
+            ```
+          generate_release_notes: false
+          make_latest: true

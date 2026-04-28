@@ -3,7 +3,9 @@
 from vcse.packs.activator import ActivationResult, PackActivator
 from vcse.packs.auditor import AuditReport, PackAuditor
 from vcse.packs.errors import PackError
+from vcse.packs.index import PackIndex, PackIndexError
 from vcse.packs.installer import InstallResult, PackInstaller
+from vcse.packs.lifecycle import PackLifecycleError, PackLifecycleManager
 from vcse.packs.loader import load_manifest
 from vcse.packs.manifest import PackDependency, PackIntegrity, PackManifest
 from vcse.packs.registry import InstalledPackRecord, PackRegistry, pack_home, pack_store_dir, registry_path
@@ -22,7 +24,11 @@ __all__ = [
     "PackDependency",
     "PackError",
     "PackInstaller",
+    "PackIndex",
+    "PackIndexError",
     "PackIntegrity",
+    "PackLifecycleError",
+    "PackLifecycleManager",
     "PackManifest",
     "PackRegistry",
     "PackValidationResult",

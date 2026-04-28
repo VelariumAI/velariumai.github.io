@@ -5,9 +5,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from vcse.knowledge.dedup import deduplicate_claims
 from vcse.knowledge.pack_builder import KnowledgePackBuilder
 from vcse.knowledge.pack_model import KnowledgeClaim, KnowledgePack, KnowledgeProvenance
 from vcse.ledger.audit import build_integrity
+from vcse.packs.index import PackIndex
+from vcse.packs.lifecycle import PackLifecycleManager
 
 
 def _read_claims(pack_path: Path) -> list[KnowledgeClaim]:
@@ -47,19 +50,35 @@ class CakePackUpdater:
         pack_path = Path(pack_path)
 
         if not pack_path.exists() or not (pack_path / "claims.jsonl").exists():
-            return self._create_new_pack(pack_path, new_claims)
+            added = self._create_new_pack(pack_path, new_claims)
+            PackIndex().update_entry(pack_path)
+            return added
+
+        PackLifecycleManager().assert_writable(pack_path)
 
         existing = _read_claims(pack_path)
-        existing_keys = {c.key for c in existing}
-
-        to_add = [c for c in new_claims if c.key not in existing_keys]
+        dedup = deduplicate_claims(existing, new_claims)
+        to_add = dedup.unique_claims
         if not to_add:
+            duplicate_provenance = [
+                provenance
+                for key in sorted(dedup.merged_provenance_map)
+                for provenance in dedup.merged_provenance_map[key][1:]
+            ]
+            if duplicate_provenance:
+                all_prov = _read_provenance(pack_path) + duplicate_provenance
+                _write_jsonl(pack_path / "provenance.jsonl", [p.to_dict() for p in all_prov])
             return 0
 
         all_claims = existing + to_add
         _write_jsonl(pack_path / "claims.jsonl", [c.to_dict() for c in all_claims])
 
-        all_prov = _read_provenance(pack_path) + [c.provenance for c in to_add]
+        duplicate_provenance = [
+            provenance
+            for key in sorted(dedup.merged_provenance_map)
+            for provenance in dedup.merged_provenance_map[key][1:]
+        ]
+        all_prov = _read_provenance(pack_path) + [c.provenance for c in to_add] + duplicate_provenance
         _write_jsonl(pack_path / "provenance.jsonl", [p.to_dict() for p in all_prov])
 
         metrics_path = pack_path / "metrics.json"
@@ -71,6 +90,7 @@ class CakePackUpdater:
 
         integrity = build_integrity(pack_path)
         (pack_path / "integrity.json").write_text(json.dumps(integrity, indent=2))
+        PackIndex().update_entry(pack_path)
 
         return len(to_add)
 
@@ -82,4 +102,8 @@ class CakePackUpdater:
             provenance=[c.provenance for c in claims],
         )
         KnowledgePackBuilder().write_pack(pack, pack_path)
+        metadata_path = pack_path / "pack.json"
+        metadata = json.loads(metadata_path.read_text())
+        metadata["lifecycle_status"] = "candidate"
+        metadata_path.write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
         return len(claims)

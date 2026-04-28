@@ -10,6 +10,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 
 from vcse.benchmark import BenchmarkCaseError, format_benchmark_text, run_benchmark
+from vcse.benchmark_coverage import CoverageBenchmarkError, format_coverage_text, run_coverage_benchmark
 from vcse.config import load_settings
 from vcse.dsl import DSLCompiler, DSLLoader, DSLValidator, GLOBAL_REGISTRY
 from vcse.dsl.errors import DSLError
@@ -40,6 +41,9 @@ from vcse.packs import (
     PackAuditor,
     PackError,
     PackInstaller,
+    PackIndex,
+    PackIndexError,
+    PackLifecycleManager,
     PackRegistry,
     PackValidator,
 )
@@ -741,6 +745,25 @@ def run_knowledge_stats(path: Path) -> str:
 
 
 def run_pack_list(json_output: bool = False) -> str:
+    indexed_items = PackIndex().list_packs(include_stale=False)
+    if indexed_items:
+        if json_output:
+            return json.dumps(indexed_items, sort_keys=True)
+        return "\n".join(
+            [
+                "status: PACK_INDEX_LIST",
+                "packs:",
+                *[
+                    (
+                        f"  - {item.get('pack_id')}@{item.get('version')} "
+                        f"domain={item.get('domain')} lifecycle={item.get('lifecycle_status')} "
+                        f"claims={item.get('claim_count')} path={item.get('pack_path')}"
+                    )
+                    for item in indexed_items
+                ],
+            ]
+        )
+
     registry = PackRegistry()
     items = registry.list()
     if json_output:
@@ -817,6 +840,31 @@ def run_pack_uninstall(pack_id: str, version: str | None = None, json_output: bo
 
 
 def run_pack_info(pack_id: str, version: str | None = None, json_output: bool = False) -> str:
+    index = PackIndex()
+    query = f"{pack_id}@{version}" if version else pack_id
+    try:
+        metadata = index.get_pack_metadata(query)
+        if json_output:
+            return json.dumps(metadata, sort_keys=True)
+        return "\n".join(
+            [
+                "status: PACK_INFO",
+                f"id: {metadata.get('pack_id')}",
+                f"version: {metadata.get('version')}",
+                f"domain: {metadata.get('domain')}",
+                f"lifecycle_status: {metadata.get('lifecycle_status')}",
+                f"claim_count: {metadata.get('claim_count')}",
+                f"certified_count: {metadata.get('certified_count')}",
+                f"candidate_count: {metadata.get('candidate_count')}",
+                f"source_ids: {','.join(metadata.get('source_ids', []))}",
+                f"pack_path: {metadata.get('pack_path')}",
+                f"last_updated: {metadata.get('last_updated')}",
+            ]
+        )
+    except PackIndexError as exc:
+        if exc.error_type != "PACK_NOT_FOUND":
+            raise
+
     record = PackInstaller().get_pack(pack_id, version)
     if json_output:
         return json.dumps(record, sort_keys=True)
@@ -830,6 +878,22 @@ def run_pack_info(pack_id: str, version: str | None = None, json_output: bool = 
             f"install_path: {record.get('install_path')}",
         ]
     )
+
+
+def _resolve_indexed_pack_path(pack_id: str) -> Path:
+    metadata = PackIndex().get_pack_metadata(pack_id)
+    pack_path = Path(str(metadata.get("pack_path", "")))
+    if not pack_path.exists():
+        raise PackError("PACK_NOT_FOUND", f"pack not found: {pack_id}")
+    return pack_path
+
+
+def run_benchmark_coverage(pack_id: str, benchmark_path: Path, json_output: bool = False) -> str:
+    pack_path = _resolve_indexed_pack_path(pack_id)
+    summary = run_coverage_benchmark(pack_path=pack_path, benchmark_path=benchmark_path)
+    if json_output:
+        return json.dumps(summary, sort_keys=True)
+    return format_coverage_text(summary)
 
 
 def run_pack_audit(target: str, json_output: bool = False) -> str:
@@ -852,6 +916,86 @@ def run_pack_audit(target: str, json_output: bool = False) -> str:
             f"hash_integrity_status: {report.hash_integrity_status}",
         ]
     )
+
+
+def run_pack_index(scan_dirs: list[Path], json_output: bool = False) -> str:
+    index = PackIndex()
+    before = index.load_index()
+    index.build_index(scan_dirs)
+    after = index.load_index()
+    stale_count = sum(1 for item in after.values() if bool(item.get("stale")))
+    payload = {"status": "INDEXED", "packs_found": len(after), "stale": stale_count}
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(
+        [
+            "status: INDEXED",
+            f"packs_found: {len(after)}",
+            f"stale: {stale_count}",
+            f"updated_entries: {max(0, len(after) - len(before))}",
+        ]
+    )
+
+
+def run_pack_list_index(include_stale: bool = False, json_output: bool = False) -> str:
+    items = PackIndex().list_packs(include_stale=include_stale)
+    if json_output:
+        return json.dumps(items, sort_keys=True)
+    lines = ["status: PACK_INDEX_LIST", "packs:"]
+    if not items:
+        lines.append("  - none")
+    else:
+        for item in items:
+            lines.append(
+                (
+                    f"  - {item.get('pack_id')}@{item.get('version')} "
+                    f"lifecycle={item.get('lifecycle_status')} claims={item.get('claim_count')} "
+                    f"stale={item.get('stale')} path={item.get('pack_path')}"
+                )
+            )
+    return "\n".join(lines)
+
+
+def run_pack_freeze(pack_path: Path, json_output: bool = False) -> str:
+    manager = PackLifecycleManager()
+    manager.freeze_pack(pack_path)
+    PackIndex().update_entry(pack_path)
+    payload = {"status": "FROZEN", "path": str(pack_path)}
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(["status: FROZEN", f"path: {pack_path}"])
+
+
+def run_pack_archive(pack_path: Path, json_output: bool = False) -> str:
+    manager = PackLifecycleManager()
+    manager.archive_pack(pack_path)
+    PackIndex().update_entry(pack_path)
+    payload = {"status": "ARCHIVED", "path": str(pack_path)}
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(["status: ARCHIVED", f"path: {pack_path}"])
+
+
+def run_pack_create(name: str, base_dir: Path, json_output: bool = False) -> str:
+    pack_dir = Path(base_dir) / name
+    if pack_dir.exists():
+        raise PackError("PACK_EXISTS", f"pack already exists: {pack_dir}")
+    pack_dir.mkdir(parents=True, exist_ok=False)
+    metadata = {
+        "id": name,
+        "version": "1.0.0",
+        "domain": "general",
+        "claim_count": 0,
+        "lifecycle_status": "candidate",
+    }
+    (pack_dir / "pack.json").write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
+    (pack_dir / "claims.jsonl").write_text("")
+    (pack_dir / "provenance.jsonl").write_text("")
+    PackIndex().update_entry(pack_dir)
+    payload = {"status": "CREATED", "path": str(pack_dir)}
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(["status: CREATED", f"path: {pack_dir}"])
 
 
 def _load_claims_from_jsonl(path: Path) -> list[dict]:
@@ -1100,7 +1244,7 @@ def main(argv: list[str] | None = None) -> None:
     run_parser.add_argument("path")
 
     benchmark_parser = subparsers.add_parser("benchmark")
-    benchmark_parser.add_argument("path")
+    benchmark_parser.add_argument("path", nargs="?")
     benchmark_parser.add_argument("--json", action="store_true", dest="json_output")
     benchmark_parser.add_argument("--allow-fail", action="store_true")
     benchmark_parser.add_argument("--ts3", action="store_true")
@@ -1111,6 +1255,7 @@ def main(argv: list[str] | None = None) -> None:
     benchmark_parser.add_argument("--index", action="store_true")
     benchmark_parser.add_argument("--top-k", type=int, dest="top_k_rules")
     benchmark_parser.add_argument("--top-k-packs", type=int, dest="top_k_packs")
+    benchmark_parser.add_argument("--benchmark")
 
     ingest_parser = subparsers.add_parser("ingest")
     ingest_parser.add_argument("path")
@@ -1227,6 +1372,7 @@ def main(argv: list[str] | None = None) -> None:
     pack_uninstall_parser.add_argument("--json", action="store_true", dest="json_output")
     pack_list_parser = pack_subparsers.add_parser("list")
     pack_list_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_list_parser.add_argument("--stale", action="store_true")
     pack_info_parser = pack_subparsers.add_parser("info")
     pack_info_parser.add_argument("pack_id")
     pack_info_parser.add_argument("--version")
@@ -1234,6 +1380,21 @@ def main(argv: list[str] | None = None) -> None:
     pack_audit_parser = pack_subparsers.add_parser("audit")
     pack_audit_parser.add_argument("target")
     pack_audit_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_index_parser = pack_subparsers.add_parser("index")
+    pack_index_parser.add_argument("--dirs", nargs="+", type=Path)
+    pack_index_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_freeze_parser = pack_subparsers.add_parser("freeze")
+    pack_freeze_parser.add_argument("pack_id_version")
+    pack_freeze_parser.add_argument("--path", required=True, type=Path)
+    pack_freeze_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_archive_parser = pack_subparsers.add_parser("archive")
+    pack_archive_parser.add_argument("pack_id_version")
+    pack_archive_parser.add_argument("--path", required=True, type=Path)
+    pack_archive_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_create_parser = pack_subparsers.add_parser("create")
+    pack_create_parser.add_argument("name")
+    pack_create_parser.add_argument("--path", required=True, type=Path)
+    pack_create_parser.add_argument("--json", action="store_true", dest="json_output")
 
     trust_parser = subparsers.add_parser("trust")
     trust_subparsers = trust_parser.add_subparsers(dest="trust_command")
@@ -1362,6 +1523,16 @@ def main(argv: list[str] | None = None) -> None:
             print(run_case_file(Path(args.path)))
             return
         if args.command == "benchmark":
+            if args.path == "coverage":
+                pack_values = [item.strip() for item in (args.pack_values or []) if item and item.strip()]
+                if len(pack_values) != 1:
+                    raise ValueError("INVALID_BENCHMARK_COVERAGE: benchmark coverage requires exactly one --pack <pack_id>")
+                benchmark_file = Path(args.benchmark) if args.benchmark else (Path("benchmarks") / "general_knowledge.jsonl")
+                output = run_benchmark_coverage(pack_values[0], benchmark_file, json_output=args.json_output)
+                print(output)
+                return
+            if not args.path:
+                raise ValueError("MISSING_ARGUMENT: benchmark path is required")
             top_k_rules = args.top_k_rules if args.top_k_rules is not None else settings.top_k_rules
             top_k_packs = args.top_k_packs if args.top_k_packs is not None else settings.top_k_packs
             validate_index_args(top_k_rules, top_k_packs)
@@ -1523,13 +1694,29 @@ def main(argv: list[str] | None = None) -> None:
                 )
                 return
             if args.pack_command == "list":
-                print(run_pack_list(json_output=args.json_output))
+                if args.stale:
+                    print(run_pack_list_index(include_stale=True, json_output=args.json_output))
+                else:
+                    print(run_pack_list(json_output=args.json_output))
                 return
             if args.pack_command == "info":
                 print(run_pack_info(args.pack_id, version=args.version, json_output=args.json_output))
                 return
             if args.pack_command == "audit":
                 print(run_pack_audit(args.target, json_output=args.json_output))
+                return
+            if args.pack_command == "index":
+                scan_dirs = args.dirs or [Path.home() / ".vcse" / "cake" / "packs", Path.cwd()]
+                print(run_pack_index(scan_dirs, json_output=args.json_output))
+                return
+            if args.pack_command == "freeze":
+                print(run_pack_freeze(args.path, json_output=args.json_output))
+                return
+            if args.pack_command == "archive":
+                print(run_pack_archive(args.path, json_output=args.json_output))
+                return
+            if args.pack_command == "create":
+                print(run_pack_create(args.name, args.path, json_output=args.json_output))
                 return
         if args.command == "trust":
             if args.trust_command == "evaluate":
@@ -1986,6 +2173,7 @@ def main(argv: list[str] | None = None) -> None:
         PackError,
         TrustError,
         LedgerError,
+        CoverageBenchmarkError,
     ) as exc:
         error_type = getattr(exc, "error_type", None)
         reason = getattr(exc, "reason", None)
