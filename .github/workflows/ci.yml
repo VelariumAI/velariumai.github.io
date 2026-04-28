@@ -63,6 +63,8 @@ jobs:
 
       - name: Acceptance checks
         run: |
+          python -m vcse.cli pack index --dirs examples/packs
+          python -m vcse.cli pack list
           python -m vcse.cli ask "What is the capital of France?" --pack general_world
           python -m vcse.cli ask "What currency does France use?" --pack general_world
           python -m vcse.cli benchmark coverage --pack general_world --json | tee coverage-result.json
@@ -130,6 +132,8 @@ jobs:
       - name: CLI smoke checks
         run: |
           python -m vcse.cli --help
+          python -m vcse.cli pack index --dirs examples/packs
+          python -m vcse.cli pack list
           python -m vcse.cli ask "What is the capital of France?" --pack general_world
           python -m vcse.cli benchmark coverage --pack general_world --json
 

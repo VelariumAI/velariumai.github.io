@@ -89,7 +89,8 @@ def test_no_forbidden_terms_in_files():
                 if term.lower() in content:
                     errors.append(f"{py_file}: forbidden term '{term}'")
 
-    assert not errors, f"Forbidden terms found:\n{'\\n'.join(errors)}"
+    joined_errors = "\n".join(errors)
+    assert not errors, f"Forbidden terms found:\n{joined_errors}"
 
 
 def test_pyproject_no_forbidden_deps():
