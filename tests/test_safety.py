@@ -62,7 +62,8 @@ def test_no_forbidden_imports():
         except SyntaxError:
             continue
 
-    assert not errors, f"Forbidden imports found:\n{'\\n'.join(errors)}"
+    error_text = "\n".join(errors)
+    assert not errors, f"Forbidden imports found:\n{error_text}"
 
 
 def test_no_forbidden_terms_in_files():
