@@ -60,3 +60,12 @@ python -m pytest -q
 python -m vcse.cli benchmark coverage --pack general_world --json
 python -m vcse.cli gauntlet benchmarks/gauntlet/ --search mcts --ts3 --index
 ```
+
+Coverage benchmark JSON now includes deterministic inference-source metrics:
+
+- `explicit_answer_count`
+- `inverse_inferred_count`
+- `transitive_inferred_count`
+- `unknown_count`
+- `unsupported_query_count`
+- `false_verified_count`
