@@ -202,6 +202,13 @@ def run_cake_pipeline(
 
 
 def _make_transport(source: CakeSource, transport_type: str, allow_http: bool):
+    if source.source_type == "http_static":
+        if not allow_http:
+            raise CakeTransportError(
+                "HTTP_DISABLED",
+                "HTTP transport requires --allow-http flag; use FileTransport for local files",
+            )
+        return HttpStaticTransport(allow_http=True)
     if source.source_type == "local_file" or transport_type == "file":
         return FileTransport()
     return HttpStaticTransport(allow_http=allow_http)
