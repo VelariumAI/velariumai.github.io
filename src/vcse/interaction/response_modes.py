@@ -26,6 +26,11 @@ RELATION_DISPLAY_MAP = {
     "part_of": "is part of",
     "has_capital": "has capital",
     "capital_of": "capital of",
+    "uses_currency": "uses",
+    "language_of": "is a language of",
+    "has_country_code": "has country code",
+    "located_in_region": "is in the",
+    "located_in_subregion": "is in the",
 }
 
 QUESTION_AUXILIARIES = {"can", "could", "would", "should", "does", "do", "did", "is", "are"}
@@ -100,6 +105,16 @@ def _humanize_claim(
         return f"{_display_subject(obj)} is the capital of {subject_display}"
     if relation == "capital_of":
         return f"{subject_display} is the capital of {_display_subject(obj)}"
+    if relation == "uses_currency":
+        return f"{subject_display} uses the {_display_subject(obj)}"
+    if relation == "language_of":
+        return f"{subject_display} is a language of {_display_subject(obj)}"
+    if relation == "has_country_code":
+        return f"{subject_display} has country code {obj}"
+    if relation == "located_in_region":
+        return f"{subject_display} is in the {_display_subject(obj)} region"
+    if relation == "located_in_subregion":
+        return f"{subject_display} is in the {_display_subject(obj)} subregion"
     if renderer_templates and relation in renderer_templates:
         return renderer_templates[relation].format(subject=subject_display, object=_display_object(obj, relation, include_article_for_is_a))
     relation_display = RELATION_DISPLAY_MAP.get(relation, relation.replace("_", " "))
@@ -124,22 +139,29 @@ def _strip_leading_question_aux(subject: str) -> str:
 
 
 def _display_subject(subject: str) -> str:
-    if not subject:
-        return subject
-    words = subject.split()
+    return _display_entity(subject)
+
+
+def _display_entity(value: str) -> str:
+    if not value:
+        return value
+    normalized = value.replace("_", " ")
+    words = normalized.split()
     if len(words) == 1 and len(words[0]) == 1:
         return words[0]
+    if all(word.isupper() and word.isalpha() and len(word) <= 4 for word in words):
+        return " ".join(words)
     return " ".join(word.capitalize() for word in words)
 
 
 def _display_object(obj: str, relation: str, include_article_for_is_a: bool) -> str:
     if relation == "is_a":
-        lowered = obj.lower()
+        lowered = obj.replace("_", " ").lower()
         if include_article_for_is_a and _needs_indefinite_article(lowered):
             article = "an" if lowered[:1] in {"a", "e", "i", "o", "u"} else "a"
             return f"{article} {lowered}"
         return lowered
-    return obj
+    return _display_entity(obj)
 
 
 def _needs_indefinite_article(obj: str) -> bool:

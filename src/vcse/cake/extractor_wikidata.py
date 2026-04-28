@@ -14,6 +14,20 @@ PROPERTY_MAP: dict[str, str] = {
     "P36": "capital_of",
     "P17": "located_in_country",
     "P31": "instance_of",
+    "P30": "part_of",
+    "P2853": "uses_currency",
+    "P498": "has_currency_code",
+    "P37": "language_of",
+    "P297": "has_country_code",
+    "P298": "has_cca3",
+    "P300": "located_in_region",
+    "P150": "located_in_subregion",
+    "P1448": "has_official_name",
+    "P47": "shares_border_with",
+    "P1813": "has_alt_spelling",
+    "P960": "has_tld",
+    "P551": "has_demonym",
+    "P2003": "has_capital",
 }
 
 

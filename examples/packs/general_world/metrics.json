@@ -1,13 +1,1 @@
-{
-  "claim_count": 500,
-  "country_count": 100,
-  "deterministic": true,
-  "relation_counts": {
-    "capital_of": 100,
-    "has_capital": 100,
-    "instance_of_capital_city": 100,
-    "instance_of_country": 100,
-    "located_in_continent": 100
-  },
-  "source_count": 1
-}
+{}

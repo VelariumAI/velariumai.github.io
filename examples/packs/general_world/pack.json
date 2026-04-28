@@ -1,28 +1,13 @@
 {
-  "claim_count": 500,
+  "claim_count": 5773,
   "conflict_count": 0,
   "constraint_count": 0,
-  "created_at": "2026-04-28T00:00:00Z",
+  "created_at": "2026-04-28T06:50:43.017737+00:00",
   "domain": "general",
   "id": "general_world",
   "lifecycle_status": "candidate",
-  "metrics": {
-    "claim_count": 500,
-    "country_count": 100,
-    "deterministic": true,
-    "relation_counts": {
-      "capital_of": 100,
-      "has_capital": 100,
-      "instance_of_capital_city": 100,
-      "instance_of_country": 100,
-      "located_in_continent": 100
-    },
-    "source_count": 1
-  },
-  "provenance_count": 500,
-  "source_ids": [
-    "general_world_seed"
-  ],
+  "metrics": {},
+  "provenance_count": 5773,
   "template_count": 0,
   "version": "1.0.0"
 }

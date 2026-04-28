@@ -1353,6 +1353,43 @@ def _goal_from_normalized_query(
             return subject_clean, "located_in_continent", values[0]
         return None
 
+    if relation == "uses_currency":
+        values = sorted(index.get((subject_clean.lower(), "uses_currency"), set()))
+        if len(values) == 1:
+            return subject_clean, "uses_currency", values[0]
+        return None
+
+    if relation == "language_of":
+        values: set[str] = set()
+        for claim in preload_claims:
+            s = str(claim.get("subject", "")).strip()
+            r = str(claim.get("relation", "")).strip()
+            o = str(claim.get("object", "")).strip()
+            if r.lower() == "language_of" and o.lower() == subject_clean.lower() and s:
+                values.add(s)
+        if len(values) == 1:
+            lang = sorted(values)[0]
+            return lang, "language_of", subject_clean
+        return None
+
+    if relation == "has_country_code":
+        values = sorted(index.get((subject_clean.lower(), "has_country_code"), set()))
+        if len(values) == 1:
+            return subject_clean, "has_country_code", values[0]
+        return None
+
+    if relation == "located_in_region":
+        values = sorted(index.get((subject_clean.lower(), "located_in_region"), set()))
+        if len(values) == 1:
+            return subject_clean, "located_in_region", values[0]
+        return None
+
+    if relation == "located_in_subregion":
+        values = sorted(index.get((subject_clean.lower(), "located_in_subregion"), set()))
+        if len(values) == 1:
+            return subject_clean, "located_in_subregion", values[0]
+        return None
+
     if relation == "instance_of" and obj is not None:
         values = {item.lower(): item for item in sorted(index.get((subject_clean.lower(), "instance_of"), set()))}
         if obj == "City":

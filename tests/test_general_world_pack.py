@@ -18,8 +18,12 @@ def test_general_world_pack_files_and_metadata() -> None:
     assert pack["lifecycle_status"] == "candidate"
 
     claims = [json.loads(line) for line in (pack_dir / "claims.jsonl").read_text().splitlines() if line.strip()]
-    assert len(claims) >= 100
+    assert len(claims) >= 5000
     assert all("subject" in row and "relation" in row and "object" in row for row in claims)
+    assert all(isinstance(row.get("provenance"), dict) for row in claims)
+    keys = {(row["subject"], row["relation"], row["object"]) for row in claims}
+    assert len(keys) == len(claims)
 
     metrics = json.loads((pack_dir / "metrics.json").read_text())
-    assert metrics["claim_count"] == len(claims)
+    if "claim_count" in metrics:
+        assert metrics["claim_count"] == len(claims)

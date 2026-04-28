@@ -49,6 +49,36 @@ def test_query_normalizer_exact_patterns() -> None:
     assert five.relation == "instance_of"
     assert five.object == "Country"
 
+    six = normalize_query("What currency does France use?")
+    assert six is not None
+    assert six.subject == "France"
+    assert six.relation == "uses_currency"
+    assert six.object is None
+
+    seven = normalize_query("What language is spoken in Germany?")
+    assert seven is not None
+    assert seven.subject == "Germany"
+    assert seven.relation == "language_of"
+    assert seven.object is None
+
+    eight = normalize_query("What is the country code of Japan?")
+    assert eight is not None
+    assert eight.subject == "Japan"
+    assert eight.relation == "has_country_code"
+    assert eight.object is None
+
+    nine = normalize_query("What region is Brazil in?")
+    assert nine is not None
+    assert nine.subject == "Brazil"
+    assert nine.relation == "located_in_region"
+    assert nine.object is None
+
+    ten = normalize_query("What subregion is Germany in?")
+    assert ten is not None
+    assert ten.subject == "Germany"
+    assert ten.relation == "located_in_subregion"
+    assert ten.object is None
+
 
 def test_query_normalizer_near_matches_fail() -> None:
     assert normalize_query("What is capital of France?") is None
@@ -56,6 +86,9 @@ def test_query_normalizer_near_matches_fail() -> None:
     assert normalize_query("What continent is France in?") is None
     assert normalize_query("Is Paris city?") is None
     assert normalize_query("Tell me about France") is None
+    assert normalize_query("Tell me the currency of France") is None
+    assert normalize_query("Currency France?") is None
+    assert normalize_query("What money does France use?") is None
 
 
 def test_ask_uses_normalizer_for_capital_and_falls_back_for_non_pattern() -> None:
@@ -72,6 +105,13 @@ def test_ask_uses_normalizer_for_capital_and_falls_back_for_non_pattern() -> Non
 def test_query_normalizer_no_false_positive() -> None:
     assert normalize_query("What is the capital of?") is None
     assert normalize_query("Is a country?") is None
+
+
+def test_query_normalizer_language_plural_pattern() -> None:
+    parsed = normalize_query("What languages are spoken in Germany?")
+    assert parsed is not None
+    assert parsed.subject == "Germany"
+    assert parsed.relation == "language_of"
 
 
 def test_socrates_rendering_still_human_readable() -> None:
@@ -91,3 +131,25 @@ def test_boolean_question_keeps_yes_prefix() -> None:
     result = run_cli("ask", "Is Paris the capital of France?", "--pack", "general_world")
     assert result.returncode == 0
     assert "Yes —" in result.stdout
+
+
+def test_ask_uses_normalizer_for_new_fact_patterns() -> None:
+    currency = run_cli("ask", "What currency does France use?", "--pack", "general_world")
+    assert currency.returncode == 0
+    assert currency.stdout.strip() == "France uses the Euro."
+
+    language = run_cli("ask", "What language is spoken in Germany?", "--pack", "general_world")
+    assert language.returncode == 0
+    assert language.stdout.strip() == "German is a language of Germany."
+
+    code = run_cli("ask", "What is the country code of Japan?", "--pack", "general_world")
+    assert code.returncode == 0
+    assert code.stdout.strip() == "Japan has country code JP."
+
+    region = run_cli("ask", "What region is Brazil in?", "--pack", "general_world")
+    assert region.returncode == 0
+    assert region.stdout.strip() == "Brazil is in the Americas region."
+
+    subregion = run_cli("ask", "What subregion is Germany in?", "--pack", "general_world")
+    assert subregion.returncode == 0
+    assert subregion.stdout.strip() == "Germany is in the Western Europe subregion."

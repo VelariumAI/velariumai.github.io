@@ -35,7 +35,7 @@ def test_benchmark_coverage_text_and_json(tmp_path: Path) -> None:
     assert raw.returncode == 0
     payload = json.loads(raw.stdout)
     assert payload["status"] == "COVERAGE_COMPLETE"
-    assert payload["total"] >= 50
+    assert payload["total"] >= 500
     assert payload["incorrect"] == 0
 
 
@@ -44,3 +44,15 @@ def test_benchmark_coverage_missing_pack_reports_pack_not_found(tmp_path: Path) 
     result = run_cli("benchmark", "coverage", "--pack", "does.not.exist", pack_home=home)
     assert result.returncode == 2
     assert "error_type: PACK_NOT_FOUND" in result.stderr
+
+
+def test_general_knowledge_benchmark_ids_are_unique() -> None:
+    benchmark_path = Path(__file__).resolve().parents[1] / "benchmarks" / "general_knowledge.jsonl"
+    ids: list[str] = []
+    for line in benchmark_path.read_text().splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        ids.append(row["id"])
+    assert len(ids) >= 500
+    assert len(ids) == len(set(ids))
