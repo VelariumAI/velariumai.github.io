@@ -2,9 +2,22 @@
 **Controlled Acquisition of Knowledge Engine**
 
 Date: 2026-04-27
-Status: Approved
+Status: Approved (corrections applied 2026-04-27)
 Project: VCSE (VRM) — Verified Reasoning Model
 Version bump: 2.6.0 → 2.7.0
+
+---
+
+## 0. Pre-Implementation Version Check (Mandatory)
+
+Before writing any code, confirm repo is at 2.6.0:
+
+```bash
+git status
+python -c "import vcse; print(vcse.__version__)"
+```
+
+Expected output: `2.6.0`. If not, stop and report — do not proceed.
 
 ---
 
@@ -116,15 +129,17 @@ class FetchedSource:
 @dataclass
 class CakeRunReport:
     run_id: str
-    source_id: str
-    status: str               # CAKE_COMPLETE | CAKE_PARTIAL | CAKE_DRY_RUN | CAKE_FAILED
-    claims_extracted: int
+    source_ids: list[str]      # all sources processed in this run
+    snapshot_ids: list[str]    # corresponding snapshot IDs (parallel list)
+    source_reports: list[dict] # per-source breakdown: {source_id, status, claims_extracted,
+                               #   claims_normalized, snapshot_id, errors, warnings}
+    status: str                # CAKE_COMPLETE | CAKE_PARTIAL | CAKE_DRY_RUN | CAKE_FAILED
+    claims_extracted: int      # total across all sources
     claims_normalized: int
     claims_ingested: int
     trust_decisions: int
-    snapshot_id: str
-    errors: list[str]
-    warnings: list[str]
+    errors: list[str]          # aggregated errors
+    warnings: list[str]        # aggregated warnings
     dry_run: bool
     timestamp: str
 ```
@@ -395,9 +410,12 @@ docs/
 src/vcse/cli.py              add `cake` subparser + subcommands
 src/vcse/__init__.py         bump __version__ to "2.7.0"
 pyproject.toml               bump version to "2.7.0"
+README.md                    add CAKE section (acquisition overview, CLI examples)
+docs/ARCHITECTURE.md         add CAKE layer to architecture diagram and component list
+docs/KNOWLEDGE.md            note CAKE as upstream acquisition source
+docs/TRUST.md                note CAKE as trust pipeline entry point for acquired claims
+docs/LEDGER.md               note CAKE ledger events (CAKE_FETCH, CAKE_SNAPSHOT, CAKE_INGEST)
 ```
-
-No other files modified.
 
 ---
 
