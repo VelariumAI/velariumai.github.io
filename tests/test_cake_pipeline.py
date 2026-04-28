@@ -152,12 +152,14 @@ def test_second_run_marks_unchanged_source(tmp_path):
     first = run_cake_pipeline(
         GENERAL_WORLD_CONFIG,
         dry_run=False,
+        incremental_mode=True,
         pack_output_dir=tmp_path,
         snapshot_root=tmp_path / "snapshots",
     )
     second = run_cake_pipeline(
         GENERAL_WORLD_CONFIG,
         dry_run=False,
+        incremental_mode=True,
         pack_output_dir=tmp_path,
         snapshot_root=tmp_path / "snapshots",
     )

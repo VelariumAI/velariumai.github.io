@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "description": "General world knowledge static sources (deterministic local seed)",
+  "sources": [
+    {
+      "id": "general_world",
+      "source_type": "local_file",
+      "format": "wikidata_json",
+      "path_or_url": "examples/cake/general_world_seed.json",
+      "trust_level": "curated_static",
+      "enabled": true,
+      "description": "Deterministic curated static world facts"
+    }
+  ]
+}

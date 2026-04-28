@@ -1,0 +1,7489 @@
+{
+  "entities": {
+    "Q_capital_abudhabi": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_abudhabi",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Abu Dhabi"
+        }
+      }
+    },
+    "Q_capital_abuja": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_abuja",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Abuja"
+        }
+      }
+    },
+    "Q_capital_accra": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_accra",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Accra"
+        }
+      }
+    },
+    "Q_capital_addisababa": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_addisababa",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Addis Ababa"
+        }
+      }
+    },
+    "Q_capital_algiers": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_algiers",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Algiers"
+        }
+      }
+    },
+    "Q_capital_amman": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_amman",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Amman"
+        }
+      }
+    },
+    "Q_capital_amsterdam": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_amsterdam",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Amsterdam"
+        }
+      }
+    },
+    "Q_capital_ankara": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_ankara",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Ankara"
+        }
+      }
+    },
+    "Q_capital_astana": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_astana",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Astana"
+        }
+      }
+    },
+    "Q_capital_asuncion": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_asuncion",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Asuncion"
+        }
+      }
+    },
+    "Q_capital_athens": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_athens",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Athens"
+        }
+      }
+    },
+    "Q_capital_baghdad": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_baghdad",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Baghdad"
+        }
+      }
+    },
+    "Q_capital_bangkok": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_bangkok",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Bangkok"
+        }
+      }
+    },
+    "Q_capital_beijing": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_beijing",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Beijing"
+        }
+      }
+    },
+    "Q_capital_beirut": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_beirut",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Beirut"
+        }
+      }
+    },
+    "Q_capital_belgrade": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_belgrade",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Belgrade"
+        }
+      }
+    },
+    "Q_capital_berlin": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_berlin",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Berlin"
+        }
+      }
+    },
+    "Q_capital_bern": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_bern",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Bern"
+        }
+      }
+    },
+    "Q_capital_bogota": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_bogota",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Bogota"
+        }
+      }
+    },
+    "Q_capital_brasilia": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_brasilia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Brasilia"
+        }
+      }
+    },
+    "Q_capital_bratislava": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_bratislava",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Bratislava"
+        }
+      }
+    },
+    "Q_capital_brussels": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_brussels",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Brussels"
+        }
+      }
+    },
+    "Q_capital_bucharest": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_bucharest",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Bucharest"
+        }
+      }
+    },
+    "Q_capital_budapest": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_budapest",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Budapest"
+        }
+      }
+    },
+    "Q_capital_buenosaires": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_buenosaires",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Buenos Aires"
+        }
+      }
+    },
+    "Q_capital_cairo": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_cairo",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Cairo"
+        }
+      }
+    },
+    "Q_capital_canberra": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_canberra",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Canberra"
+        }
+      }
+    },
+    "Q_capital_caracas": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_caracas",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Caracas"
+        }
+      }
+    },
+    "Q_capital_copenhagen": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_copenhagen",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Copenhagen"
+        }
+      }
+    },
+    "Q_capital_damascus": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_damascus",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Damascus"
+        }
+      }
+    },
+    "Q_capital_dhaka": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_dhaka",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Dhaka"
+        }
+      }
+    },
+    "Q_capital_doha": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_doha",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Doha"
+        }
+      }
+    },
+    "Q_capital_dublin": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_dublin",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Dublin"
+        }
+      }
+    },
+    "Q_capital_guatemalacity": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_guatemalacity",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Guatemala City"
+        }
+      }
+    },
+    "Q_capital_hanoi": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_hanoi",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Hanoi"
+        }
+      }
+    },
+    "Q_capital_harare": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_harare",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Harare"
+        }
+      }
+    },
+    "Q_capital_havana": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_havana",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Havana"
+        }
+      }
+    },
+    "Q_capital_helsinki": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_helsinki",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Helsinki"
+        }
+      }
+    },
+    "Q_capital_islamabad": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_islamabad",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Islamabad"
+        }
+      }
+    },
+    "Q_capital_jakarta": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_jakarta",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Jakarta"
+        }
+      }
+    },
+    "Q_capital_jerusalem": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_jerusalem",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Jerusalem"
+        }
+      }
+    },
+    "Q_capital_kathmandu": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_kathmandu",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Kathmandu"
+        }
+      }
+    },
+    "Q_capital_kualalumpur": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_kualalumpur",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Kuala Lumpur"
+        }
+      }
+    },
+    "Q_capital_kuwaitcity": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_kuwaitcity",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Kuwait City"
+        }
+      }
+    },
+    "Q_capital_kyiv": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_kyiv",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Kyiv"
+        }
+      }
+    },
+    "Q_capital_lima": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_lima",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Lima"
+        }
+      }
+    },
+    "Q_capital_lisbon": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_lisbon",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Lisbon"
+        }
+      }
+    },
+    "Q_capital_ljubljana": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_ljubljana",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Ljubljana"
+        }
+      }
+    },
+    "Q_capital_london": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_london",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "London"
+        }
+      }
+    },
+    "Q_capital_lusaka": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_lusaka",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Lusaka"
+        }
+      }
+    },
+    "Q_capital_luxembourg": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_luxembourg",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Luxembourg"
+        }
+      }
+    },
+    "Q_capital_madrid": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_madrid",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Madrid"
+        }
+      }
+    },
+    "Q_capital_managua": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_managua",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Managua"
+        }
+      }
+    },
+    "Q_capital_manila": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_manila",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Manila"
+        }
+      }
+    },
+    "Q_capital_mexicocity": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_mexicocity",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Mexico City"
+        }
+      }
+    },
+    "Q_capital_montevideo": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_montevideo",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Montevideo"
+        }
+      }
+    },
+    "Q_capital_moscow": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_moscow",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Moscow"
+        }
+      }
+    },
+    "Q_capital_muscat": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_muscat",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Muscat"
+        }
+      }
+    },
+    "Q_capital_nairobi": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_nairobi",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Nairobi"
+        }
+      }
+    },
+    "Q_capital_naypyidaw": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_naypyidaw",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Naypyidaw"
+        }
+      }
+    },
+    "Q_capital_newdelhi": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_newdelhi",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "New Delhi"
+        }
+      }
+    },
+    "Q_capital_oslo": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_oslo",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Oslo"
+        }
+      }
+    },
+    "Q_capital_ottawa": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_ottawa",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Ottawa"
+        }
+      }
+    },
+    "Q_capital_panamacity": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_panamacity",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Panama City"
+        }
+      }
+    },
+    "Q_capital_paris": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_paris",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Paris"
+        }
+      }
+    },
+    "Q_capital_phnompenh": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_phnompenh",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Phnom Penh"
+        }
+      }
+    },
+    "Q_capital_prague": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_prague",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Prague"
+        }
+      }
+    },
+    "Q_capital_pretoria": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_pretoria",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Pretoria"
+        }
+      }
+    },
+    "Q_capital_pyongyang": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_pyongyang",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Pyongyang"
+        }
+      }
+    },
+    "Q_capital_quito": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_quito",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Quito"
+        }
+      }
+    },
+    "Q_capital_rabat": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_rabat",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Rabat"
+        }
+      }
+    },
+    "Q_capital_reykjavik": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_reykjavik",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Reykjavik"
+        }
+      }
+    },
+    "Q_capital_riga": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_riga",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Riga"
+        }
+      }
+    },
+    "Q_capital_riyadh": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_riyadh",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Riyadh"
+        }
+      }
+    },
+    "Q_capital_rome": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_rome",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Rome"
+        }
+      }
+    },
+    "Q_capital_sanaa": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_sanaa",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Sanaa"
+        }
+      }
+    },
+    "Q_capital_sanjose": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_sanjose",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "San Jose"
+        }
+      }
+    },
+    "Q_capital_sansalvador": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_sansalvador",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "San Salvador"
+        }
+      }
+    },
+    "Q_capital_santiago": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_santiago",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Santiago"
+        }
+      }
+    },
+    "Q_capital_santodomingo": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_santodomingo",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Santo Domingo"
+        }
+      }
+    },
+    "Q_capital_seoul": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_seoul",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Seoul"
+        }
+      }
+    },
+    "Q_capital_singapore": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_singapore",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Singapore"
+        }
+      }
+    },
+    "Q_capital_sofia": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_sofia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Sofia"
+        }
+      }
+    },
+    "Q_capital_srijayawardenepurakotte": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_srijayawardenepurakotte",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Sri Jayawardenepura Kotte"
+        }
+      }
+    },
+    "Q_capital_stockholm": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_stockholm",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Stockholm"
+        }
+      }
+    },
+    "Q_capital_sucre": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_sucre",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Sucre"
+        }
+      }
+    },
+    "Q_capital_taipei": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_taipei",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Taipei"
+        }
+      }
+    },
+    "Q_capital_tallinn": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_tallinn",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Tallinn"
+        }
+      }
+    },
+    "Q_capital_tegucigalpa": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_tegucigalpa",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Tegucigalpa"
+        }
+      }
+    },
+    "Q_capital_tehran": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_tehran",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Tehran"
+        }
+      }
+    },
+    "Q_capital_tokyo": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_tokyo",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Tokyo"
+        }
+      }
+    },
+    "Q_capital_tunis": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_tunis",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Tunis"
+        }
+      }
+    },
+    "Q_capital_ulaanbaatar": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_ulaanbaatar",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Ulaanbaatar"
+        }
+      }
+    },
+    "Q_capital_vienna": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_vienna",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Vienna"
+        }
+      }
+    },
+    "Q_capital_vilnius": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_vilnius",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Vilnius"
+        }
+      }
+    },
+    "Q_capital_warsaw": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_warsaw",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Warsaw"
+        }
+      }
+    },
+    "Q_capital_washington": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_washington",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Washington"
+        }
+      }
+    },
+    "Q_capital_wellington": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_wellington",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Wellington"
+        }
+      }
+    },
+    "Q_capital_yaounde": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_yaounde",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Yaounde"
+        }
+      }
+    },
+    "Q_capital_zagreb": {
+      "claims": {
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_capitalcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_capital_zagreb",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Zagreb"
+        }
+      }
+    },
+    "Q_continent_africa": {
+      "claims": {},
+      "id": "Q_continent_africa",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Africa"
+        }
+      }
+    },
+    "Q_continent_asia": {
+      "claims": {},
+      "id": "Q_continent_asia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Asia"
+        }
+      }
+    },
+    "Q_continent_europe": {
+      "claims": {},
+      "id": "Q_continent_europe",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Europe"
+        }
+      }
+    },
+    "Q_continent_northamerica": {
+      "claims": {},
+      "id": "Q_continent_northamerica",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "North America"
+        }
+      }
+    },
+    "Q_continent_oceania": {
+      "claims": {},
+      "id": "Q_continent_oceania",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Oceania"
+        }
+      }
+    },
+    "Q_continent_southamerica": {
+      "claims": {},
+      "id": "Q_continent_southamerica",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "South America"
+        }
+      }
+    },
+    "Q_country_algeria": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_africa"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_algiers"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_algeria",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Algeria"
+        }
+      }
+    },
+    "Q_country_argentina": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_southamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_buenosaires"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_argentina",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Argentina"
+        }
+      }
+    },
+    "Q_country_australia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_oceania"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_canberra"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_australia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Australia"
+        }
+      }
+    },
+    "Q_country_austria": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_vienna"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_austria",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Austria"
+        }
+      }
+    },
+    "Q_country_bangladesh": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_dhaka"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_bangladesh",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Bangladesh"
+        }
+      }
+    },
+    "Q_country_belgium": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_brussels"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_belgium",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Belgium"
+        }
+      }
+    },
+    "Q_country_bolivia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_southamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_sucre"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_bolivia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Bolivia"
+        }
+      }
+    },
+    "Q_country_brazil": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_southamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_brasilia"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_brazil",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Brazil"
+        }
+      }
+    },
+    "Q_country_bulgaria": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_sofia"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_bulgaria",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Bulgaria"
+        }
+      }
+    },
+    "Q_country_cambodia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_phnompenh"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_cambodia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Cambodia"
+        }
+      }
+    },
+    "Q_country_cameroon": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_africa"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_yaounde"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_cameroon",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Cameroon"
+        }
+      }
+    },
+    "Q_country_canada": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_northamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_ottawa"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_canada",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Canada"
+        }
+      }
+    },
+    "Q_country_chile": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_southamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_santiago"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_chile",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Chile"
+        }
+      }
+    },
+    "Q_country_china": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_beijing"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_china",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "China"
+        }
+      }
+    },
+    "Q_country_colombia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_southamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_bogota"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_colombia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Colombia"
+        }
+      }
+    },
+    "Q_country_costarica": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_northamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_sanjose"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_costarica",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Costa Rica"
+        }
+      }
+    },
+    "Q_country_croatia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_zagreb"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_croatia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Croatia"
+        }
+      }
+    },
+    "Q_country_cuba": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_northamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_havana"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_cuba",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Cuba"
+        }
+      }
+    },
+    "Q_country_czechrepublic": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_prague"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_czechrepublic",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Czech Republic"
+        }
+      }
+    },
+    "Q_country_denmark": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_copenhagen"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_denmark",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Denmark"
+        }
+      }
+    },
+    "Q_country_dominicanrepublic": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_northamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_santodomingo"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_dominicanrepublic",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Dominican Republic"
+        }
+      }
+    },
+    "Q_country_ecuador": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_southamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_quito"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_ecuador",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Ecuador"
+        }
+      }
+    },
+    "Q_country_egypt": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_africa"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_cairo"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_egypt",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Egypt"
+        }
+      }
+    },
+    "Q_country_elsalvador": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_northamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_sansalvador"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_elsalvador",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "El Salvador"
+        }
+      }
+    },
+    "Q_country_estonia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_tallinn"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_estonia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Estonia"
+        }
+      }
+    },
+    "Q_country_ethiopia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_africa"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_addisababa"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_ethiopia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Ethiopia"
+        }
+      }
+    },
+    "Q_country_finland": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_helsinki"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_finland",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Finland"
+        }
+      }
+    },
+    "Q_country_france": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_paris"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_france",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "France"
+        }
+      }
+    },
+    "Q_country_germany": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_berlin"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_germany",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Germany"
+        }
+      }
+    },
+    "Q_country_ghana": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_africa"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_accra"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_ghana",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Ghana"
+        }
+      }
+    },
+    "Q_country_greece": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_athens"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_greece",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Greece"
+        }
+      }
+    },
+    "Q_country_guatemala": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_northamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_guatemalacity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_guatemala",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Guatemala"
+        }
+      }
+    },
+    "Q_country_honduras": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_northamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_tegucigalpa"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_honduras",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Honduras"
+        }
+      }
+    },
+    "Q_country_hungary": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_budapest"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_hungary",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Hungary"
+        }
+      }
+    },
+    "Q_country_iceland": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_reykjavik"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_iceland",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Iceland"
+        }
+      }
+    },
+    "Q_country_india": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_newdelhi"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_india",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "India"
+        }
+      }
+    },
+    "Q_country_indonesia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_jakarta"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_indonesia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Indonesia"
+        }
+      }
+    },
+    "Q_country_iran": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_tehran"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_iran",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Iran"
+        }
+      }
+    },
+    "Q_country_iraq": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_baghdad"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_iraq",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Iraq"
+        }
+      }
+    },
+    "Q_country_ireland": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_dublin"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_ireland",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Ireland"
+        }
+      }
+    },
+    "Q_country_israel": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_jerusalem"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_israel",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Israel"
+        }
+      }
+    },
+    "Q_country_italy": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_rome"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_italy",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Italy"
+        }
+      }
+    },
+    "Q_country_japan": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_tokyo"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_japan",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Japan"
+        }
+      }
+    },
+    "Q_country_jordan": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_amman"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_jordan",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Jordan"
+        }
+      }
+    },
+    "Q_country_kazakhstan": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_astana"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_kazakhstan",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Kazakhstan"
+        }
+      }
+    },
+    "Q_country_kenya": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_africa"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_nairobi"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_kenya",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Kenya"
+        }
+      }
+    },
+    "Q_country_kuwait": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_kuwaitcity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_kuwait",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Kuwait"
+        }
+      }
+    },
+    "Q_country_latvia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_riga"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_latvia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Latvia"
+        }
+      }
+    },
+    "Q_country_lebanon": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_beirut"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_lebanon",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Lebanon"
+        }
+      }
+    },
+    "Q_country_lithuania": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_vilnius"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_lithuania",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Lithuania"
+        }
+      }
+    },
+    "Q_country_luxembourg": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_luxembourg"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_luxembourg",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Luxembourg"
+        }
+      }
+    },
+    "Q_country_malaysia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_kualalumpur"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_malaysia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Malaysia"
+        }
+      }
+    },
+    "Q_country_mexico": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_northamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_mexicocity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_mexico",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Mexico"
+        }
+      }
+    },
+    "Q_country_mongolia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_ulaanbaatar"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_mongolia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Mongolia"
+        }
+      }
+    },
+    "Q_country_morocco": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_africa"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_rabat"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_morocco",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Morocco"
+        }
+      }
+    },
+    "Q_country_myanmar": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_naypyidaw"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_myanmar",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Myanmar"
+        }
+      }
+    },
+    "Q_country_nepal": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_kathmandu"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_nepal",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Nepal"
+        }
+      }
+    },
+    "Q_country_netherlands": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_amsterdam"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_netherlands",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Netherlands"
+        }
+      }
+    },
+    "Q_country_newzealand": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_oceania"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_wellington"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_newzealand",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "New Zealand"
+        }
+      }
+    },
+    "Q_country_nicaragua": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_northamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_managua"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_nicaragua",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Nicaragua"
+        }
+      }
+    },
+    "Q_country_nigeria": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_africa"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_abuja"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_nigeria",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Nigeria"
+        }
+      }
+    },
+    "Q_country_northkorea": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_pyongyang"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_northkorea",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "North Korea"
+        }
+      }
+    },
+    "Q_country_norway": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_oslo"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_norway",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Norway"
+        }
+      }
+    },
+    "Q_country_oman": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_muscat"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_oman",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Oman"
+        }
+      }
+    },
+    "Q_country_pakistan": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_islamabad"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_pakistan",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Pakistan"
+        }
+      }
+    },
+    "Q_country_panama": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_northamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_panamacity"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_panama",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Panama"
+        }
+      }
+    },
+    "Q_country_paraguay": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_southamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_asuncion"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_paraguay",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Paraguay"
+        }
+      }
+    },
+    "Q_country_peru": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_southamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_lima"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_peru",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Peru"
+        }
+      }
+    },
+    "Q_country_philippines": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_manila"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_philippines",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Philippines"
+        }
+      }
+    },
+    "Q_country_poland": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_warsaw"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_poland",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Poland"
+        }
+      }
+    },
+    "Q_country_portugal": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_lisbon"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_portugal",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Portugal"
+        }
+      }
+    },
+    "Q_country_qatar": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_doha"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_qatar",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Qatar"
+        }
+      }
+    },
+    "Q_country_romania": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_bucharest"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_romania",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Romania"
+        }
+      }
+    },
+    "Q_country_russia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_moscow"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_russia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Russia"
+        }
+      }
+    },
+    "Q_country_saudiarabia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_riyadh"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_saudiarabia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Saudi Arabia"
+        }
+      }
+    },
+    "Q_country_serbia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_belgrade"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_serbia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Serbia"
+        }
+      }
+    },
+    "Q_country_singapore": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_singapore"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_singapore",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Singapore"
+        }
+      }
+    },
+    "Q_country_slovakia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_bratislava"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_slovakia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Slovakia"
+        }
+      }
+    },
+    "Q_country_slovenia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_ljubljana"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_slovenia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Slovenia"
+        }
+      }
+    },
+    "Q_country_southafrica": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_africa"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_pretoria"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_southafrica",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "South Africa"
+        }
+      }
+    },
+    "Q_country_southkorea": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_seoul"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_southkorea",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "South Korea"
+        }
+      }
+    },
+    "Q_country_spain": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_madrid"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_spain",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Spain"
+        }
+      }
+    },
+    "Q_country_srilanka": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_srijayawardenepurakotte"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_srilanka",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Sri Lanka"
+        }
+      }
+    },
+    "Q_country_sweden": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_stockholm"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_sweden",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Sweden"
+        }
+      }
+    },
+    "Q_country_switzerland": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_bern"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_switzerland",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Switzerland"
+        }
+      }
+    },
+    "Q_country_syria": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_damascus"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_syria",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Syria"
+        }
+      }
+    },
+    "Q_country_taiwan": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_taipei"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_taiwan",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Taiwan"
+        }
+      }
+    },
+    "Q_country_thailand": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_bangkok"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_thailand",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Thailand"
+        }
+      }
+    },
+    "Q_country_tunisia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_africa"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_tunis"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_tunisia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Tunisia"
+        }
+      }
+    },
+    "Q_country_turkey": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_ankara"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_turkey",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Turkey"
+        }
+      }
+    },
+    "Q_country_ukraine": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_kyiv"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_ukraine",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Ukraine"
+        }
+      }
+    },
+    "Q_country_unitedarabemirates": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_abudhabi"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_unitedarabemirates",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "United Arab Emirates"
+        }
+      }
+    },
+    "Q_country_unitedkingdom": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_europe"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_london"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_unitedkingdom",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "United Kingdom"
+        }
+      }
+    },
+    "Q_country_unitedstates": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_northamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_washington"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_unitedstates",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "United States"
+        }
+      }
+    },
+    "Q_country_uruguay": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_southamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_montevideo"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_uruguay",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Uruguay"
+        }
+      }
+    },
+    "Q_country_venezuela": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_southamerica"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_caracas"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_venezuela",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Venezuela"
+        }
+      }
+    },
+    "Q_country_vietnam": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_hanoi"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_vietnam",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Vietnam"
+        }
+      }
+    },
+    "Q_country_yemen": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_asia"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_sanaa"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_yemen",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Yemen"
+        }
+      }
+    },
+    "Q_country_zambia": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_africa"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_lusaka"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_zambia",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Zambia"
+        }
+      }
+    },
+    "Q_country_zimbabwe": {
+      "claims": {
+        "P30": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_continent_africa"
+                }
+              }
+            }
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_type_country"
+                }
+              }
+            }
+          }
+        ],
+        "P36": [
+          {
+            "mainsnak": {
+              "datavalue": {
+                "type": "wikibase-entityid",
+                "value": {
+                  "entity-type": "item",
+                  "id": "Q_capital_harare"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "id": "Q_country_zimbabwe",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "Zimbabwe"
+        }
+      }
+    },
+    "Q_type_capitalcity": {
+      "claims": {},
+      "id": "Q_type_capitalcity",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "capital city"
+        }
+      }
+    },
+    "Q_type_country": {
+      "claims": {},
+      "id": "Q_type_country",
+      "labels": {
+        "en": {
+          "language": "en",
+          "value": "country"
+        }
+      }
+    }
+  },
+  "meta": {
+    "deterministic": true,
+    "schema": "vcse.general_world.seed.v1",
+    "source": "examples/general_world/countries_fact_table.json"
+  }
+}

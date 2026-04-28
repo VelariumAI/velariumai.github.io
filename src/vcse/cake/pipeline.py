@@ -46,6 +46,10 @@ class CakeRunReport:
     claims_extracted: int
     claims_normalized: int
     claims_ingested: int
+    duplicates_detected: int
+    claims_merged: int
+    new_claims: int
+    skipped_sources: int
     trust_decisions: int
     errors: list[str]
     warnings: list[str]
@@ -62,6 +66,10 @@ class CakeRunReport:
             "claims_extracted": self.claims_extracted,
             "claims_normalized": self.claims_normalized,
             "claims_ingested": self.claims_ingested,
+            "duplicates_detected": self.duplicates_detected,
+            "claims_merged": self.claims_merged,
+            "new_claims": self.new_claims,
+            "skipped_sources": self.skipped_sources,
             "trust_decisions": self.trust_decisions,
             "errors": self.errors,
             "warnings": self.warnings,
@@ -78,6 +86,7 @@ def run_cake_pipeline(
     allow_http: bool = False,
     transport_type: str = "file",
     allow_partial: bool = False,
+    incremental_mode: bool = False,
     pack_output_dir: str | Path | None = None,
     snapshot_root: Path | None = None,
 ) -> CakeRunReport:
@@ -87,7 +96,7 @@ def run_cake_pipeline(
     output_dir = Path(pack_output_dir) if pack_output_dir else Path.home() / ".vcse" / "cake" / "packs"
 
     config = load_source_config(source_config_path)
-    snapshot_store = CakeSnapshotStore(root=snapshot_root)
+    snapshot_store = CakeSnapshotStore(root=(snapshot_root or (output_dir / ".snapshots")))
     normalizer = CakeNormalizerAdapter()
     trust_runner = CakeTrustRunner()
     pack_updater = CakePackUpdater()
@@ -100,6 +109,10 @@ def run_cake_pipeline(
     total_extracted = 0
     total_normalized = 0
     total_ingested = 0
+    total_duplicates = 0
+    total_merged = 0
+    total_new = 0
+    skipped_sources = 0
     total_trust = 0
     any_success = False
     any_failure = False
@@ -121,14 +134,35 @@ def run_cake_pipeline(
         try:
             transport = _make_transport(source, transport_type, allow_http)
             fetched = fetch_source(source, transport, limit=limit)
-            snap = snapshot_store.save(fetched)
+            short_hash = fetched.content_hash[:16]
+            snapshot_id = f"{source.id}/{short_hash}"
+            if incremental_mode and snapshot_store.has_snapshot(source.id, fetched.content_hash):
+                src_report["snapshot_id"] = snapshot_id
+                src_report["status"] = "UNCHANGED"
+                src_report["claims_extracted"] = 0
+                src_report["claims_normalized"] = 0
+                src_report["claims_ingested"] = 0
+                src_report["duplicates_detected"] = 0
+                src_report["claims_merged"] = 0
+                src_report["new_claims"] = 0
+                skipped_sources += 1
+                any_success = True
+                source_ids.append(source.id)
+                snapshot_ids.append(snapshot_id)
+                source_reports.append(src_report)
+                continue
 
-            src_report["snapshot_id"] = snap.snapshot_id
+            snap = None
+            if not dry_run:
+                snap = snapshot_store.save(fetched)
+                src_report["snapshot_id"] = snap.snapshot_id
+            else:
+                src_report["snapshot_id"] = snapshot_id
             source_ids.append(source.id)
-            snapshot_ids.append(snap.snapshot_id)
+            snapshot_ids.append(src_report["snapshot_id"])
 
             extractor = _get_extractor(source.format)
-            claims = extractor.extract(fetched, snap.snapshot_id, limit=limit)
+            claims = extractor.extract(fetched, str(src_report["snapshot_id"]), limit=limit)
             src_report["claims_extracted"] = len(claims)
             total_extracted += len(claims)
 
@@ -142,9 +176,15 @@ def run_cake_pipeline(
                 continue
 
             pack_path = output_dir / source.id
-            ingested = pack_updater.update(pack_path, normalized)
-            total_ingested += ingested
-            src_report["claims_ingested"] = ingested
+            update_report = pack_updater.update_with_report(pack_path, normalized)
+            total_ingested += update_report.new_claims
+            total_duplicates += update_report.duplicates_detected
+            total_merged += update_report.claims_merged
+            total_new += update_report.new_claims
+            src_report["claims_ingested"] = update_report.new_claims
+            src_report["duplicates_detected"] = update_report.duplicates_detected
+            src_report["claims_merged"] = update_report.claims_merged
+            src_report["new_claims"] = update_report.new_claims
 
             trust_report = trust_runner.evaluate(normalized)
             total_trust += len(trust_report.decisions)
@@ -193,6 +233,10 @@ def run_cake_pipeline(
         claims_extracted=total_extracted,
         claims_normalized=total_normalized,
         claims_ingested=total_ingested,
+        duplicates_detected=total_duplicates,
+        claims_merged=total_merged,
+        new_claims=total_new,
+        skipped_sources=skipped_sources,
         trust_decisions=total_trust,
         errors=all_errors,
         warnings=all_warnings,

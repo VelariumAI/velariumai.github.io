@@ -1,0 +1,200 @@
+{"expected": "candidate", "id": "gw_pos_001", "object": "Algeria", "prompt": "What country has capital Algiers?", "relation": "capital_of", "subject": "Algiers"}
+{"expected": "candidate", "id": "gw_pos_002", "object": "Argentina", "prompt": "What country has capital Buenos Aires?", "relation": "capital_of", "subject": "Buenos Aires"}
+{"expected": "candidate", "id": "gw_pos_003", "object": "Australia", "prompt": "What country has capital Canberra?", "relation": "capital_of", "subject": "Canberra"}
+{"expected": "candidate", "id": "gw_pos_004", "object": "Austria", "prompt": "What country has capital Vienna?", "relation": "capital_of", "subject": "Vienna"}
+{"expected": "candidate", "id": "gw_pos_005", "object": "Bangladesh", "prompt": "What country has capital Dhaka?", "relation": "capital_of", "subject": "Dhaka"}
+{"expected": "candidate", "id": "gw_pos_006", "object": "Belgium", "prompt": "What country has capital Brussels?", "relation": "capital_of", "subject": "Brussels"}
+{"expected": "candidate", "id": "gw_pos_007", "object": "Bolivia", "prompt": "What country has capital Sucre?", "relation": "capital_of", "subject": "Sucre"}
+{"expected": "candidate", "id": "gw_pos_008", "object": "Brazil", "prompt": "What country has capital Brasilia?", "relation": "capital_of", "subject": "Brasilia"}
+{"expected": "candidate", "id": "gw_pos_009", "object": "Bulgaria", "prompt": "What country has capital Sofia?", "relation": "capital_of", "subject": "Sofia"}
+{"expected": "candidate", "id": "gw_pos_010", "object": "Cambodia", "prompt": "What country has capital Phnom Penh?", "relation": "capital_of", "subject": "Phnom Penh"}
+{"expected": "candidate", "id": "gw_pos_011", "object": "Cameroon", "prompt": "What country has capital Yaounde?", "relation": "capital_of", "subject": "Yaounde"}
+{"expected": "candidate", "id": "gw_pos_012", "object": "Canada", "prompt": "What country has capital Ottawa?", "relation": "capital_of", "subject": "Ottawa"}
+{"expected": "candidate", "id": "gw_pos_013", "object": "Chile", "prompt": "What country has capital Santiago?", "relation": "capital_of", "subject": "Santiago"}
+{"expected": "candidate", "id": "gw_pos_014", "object": "China", "prompt": "What country has capital Beijing?", "relation": "capital_of", "subject": "Beijing"}
+{"expected": "candidate", "id": "gw_pos_015", "object": "Colombia", "prompt": "What country has capital Bogota?", "relation": "capital_of", "subject": "Bogota"}
+{"expected": "candidate", "id": "gw_pos_016", "object": "Costa Rica", "prompt": "What country has capital San Jose?", "relation": "capital_of", "subject": "San Jose"}
+{"expected": "candidate", "id": "gw_pos_017", "object": "Croatia", "prompt": "What country has capital Zagreb?", "relation": "capital_of", "subject": "Zagreb"}
+{"expected": "candidate", "id": "gw_pos_018", "object": "Cuba", "prompt": "What country has capital Havana?", "relation": "capital_of", "subject": "Havana"}
+{"expected": "candidate", "id": "gw_pos_019", "object": "Czech Republic", "prompt": "What country has capital Prague?", "relation": "capital_of", "subject": "Prague"}
+{"expected": "candidate", "id": "gw_pos_020", "object": "Denmark", "prompt": "What country has capital Copenhagen?", "relation": "capital_of", "subject": "Copenhagen"}
+{"expected": "candidate", "id": "gw_pos_021", "object": "Dominican Republic", "prompt": "What country has capital Santo Domingo?", "relation": "capital_of", "subject": "Santo Domingo"}
+{"expected": "candidate", "id": "gw_pos_022", "object": "Ecuador", "prompt": "What country has capital Quito?", "relation": "capital_of", "subject": "Quito"}
+{"expected": "candidate", "id": "gw_pos_023", "object": "Egypt", "prompt": "What country has capital Cairo?", "relation": "capital_of", "subject": "Cairo"}
+{"expected": "candidate", "id": "gw_pos_024", "object": "El Salvador", "prompt": "What country has capital San Salvador?", "relation": "capital_of", "subject": "San Salvador"}
+{"expected": "candidate", "id": "gw_pos_025", "object": "Estonia", "prompt": "What country has capital Tallinn?", "relation": "capital_of", "subject": "Tallinn"}
+{"expected": "candidate", "id": "gw_pos_026", "object": "Ethiopia", "prompt": "What country has capital Addis Ababa?", "relation": "capital_of", "subject": "Addis Ababa"}
+{"expected": "candidate", "id": "gw_pos_027", "object": "Finland", "prompt": "What country has capital Helsinki?", "relation": "capital_of", "subject": "Helsinki"}
+{"expected": "candidate", "id": "gw_pos_028", "object": "France", "prompt": "What country has capital Paris?", "relation": "capital_of", "subject": "Paris"}
+{"expected": "candidate", "id": "gw_pos_029", "object": "Germany", "prompt": "What country has capital Berlin?", "relation": "capital_of", "subject": "Berlin"}
+{"expected": "candidate", "id": "gw_pos_030", "object": "Ghana", "prompt": "What country has capital Accra?", "relation": "capital_of", "subject": "Accra"}
+{"expected": "candidate", "id": "gw_pos_031", "object": "Greece", "prompt": "What country has capital Athens?", "relation": "capital_of", "subject": "Athens"}
+{"expected": "candidate", "id": "gw_pos_032", "object": "Guatemala", "prompt": "What country has capital Guatemala City?", "relation": "capital_of", "subject": "Guatemala City"}
+{"expected": "candidate", "id": "gw_pos_033", "object": "Honduras", "prompt": "What country has capital Tegucigalpa?", "relation": "capital_of", "subject": "Tegucigalpa"}
+{"expected": "candidate", "id": "gw_pos_034", "object": "Hungary", "prompt": "What country has capital Budapest?", "relation": "capital_of", "subject": "Budapest"}
+{"expected": "candidate", "id": "gw_pos_035", "object": "Iceland", "prompt": "What country has capital Reykjavik?", "relation": "capital_of", "subject": "Reykjavik"}
+{"expected": "candidate", "id": "gw_pos_036", "object": "India", "prompt": "What country has capital New Delhi?", "relation": "capital_of", "subject": "New Delhi"}
+{"expected": "candidate", "id": "gw_pos_037", "object": "Indonesia", "prompt": "What country has capital Jakarta?", "relation": "capital_of", "subject": "Jakarta"}
+{"expected": "candidate", "id": "gw_pos_038", "object": "Iran", "prompt": "What country has capital Tehran?", "relation": "capital_of", "subject": "Tehran"}
+{"expected": "candidate", "id": "gw_pos_039", "object": "Iraq", "prompt": "What country has capital Baghdad?", "relation": "capital_of", "subject": "Baghdad"}
+{"expected": "candidate", "id": "gw_pos_040", "object": "Ireland", "prompt": "What country has capital Dublin?", "relation": "capital_of", "subject": "Dublin"}
+{"expected": "candidate", "id": "gw_pos_041", "object": "Israel", "prompt": "What country has capital Jerusalem?", "relation": "capital_of", "subject": "Jerusalem"}
+{"expected": "candidate", "id": "gw_pos_042", "object": "Italy", "prompt": "What country has capital Rome?", "relation": "capital_of", "subject": "Rome"}
+{"expected": "candidate", "id": "gw_pos_043", "object": "Japan", "prompt": "What country has capital Tokyo?", "relation": "capital_of", "subject": "Tokyo"}
+{"expected": "candidate", "id": "gw_pos_044", "object": "Jordan", "prompt": "What country has capital Amman?", "relation": "capital_of", "subject": "Amman"}
+{"expected": "candidate", "id": "gw_pos_045", "object": "Kazakhstan", "prompt": "What country has capital Astana?", "relation": "capital_of", "subject": "Astana"}
+{"expected": "candidate", "id": "gw_pos_046", "object": "Kenya", "prompt": "What country has capital Nairobi?", "relation": "capital_of", "subject": "Nairobi"}
+{"expected": "candidate", "id": "gw_pos_047", "object": "Kuwait", "prompt": "What country has capital Kuwait City?", "relation": "capital_of", "subject": "Kuwait City"}
+{"expected": "candidate", "id": "gw_pos_048", "object": "Latvia", "prompt": "What country has capital Riga?", "relation": "capital_of", "subject": "Riga"}
+{"expected": "candidate", "id": "gw_pos_049", "object": "Lebanon", "prompt": "What country has capital Beirut?", "relation": "capital_of", "subject": "Beirut"}
+{"expected": "candidate", "id": "gw_pos_050", "object": "Lithuania", "prompt": "What country has capital Vilnius?", "relation": "capital_of", "subject": "Vilnius"}
+{"expected": "candidate", "id": "gw_pos_051", "object": "Luxembourg", "prompt": "What country has capital Luxembourg?", "relation": "capital_of", "subject": "Luxembourg"}
+{"expected": "candidate", "id": "gw_pos_052", "object": "Malaysia", "prompt": "What country has capital Kuala Lumpur?", "relation": "capital_of", "subject": "Kuala Lumpur"}
+{"expected": "candidate", "id": "gw_pos_053", "object": "Mexico", "prompt": "What country has capital Mexico City?", "relation": "capital_of", "subject": "Mexico City"}
+{"expected": "candidate", "id": "gw_pos_054", "object": "Mongolia", "prompt": "What country has capital Ulaanbaatar?", "relation": "capital_of", "subject": "Ulaanbaatar"}
+{"expected": "candidate", "id": "gw_pos_055", "object": "Morocco", "prompt": "What country has capital Rabat?", "relation": "capital_of", "subject": "Rabat"}
+{"expected": "candidate", "id": "gw_pos_056", "object": "Myanmar", "prompt": "What country has capital Naypyidaw?", "relation": "capital_of", "subject": "Naypyidaw"}
+{"expected": "candidate", "id": "gw_pos_057", "object": "Nepal", "prompt": "What country has capital Kathmandu?", "relation": "capital_of", "subject": "Kathmandu"}
+{"expected": "candidate", "id": "gw_pos_058", "object": "Netherlands", "prompt": "What country has capital Amsterdam?", "relation": "capital_of", "subject": "Amsterdam"}
+{"expected": "candidate", "id": "gw_pos_059", "object": "New Zealand", "prompt": "What country has capital Wellington?", "relation": "capital_of", "subject": "Wellington"}
+{"expected": "candidate", "id": "gw_pos_060", "object": "Nicaragua", "prompt": "What country has capital Managua?", "relation": "capital_of", "subject": "Managua"}
+{"expected": "candidate", "id": "gw_pos_061", "object": "Nigeria", "prompt": "What country has capital Abuja?", "relation": "capital_of", "subject": "Abuja"}
+{"expected": "candidate", "id": "gw_pos_062", "object": "North Korea", "prompt": "What country has capital Pyongyang?", "relation": "capital_of", "subject": "Pyongyang"}
+{"expected": "candidate", "id": "gw_pos_063", "object": "Norway", "prompt": "What country has capital Oslo?", "relation": "capital_of", "subject": "Oslo"}
+{"expected": "candidate", "id": "gw_pos_064", "object": "Oman", "prompt": "What country has capital Muscat?", "relation": "capital_of", "subject": "Muscat"}
+{"expected": "candidate", "id": "gw_pos_065", "object": "Pakistan", "prompt": "What country has capital Islamabad?", "relation": "capital_of", "subject": "Islamabad"}
+{"expected": "candidate", "id": "gw_pos_066", "object": "Panama", "prompt": "What country has capital Panama City?", "relation": "capital_of", "subject": "Panama City"}
+{"expected": "candidate", "id": "gw_pos_067", "object": "Paraguay", "prompt": "What country has capital Asuncion?", "relation": "capital_of", "subject": "Asuncion"}
+{"expected": "candidate", "id": "gw_pos_068", "object": "Peru", "prompt": "What country has capital Lima?", "relation": "capital_of", "subject": "Lima"}
+{"expected": "candidate", "id": "gw_pos_069", "object": "Philippines", "prompt": "What country has capital Manila?", "relation": "capital_of", "subject": "Manila"}
+{"expected": "candidate", "id": "gw_pos_070", "object": "Poland", "prompt": "What country has capital Warsaw?", "relation": "capital_of", "subject": "Warsaw"}
+{"expected": "candidate", "id": "gw_pos_071", "object": "Portugal", "prompt": "What country has capital Lisbon?", "relation": "capital_of", "subject": "Lisbon"}
+{"expected": "candidate", "id": "gw_pos_072", "object": "Qatar", "prompt": "What country has capital Doha?", "relation": "capital_of", "subject": "Doha"}
+{"expected": "candidate", "id": "gw_pos_073", "object": "Romania", "prompt": "What country has capital Bucharest?", "relation": "capital_of", "subject": "Bucharest"}
+{"expected": "candidate", "id": "gw_pos_074", "object": "Russia", "prompt": "What country has capital Moscow?", "relation": "capital_of", "subject": "Moscow"}
+{"expected": "candidate", "id": "gw_pos_075", "object": "Saudi Arabia", "prompt": "What country has capital Riyadh?", "relation": "capital_of", "subject": "Riyadh"}
+{"expected": "candidate", "id": "gw_pos_076", "object": "Serbia", "prompt": "What country has capital Belgrade?", "relation": "capital_of", "subject": "Belgrade"}
+{"expected": "candidate", "id": "gw_pos_077", "object": "Singapore", "prompt": "What country has capital Singapore?", "relation": "capital_of", "subject": "Singapore"}
+{"expected": "candidate", "id": "gw_pos_078", "object": "Slovakia", "prompt": "What country has capital Bratislava?", "relation": "capital_of", "subject": "Bratislava"}
+{"expected": "candidate", "id": "gw_pos_079", "object": "Slovenia", "prompt": "What country has capital Ljubljana?", "relation": "capital_of", "subject": "Ljubljana"}
+{"expected": "candidate", "id": "gw_pos_080", "object": "South Africa", "prompt": "What country has capital Pretoria?", "relation": "capital_of", "subject": "Pretoria"}
+{"expected": "candidate", "id": "gw_pos_081", "object": "South Korea", "prompt": "What country has capital Seoul?", "relation": "capital_of", "subject": "Seoul"}
+{"expected": "candidate", "id": "gw_pos_082", "object": "Spain", "prompt": "What country has capital Madrid?", "relation": "capital_of", "subject": "Madrid"}
+{"expected": "candidate", "id": "gw_pos_083", "object": "Sri Lanka", "prompt": "What country has capital Sri Jayawardenepura Kotte?", "relation": "capital_of", "subject": "Sri Jayawardenepura Kotte"}
+{"expected": "candidate", "id": "gw_pos_084", "object": "Sweden", "prompt": "What country has capital Stockholm?", "relation": "capital_of", "subject": "Stockholm"}
+{"expected": "candidate", "id": "gw_pos_085", "object": "Switzerland", "prompt": "What country has capital Bern?", "relation": "capital_of", "subject": "Bern"}
+{"expected": "candidate", "id": "gw_pos_086", "object": "Syria", "prompt": "What country has capital Damascus?", "relation": "capital_of", "subject": "Damascus"}
+{"expected": "candidate", "id": "gw_pos_087", "object": "Taiwan", "prompt": "What country has capital Taipei?", "relation": "capital_of", "subject": "Taipei"}
+{"expected": "candidate", "id": "gw_pos_088", "object": "Thailand", "prompt": "What country has capital Bangkok?", "relation": "capital_of", "subject": "Bangkok"}
+{"expected": "candidate", "id": "gw_pos_089", "object": "Tunisia", "prompt": "What country has capital Tunis?", "relation": "capital_of", "subject": "Tunis"}
+{"expected": "candidate", "id": "gw_pos_090", "object": "Turkey", "prompt": "What country has capital Ankara?", "relation": "capital_of", "subject": "Ankara"}
+{"expected": "candidate", "id": "gw_pos_091", "object": "Ukraine", "prompt": "What country has capital Kyiv?", "relation": "capital_of", "subject": "Kyiv"}
+{"expected": "candidate", "id": "gw_pos_092", "object": "United Arab Emirates", "prompt": "What country has capital Abu Dhabi?", "relation": "capital_of", "subject": "Abu Dhabi"}
+{"expected": "candidate", "id": "gw_pos_093", "object": "United Kingdom", "prompt": "What country has capital London?", "relation": "capital_of", "subject": "London"}
+{"expected": "candidate", "id": "gw_pos_094", "object": "United States", "prompt": "What country has capital Washington?", "relation": "capital_of", "subject": "Washington"}
+{"expected": "candidate", "id": "gw_pos_095", "object": "Uruguay", "prompt": "What country has capital Montevideo?", "relation": "capital_of", "subject": "Montevideo"}
+{"expected": "candidate", "id": "gw_pos_096", "object": "Venezuela", "prompt": "What country has capital Caracas?", "relation": "capital_of", "subject": "Caracas"}
+{"expected": "candidate", "id": "gw_pos_097", "object": "Vietnam", "prompt": "What country has capital Hanoi?", "relation": "capital_of", "subject": "Hanoi"}
+{"expected": "candidate", "id": "gw_pos_098", "object": "Yemen", "prompt": "What country has capital Sanaa?", "relation": "capital_of", "subject": "Sanaa"}
+{"expected": "candidate", "id": "gw_pos_099", "object": "Zambia", "prompt": "What country has capital Lusaka?", "relation": "capital_of", "subject": "Lusaka"}
+{"expected": "candidate", "id": "gw_pos_100", "object": "Zimbabwe", "prompt": "What country has capital Harare?", "relation": "capital_of", "subject": "Harare"}
+{"expected": "unknown", "id": "gw_neg_001", "object": "Argentina", "prompt": "Is Algiers the capital of Argentina?", "relation": "capital_of", "subject": "Algiers"}
+{"expected": "unknown", "id": "gw_neg_002", "object": "Australia", "prompt": "Is Buenos Aires the capital of Australia?", "relation": "capital_of", "subject": "Buenos Aires"}
+{"expected": "unknown", "id": "gw_neg_003", "object": "Austria", "prompt": "Is Canberra the capital of Austria?", "relation": "capital_of", "subject": "Canberra"}
+{"expected": "unknown", "id": "gw_neg_004", "object": "Bangladesh", "prompt": "Is Vienna the capital of Bangladesh?", "relation": "capital_of", "subject": "Vienna"}
+{"expected": "unknown", "id": "gw_neg_005", "object": "Belgium", "prompt": "Is Dhaka the capital of Belgium?", "relation": "capital_of", "subject": "Dhaka"}
+{"expected": "unknown", "id": "gw_neg_006", "object": "Bolivia", "prompt": "Is Brussels the capital of Bolivia?", "relation": "capital_of", "subject": "Brussels"}
+{"expected": "unknown", "id": "gw_neg_007", "object": "Brazil", "prompt": "Is Sucre the capital of Brazil?", "relation": "capital_of", "subject": "Sucre"}
+{"expected": "unknown", "id": "gw_neg_008", "object": "Bulgaria", "prompt": "Is Brasilia the capital of Bulgaria?", "relation": "capital_of", "subject": "Brasilia"}
+{"expected": "unknown", "id": "gw_neg_009", "object": "Cambodia", "prompt": "Is Sofia the capital of Cambodia?", "relation": "capital_of", "subject": "Sofia"}
+{"expected": "unknown", "id": "gw_neg_010", "object": "Cameroon", "prompt": "Is Phnom Penh the capital of Cameroon?", "relation": "capital_of", "subject": "Phnom Penh"}
+{"expected": "unknown", "id": "gw_neg_011", "object": "Canada", "prompt": "Is Yaounde the capital of Canada?", "relation": "capital_of", "subject": "Yaounde"}
+{"expected": "unknown", "id": "gw_neg_012", "object": "Chile", "prompt": "Is Ottawa the capital of Chile?", "relation": "capital_of", "subject": "Ottawa"}
+{"expected": "unknown", "id": "gw_neg_013", "object": "China", "prompt": "Is Santiago the capital of China?", "relation": "capital_of", "subject": "Santiago"}
+{"expected": "unknown", "id": "gw_neg_014", "object": "Colombia", "prompt": "Is Beijing the capital of Colombia?", "relation": "capital_of", "subject": "Beijing"}
+{"expected": "unknown", "id": "gw_neg_015", "object": "Costa Rica", "prompt": "Is Bogota the capital of Costa Rica?", "relation": "capital_of", "subject": "Bogota"}
+{"expected": "unknown", "id": "gw_neg_016", "object": "Croatia", "prompt": "Is San Jose the capital of Croatia?", "relation": "capital_of", "subject": "San Jose"}
+{"expected": "unknown", "id": "gw_neg_017", "object": "Cuba", "prompt": "Is Zagreb the capital of Cuba?", "relation": "capital_of", "subject": "Zagreb"}
+{"expected": "unknown", "id": "gw_neg_018", "object": "Czech Republic", "prompt": "Is Havana the capital of Czech Republic?", "relation": "capital_of", "subject": "Havana"}
+{"expected": "unknown", "id": "gw_neg_019", "object": "Denmark", "prompt": "Is Prague the capital of Denmark?", "relation": "capital_of", "subject": "Prague"}
+{"expected": "unknown", "id": "gw_neg_020", "object": "Dominican Republic", "prompt": "Is Copenhagen the capital of Dominican Republic?", "relation": "capital_of", "subject": "Copenhagen"}
+{"expected": "unknown", "id": "gw_neg_021", "object": "Ecuador", "prompt": "Is Santo Domingo the capital of Ecuador?", "relation": "capital_of", "subject": "Santo Domingo"}
+{"expected": "unknown", "id": "gw_neg_022", "object": "Egypt", "prompt": "Is Quito the capital of Egypt?", "relation": "capital_of", "subject": "Quito"}
+{"expected": "unknown", "id": "gw_neg_023", "object": "El Salvador", "prompt": "Is Cairo the capital of El Salvador?", "relation": "capital_of", "subject": "Cairo"}
+{"expected": "unknown", "id": "gw_neg_024", "object": "Estonia", "prompt": "Is San Salvador the capital of Estonia?", "relation": "capital_of", "subject": "San Salvador"}
+{"expected": "unknown", "id": "gw_neg_025", "object": "Ethiopia", "prompt": "Is Tallinn the capital of Ethiopia?", "relation": "capital_of", "subject": "Tallinn"}
+{"expected": "unknown", "id": "gw_neg_026", "object": "Finland", "prompt": "Is Addis Ababa the capital of Finland?", "relation": "capital_of", "subject": "Addis Ababa"}
+{"expected": "unknown", "id": "gw_neg_027", "object": "France", "prompt": "Is Helsinki the capital of France?", "relation": "capital_of", "subject": "Helsinki"}
+{"expected": "unknown", "id": "gw_neg_028", "object": "Germany", "prompt": "Is Paris the capital of Germany?", "relation": "capital_of", "subject": "Paris"}
+{"expected": "unknown", "id": "gw_neg_029", "object": "Ghana", "prompt": "Is Berlin the capital of Ghana?", "relation": "capital_of", "subject": "Berlin"}
+{"expected": "unknown", "id": "gw_neg_030", "object": "Greece", "prompt": "Is Accra the capital of Greece?", "relation": "capital_of", "subject": "Accra"}
+{"expected": "unknown", "id": "gw_neg_031", "object": "Guatemala", "prompt": "Is Athens the capital of Guatemala?", "relation": "capital_of", "subject": "Athens"}
+{"expected": "unknown", "id": "gw_neg_032", "object": "Honduras", "prompt": "Is Guatemala City the capital of Honduras?", "relation": "capital_of", "subject": "Guatemala City"}
+{"expected": "unknown", "id": "gw_neg_033", "object": "Hungary", "prompt": "Is Tegucigalpa the capital of Hungary?", "relation": "capital_of", "subject": "Tegucigalpa"}
+{"expected": "unknown", "id": "gw_neg_034", "object": "Iceland", "prompt": "Is Budapest the capital of Iceland?", "relation": "capital_of", "subject": "Budapest"}
+{"expected": "unknown", "id": "gw_neg_035", "object": "India", "prompt": "Is Reykjavik the capital of India?", "relation": "capital_of", "subject": "Reykjavik"}
+{"expected": "unknown", "id": "gw_neg_036", "object": "Indonesia", "prompt": "Is New Delhi the capital of Indonesia?", "relation": "capital_of", "subject": "New Delhi"}
+{"expected": "unknown", "id": "gw_neg_037", "object": "Iran", "prompt": "Is Jakarta the capital of Iran?", "relation": "capital_of", "subject": "Jakarta"}
+{"expected": "unknown", "id": "gw_neg_038", "object": "Iraq", "prompt": "Is Tehran the capital of Iraq?", "relation": "capital_of", "subject": "Tehran"}
+{"expected": "unknown", "id": "gw_neg_039", "object": "Ireland", "prompt": "Is Baghdad the capital of Ireland?", "relation": "capital_of", "subject": "Baghdad"}
+{"expected": "unknown", "id": "gw_neg_040", "object": "Israel", "prompt": "Is Dublin the capital of Israel?", "relation": "capital_of", "subject": "Dublin"}
+{"expected": "unknown", "id": "gw_neg_041", "object": "Italy", "prompt": "Is Jerusalem the capital of Italy?", "relation": "capital_of", "subject": "Jerusalem"}
+{"expected": "unknown", "id": "gw_neg_042", "object": "Japan", "prompt": "Is Rome the capital of Japan?", "relation": "capital_of", "subject": "Rome"}
+{"expected": "unknown", "id": "gw_neg_043", "object": "Jordan", "prompt": "Is Tokyo the capital of Jordan?", "relation": "capital_of", "subject": "Tokyo"}
+{"expected": "unknown", "id": "gw_neg_044", "object": "Kazakhstan", "prompt": "Is Amman the capital of Kazakhstan?", "relation": "capital_of", "subject": "Amman"}
+{"expected": "unknown", "id": "gw_neg_045", "object": "Kenya", "prompt": "Is Astana the capital of Kenya?", "relation": "capital_of", "subject": "Astana"}
+{"expected": "unknown", "id": "gw_neg_046", "object": "Kuwait", "prompt": "Is Nairobi the capital of Kuwait?", "relation": "capital_of", "subject": "Nairobi"}
+{"expected": "unknown", "id": "gw_neg_047", "object": "Latvia", "prompt": "Is Kuwait City the capital of Latvia?", "relation": "capital_of", "subject": "Kuwait City"}
+{"expected": "unknown", "id": "gw_neg_048", "object": "Lebanon", "prompt": "Is Riga the capital of Lebanon?", "relation": "capital_of", "subject": "Riga"}
+{"expected": "unknown", "id": "gw_neg_049", "object": "Lithuania", "prompt": "Is Beirut the capital of Lithuania?", "relation": "capital_of", "subject": "Beirut"}
+{"expected": "unknown", "id": "gw_neg_050", "object": "Luxembourg", "prompt": "Is Vilnius the capital of Luxembourg?", "relation": "capital_of", "subject": "Vilnius"}
+{"expected": "unknown", "id": "gw_neg_051", "object": "Malaysia", "prompt": "Is Luxembourg the capital of Malaysia?", "relation": "capital_of", "subject": "Luxembourg"}
+{"expected": "unknown", "id": "gw_neg_052", "object": "Mexico", "prompt": "Is Kuala Lumpur the capital of Mexico?", "relation": "capital_of", "subject": "Kuala Lumpur"}
+{"expected": "unknown", "id": "gw_neg_053", "object": "Mongolia", "prompt": "Is Mexico City the capital of Mongolia?", "relation": "capital_of", "subject": "Mexico City"}
+{"expected": "unknown", "id": "gw_neg_054", "object": "Morocco", "prompt": "Is Ulaanbaatar the capital of Morocco?", "relation": "capital_of", "subject": "Ulaanbaatar"}
+{"expected": "unknown", "id": "gw_neg_055", "object": "Myanmar", "prompt": "Is Rabat the capital of Myanmar?", "relation": "capital_of", "subject": "Rabat"}
+{"expected": "unknown", "id": "gw_neg_056", "object": "Nepal", "prompt": "Is Naypyidaw the capital of Nepal?", "relation": "capital_of", "subject": "Naypyidaw"}
+{"expected": "unknown", "id": "gw_neg_057", "object": "Netherlands", "prompt": "Is Kathmandu the capital of Netherlands?", "relation": "capital_of", "subject": "Kathmandu"}
+{"expected": "unknown", "id": "gw_neg_058", "object": "New Zealand", "prompt": "Is Amsterdam the capital of New Zealand?", "relation": "capital_of", "subject": "Amsterdam"}
+{"expected": "unknown", "id": "gw_neg_059", "object": "Nicaragua", "prompt": "Is Wellington the capital of Nicaragua?", "relation": "capital_of", "subject": "Wellington"}
+{"expected": "unknown", "id": "gw_neg_060", "object": "Nigeria", "prompt": "Is Managua the capital of Nigeria?", "relation": "capital_of", "subject": "Managua"}
+{"expected": "unknown", "id": "gw_neg_061", "object": "North Korea", "prompt": "Is Abuja the capital of North Korea?", "relation": "capital_of", "subject": "Abuja"}
+{"expected": "unknown", "id": "gw_neg_062", "object": "Norway", "prompt": "Is Pyongyang the capital of Norway?", "relation": "capital_of", "subject": "Pyongyang"}
+{"expected": "unknown", "id": "gw_neg_063", "object": "Oman", "prompt": "Is Oslo the capital of Oman?", "relation": "capital_of", "subject": "Oslo"}
+{"expected": "unknown", "id": "gw_neg_064", "object": "Pakistan", "prompt": "Is Muscat the capital of Pakistan?", "relation": "capital_of", "subject": "Muscat"}
+{"expected": "unknown", "id": "gw_neg_065", "object": "Panama", "prompt": "Is Islamabad the capital of Panama?", "relation": "capital_of", "subject": "Islamabad"}
+{"expected": "unknown", "id": "gw_neg_066", "object": "Paraguay", "prompt": "Is Panama City the capital of Paraguay?", "relation": "capital_of", "subject": "Panama City"}
+{"expected": "unknown", "id": "gw_neg_067", "object": "Peru", "prompt": "Is Asuncion the capital of Peru?", "relation": "capital_of", "subject": "Asuncion"}
+{"expected": "unknown", "id": "gw_neg_068", "object": "Philippines", "prompt": "Is Lima the capital of Philippines?", "relation": "capital_of", "subject": "Lima"}
+{"expected": "unknown", "id": "gw_neg_069", "object": "Poland", "prompt": "Is Manila the capital of Poland?", "relation": "capital_of", "subject": "Manila"}
+{"expected": "unknown", "id": "gw_neg_070", "object": "Portugal", "prompt": "Is Warsaw the capital of Portugal?", "relation": "capital_of", "subject": "Warsaw"}
+{"expected": "unknown", "id": "gw_neg_071", "object": "Qatar", "prompt": "Is Lisbon the capital of Qatar?", "relation": "capital_of", "subject": "Lisbon"}
+{"expected": "unknown", "id": "gw_neg_072", "object": "Romania", "prompt": "Is Doha the capital of Romania?", "relation": "capital_of", "subject": "Doha"}
+{"expected": "unknown", "id": "gw_neg_073", "object": "Russia", "prompt": "Is Bucharest the capital of Russia?", "relation": "capital_of", "subject": "Bucharest"}
+{"expected": "unknown", "id": "gw_neg_074", "object": "Saudi Arabia", "prompt": "Is Moscow the capital of Saudi Arabia?", "relation": "capital_of", "subject": "Moscow"}
+{"expected": "unknown", "id": "gw_neg_075", "object": "Serbia", "prompt": "Is Riyadh the capital of Serbia?", "relation": "capital_of", "subject": "Riyadh"}
+{"expected": "unknown", "id": "gw_neg_076", "object": "Singapore", "prompt": "Is Belgrade the capital of Singapore?", "relation": "capital_of", "subject": "Belgrade"}
+{"expected": "unknown", "id": "gw_neg_077", "object": "Slovakia", "prompt": "Is Singapore the capital of Slovakia?", "relation": "capital_of", "subject": "Singapore"}
+{"expected": "unknown", "id": "gw_neg_078", "object": "Slovenia", "prompt": "Is Bratislava the capital of Slovenia?", "relation": "capital_of", "subject": "Bratislava"}
+{"expected": "unknown", "id": "gw_neg_079", "object": "South Africa", "prompt": "Is Ljubljana the capital of South Africa?", "relation": "capital_of", "subject": "Ljubljana"}
+{"expected": "unknown", "id": "gw_neg_080", "object": "South Korea", "prompt": "Is Pretoria the capital of South Korea?", "relation": "capital_of", "subject": "Pretoria"}
+{"expected": "unknown", "id": "gw_neg_081", "object": "Spain", "prompt": "Is Seoul the capital of Spain?", "relation": "capital_of", "subject": "Seoul"}
+{"expected": "unknown", "id": "gw_neg_082", "object": "Sri Lanka", "prompt": "Is Madrid the capital of Sri Lanka?", "relation": "capital_of", "subject": "Madrid"}
+{"expected": "unknown", "id": "gw_neg_083", "object": "Sweden", "prompt": "Is Sri Jayawardenepura Kotte the capital of Sweden?", "relation": "capital_of", "subject": "Sri Jayawardenepura Kotte"}
+{"expected": "unknown", "id": "gw_neg_084", "object": "Switzerland", "prompt": "Is Stockholm the capital of Switzerland?", "relation": "capital_of", "subject": "Stockholm"}
+{"expected": "unknown", "id": "gw_neg_085", "object": "Syria", "prompt": "Is Bern the capital of Syria?", "relation": "capital_of", "subject": "Bern"}
+{"expected": "unknown", "id": "gw_neg_086", "object": "Taiwan", "prompt": "Is Damascus the capital of Taiwan?", "relation": "capital_of", "subject": "Damascus"}
+{"expected": "unknown", "id": "gw_neg_087", "object": "Thailand", "prompt": "Is Taipei the capital of Thailand?", "relation": "capital_of", "subject": "Taipei"}
+{"expected": "unknown", "id": "gw_neg_088", "object": "Tunisia", "prompt": "Is Bangkok the capital of Tunisia?", "relation": "capital_of", "subject": "Bangkok"}
+{"expected": "unknown", "id": "gw_neg_089", "object": "Turkey", "prompt": "Is Tunis the capital of Turkey?", "relation": "capital_of", "subject": "Tunis"}
+{"expected": "unknown", "id": "gw_neg_090", "object": "Ukraine", "prompt": "Is Ankara the capital of Ukraine?", "relation": "capital_of", "subject": "Ankara"}
+{"expected": "unknown", "id": "gw_neg_091", "object": "United Arab Emirates", "prompt": "Is Kyiv the capital of United Arab Emirates?", "relation": "capital_of", "subject": "Kyiv"}
+{"expected": "unknown", "id": "gw_neg_092", "object": "United Kingdom", "prompt": "Is Abu Dhabi the capital of United Kingdom?", "relation": "capital_of", "subject": "Abu Dhabi"}
+{"expected": "unknown", "id": "gw_neg_093", "object": "United States", "prompt": "Is London the capital of United States?", "relation": "capital_of", "subject": "London"}
+{"expected": "unknown", "id": "gw_neg_094", "object": "Uruguay", "prompt": "Is Washington the capital of Uruguay?", "relation": "capital_of", "subject": "Washington"}
+{"expected": "unknown", "id": "gw_neg_095", "object": "Venezuela", "prompt": "Is Montevideo the capital of Venezuela?", "relation": "capital_of", "subject": "Montevideo"}
+{"expected": "unknown", "id": "gw_neg_096", "object": "Vietnam", "prompt": "Is Caracas the capital of Vietnam?", "relation": "capital_of", "subject": "Caracas"}
+{"expected": "unknown", "id": "gw_neg_097", "object": "Yemen", "prompt": "Is Hanoi the capital of Yemen?", "relation": "capital_of", "subject": "Hanoi"}
+{"expected": "unknown", "id": "gw_neg_098", "object": "Zambia", "prompt": "Is Sanaa the capital of Zambia?", "relation": "capital_of", "subject": "Sanaa"}
+{"expected": "unknown", "id": "gw_neg_099", "object": "Zimbabwe", "prompt": "Is Lusaka the capital of Zimbabwe?", "relation": "capital_of", "subject": "Lusaka"}
+{"expected": "unknown", "id": "gw_neg_100", "object": "Algeria", "prompt": "Is Harare the capital of Algeria?", "relation": "capital_of", "subject": "Harare"}

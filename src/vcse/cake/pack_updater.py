@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from dataclasses import dataclass
 
 from vcse.knowledge.dedup import deduplicate_claims
 from vcse.knowledge.pack_builder import KnowledgePackBuilder
@@ -42,23 +43,33 @@ def _write_jsonl(path: Path, records: list[dict]) -> None:
 class CakePackUpdater:
     """Appends new unique claims to an existing pack on disk. Never overwrites."""
 
+    @dataclass(frozen=True)
+    class UpdateReport:
+        new_claims: int
+        duplicates_detected: int
+        claims_merged: int
+
     def update(self, pack_path: Path, new_claims: list[KnowledgeClaim]) -> int:
         """
         Append new_claims to pack at pack_path. Returns count of claims actually added.
         If pack does not exist, creates it via KnowledgePackBuilder.
         """
+        return self.update_with_report(pack_path, new_claims).new_claims
+
+    def update_with_report(self, pack_path: Path, new_claims: list[KnowledgeClaim]) -> UpdateReport:
         pack_path = Path(pack_path)
 
         if not pack_path.exists() or not (pack_path / "claims.jsonl").exists():
             added = self._create_new_pack(pack_path, new_claims)
             PackIndex().update_entry(pack_path)
-            return added
+            return self.UpdateReport(new_claims=added, duplicates_detected=0, claims_merged=0)
 
         PackLifecycleManager().assert_writable(pack_path)
 
         existing = _read_claims(pack_path)
         dedup = deduplicate_claims(existing, new_claims)
         to_add = dedup.unique_claims
+        duplicate_count = len(dedup.duplicates_detected)
         if not to_add:
             duplicate_provenance = [
                 provenance
@@ -68,7 +79,11 @@ class CakePackUpdater:
             if duplicate_provenance:
                 all_prov = _read_provenance(pack_path) + duplicate_provenance
                 _write_jsonl(pack_path / "provenance.jsonl", [p.to_dict() for p in all_prov])
-            return 0
+            return self.UpdateReport(
+                new_claims=0,
+                duplicates_detected=duplicate_count,
+                claims_merged=duplicate_count,
+            )
 
         all_claims = existing + to_add
         _write_jsonl(pack_path / "claims.jsonl", [c.to_dict() for c in all_claims])
@@ -92,7 +107,11 @@ class CakePackUpdater:
         (pack_path / "integrity.json").write_text(json.dumps(integrity, indent=2))
         PackIndex().update_entry(pack_path)
 
-        return len(to_add)
+        return self.UpdateReport(
+            new_claims=len(to_add),
+            duplicates_detected=duplicate_count,
+            claims_merged=duplicate_count,
+        )
 
     def _create_new_pack(self, pack_path: Path, claims: list[KnowledgeClaim]) -> int:
         pack = KnowledgePack(

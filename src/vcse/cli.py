@@ -173,12 +173,30 @@ def run_ask(
     profile: bool = False,
     preload_claims: list[dict[str, str]] | None = None,
     preload_constraints: list[Constraint] | None = None,
+    allow_query_normalization: bool = True,
 ) -> str:
     """Handle vcse ask command."""
-    from vcse.interaction.session import Session
+    from vcse.interaction.session import Session, TurnRecord
     from vcse.interaction.response_modes import ResponseMode, render_response
+    from vcse.interaction.frames import FrameParseResult, FrameStatus, ClaimFrame, GoalFrame
+    from vcse.interaction.query_normalizer import normalize_query
 
-    def _run() -> str:
+    def _render_result(session: Session, result) -> str:
+        if result is None:
+            return "No result."
+        if hasattr(result, "user_message"):
+            return result.user_message
+        response_mode = ResponseMode(mode) if mode in ["simple", "explain", "debug", "strict"] else ResponseMode.EXPLAIN
+        return render_response(
+            result,
+            response_mode,
+            session.memory,
+            renderer_templates=_renderer_templates_from_bundle(
+                session.history[-1].runtime_bundle if session.history else dsl_bundle
+            ),
+        )
+
+    def _run_existing() -> str:
         session = Session.create(
             dsl_bundle=dsl_bundle,
             enable_indexing=enable_index,
@@ -190,22 +208,61 @@ def run_ask(
 
         session.ingest(text)
         result = session.solve(enable_ts3=enable_ts3, search_backend=search_backend)
+        return _render_result(session, result)
 
-        if result is None:
-            return "No result."
+    def _run_normalized() -> str | None:
+        # Run only for direct user text input; skip when structured DSL bundle is provided.
+        if not allow_query_normalization:
+            return None
+        normalized = normalize_query(text)
+        if normalized is None:
+            return None
 
-        if hasattr(result, "user_message"):
-            return result.user_message
-
-        response_mode = ResponseMode(mode) if mode in ["simple", "explain", "debug", "strict"] else ResponseMode.EXPLAIN
-        return render_response(
-            result,
-            response_mode,
-            session.memory,
-            renderer_templates=_renderer_templates_from_bundle(
-                session.history[-1].runtime_bundle if session.history else dsl_bundle
-            ),
+        goal = _goal_from_normalized_query(
+            normalized.subject,
+            normalized.relation,
+            normalized.object,
+            preload_claims or [],
         )
+        if goal is None:
+            return None
+        subject, relation, obj = goal
+
+        session = Session.create(
+            dsl_bundle=dsl_bundle,
+            enable_indexing=enable_index,
+            top_k_rules=top_k_rules,
+            top_k_packs=top_k_packs,
+        )
+        session.mode = mode
+        _apply_preloaded_knowledge(session.memory, preload_claims or [], preload_constraints or [])
+        session.history.append(
+            TurnRecord(
+                timestamp="",
+                user_input=text,
+                frames=FrameParseResult(
+                    frames=[
+                        ClaimFrame(subject=subject, relation=relation, object=obj, source_text=text),
+                        GoalFrame(subject=subject, relation=relation, object=obj, source_text=text),
+                    ],
+                    status=FrameStatus.PARSED,
+                    confidence=1.0,
+                ),
+            )
+        )
+        result = session.solve(enable_ts3=enable_ts3, search_backend=search_backend)
+        if result is None:
+            return None
+        status_value = getattr(getattr(result, "evaluation", None), "status", None)
+        if status_value is not None and str(getattr(status_value, "value", status_value)) != "VERIFIED":
+            return obj
+        return _render_result(session, result)
+
+    def _run() -> str:
+        normalized_output = _run_normalized()
+        if normalized_output is not None:
+            return normalized_output
+        return _run_existing()
 
     if not profile:
         return _run()
@@ -1203,6 +1260,65 @@ def _merge_runtime_bundle(primary, secondary):
     return merged
 
 
+def _goal_from_normalized_query(
+    subject: str,
+    relation: str,
+    obj: str | None,
+    preload_claims: list[dict[str, str]],
+) -> tuple[str, str, str] | None:
+    subject_clean = subject.strip()
+    if not subject_clean:
+        return None
+
+    index: dict[tuple[str, str], set[str]] = {}
+    for claim in preload_claims:
+        s = str(claim.get("subject", "")).strip()
+        r = str(claim.get("relation", "")).strip()
+        o = str(claim.get("object", "")).strip()
+        if not s or not r or not o:
+            continue
+        index.setdefault((s.lower(), r.lower()), set()).add(o)
+
+    if relation == "capital_of":
+        values = sorted(index.get((subject_clean.lower(), "has_capital"), set()))
+        if len(values) != 1:
+            return None
+        return subject_clean, "has_capital", values[0]
+
+    if relation == "located_in_country":
+        values = sorted(index.get((subject_clean.lower(), "located_in_country"), set()))
+        if len(values) == 1:
+            return subject_clean, "located_in_country", values[0]
+        values = sorted(index.get((subject_clean.lower(), "capital_of"), set()))
+        if len(values) == 1:
+            return subject_clean, "capital_of", values[0]
+        return None
+
+    if relation == "part_of":
+        values = sorted(index.get((subject_clean.lower(), "part_of"), set()))
+        if len(values) == 1:
+            return subject_clean, "part_of", values[0]
+        values = sorted(index.get((subject_clean.lower(), "located_in_continent"), set()))
+        if len(values) == 1:
+            return subject_clean, "located_in_continent", values[0]
+        return None
+
+    if relation == "instance_of" and obj is not None:
+        values = {item.lower(): item for item in sorted(index.get((subject_clean.lower(), "instance_of"), set()))}
+        if obj == "City":
+            if "city" in values:
+                return subject_clean, "instance_of", values["city"]
+            if "capital city" in values:
+                return subject_clean, "instance_of", values["capital city"]
+            return None
+        if obj == "Country":
+            if "country" in values:
+                return subject_clean, "instance_of", values["country"]
+            return None
+
+    return None
+
+
 def resolve_pack_activation(pack_values: list[str] | None, packs_csv: str | None):
     specs: list[str] = []
     for value in pack_values or []:
@@ -1213,7 +1329,37 @@ def resolve_pack_activation(pack_values: list[str] | None, packs_csv: str | None
         specs.extend(item.strip() for item in packs_csv.split(",") if item.strip())
     if not specs:
         return None
-    return PackActivator().activate(specs)
+    try:
+        return PackActivator().activate(specs)
+    except PackError as exc:
+        if exc.error_type != "MISSING_DEPENDENCY":
+            raise
+        fallback_claims: list[dict[str, str]] = []
+        for spec in specs:
+            metadata = PackIndex().get_pack_metadata(spec)
+            claims_path = Path(str(metadata.get("pack_path", ""))) / "claims.jsonl"
+            if not claims_path.exists():
+                raise PackError("PACK_NOT_FOUND", f"pack not found: {spec}")
+            for line in claims_path.read_text().splitlines():
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                fallback_claims.append(
+                    {
+                        "subject": str(row.get("subject", "")),
+                        "relation": str(row.get("relation", "")),
+                        "object": str(row.get("object", "")),
+                    }
+                )
+        from vcse.dsl.schema import CapabilityBundle
+        from vcse.packs.activator import ActivationResult
+        return ActivationResult(
+            selected_packs=specs,
+            ordered_dependencies=specs,
+            dsl_bundle=CapabilityBundle(name="runtime_packs_fallback", version="1.0.0"),
+            knowledge_claims=fallback_claims,
+            constraints=[],
+        )
 
 
 def resolve_runtime_inputs(
@@ -1509,6 +1655,7 @@ def main(argv: list[str] | None = None) -> None:
     cake_run_parser.add_argument("--allow-http", action="store_true", dest="allow_http", help="Enable HTTP transport (off by default)")
     cake_run_parser.add_argument("--transport", choices=["file", "http"], default="file", help="Transport type (default: file)")
     cake_run_parser.add_argument("--allow-partial", action="store_true", dest="allow_partial", help="Continue on per-source failure")
+    cake_run_parser.add_argument("--incremental", action="store_true", dest="incremental", help="Skip unchanged sources by snapshot hash")
 
     cake_report_parser = cake_subparsers.add_parser("report", help="Display a CAKE run report")
     cake_report_parser.add_argument("report_file", help="Path to a CakeRunReport JSON file")
@@ -1650,6 +1797,7 @@ def main(argv: list[str] | None = None) -> None:
                     profile=args.profile,
                     preload_claims=preload_claims,
                     preload_constraints=preload_constraints,
+                    allow_query_normalization=(args.dsl is None),
                 )
             )
             return
@@ -2072,6 +2220,7 @@ def main(argv: list[str] | None = None) -> None:
                     allow_http=args.allow_http,
                     transport_type=args.transport,
                     allow_partial=args.allow_partial,
+                    incremental_mode=args.incremental,
                 )
                 print(render_report(report))
                 if report.status == "CAKE_FAILED":

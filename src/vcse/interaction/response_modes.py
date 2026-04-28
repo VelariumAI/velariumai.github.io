@@ -20,6 +20,8 @@ RELATION_DISPLAY_MAP = {
     "is_a": "is",
     "equals": "equals",
     "part_of": "is part of",
+    "has_capital": "has capital",
+    "capital_of": "capital of",
 }
 
 QUESTION_AUXILIARIES = {"can", "could", "would", "should", "does", "do", "did", "is", "are"}
@@ -86,6 +88,10 @@ def _humanize_claim(
 
     subject = _strip_leading_question_aux(subject)
     subject_display = _display_subject(subject)
+    if relation == "has_capital":
+        return f"{_display_subject(obj)} is the capital of {subject_display}"
+    if relation == "capital_of":
+        return f"{subject_display} is the capital of {_display_subject(obj)}"
     if renderer_templates and relation in renderer_templates:
         return renderer_templates[relation].format(subject=subject_display, object=_display_object(obj, relation, include_article_for_is_a))
     relation_display = RELATION_DISPLAY_MAP.get(relation, relation.replace("_", " "))

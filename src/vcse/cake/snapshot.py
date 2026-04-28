@@ -77,6 +77,12 @@ class CakeSnapshotStore:
             meta_path=meta_path,
         )
 
+    def has_snapshot(self, source_id: str, content_hash: str) -> bool:
+        short_hash = content_hash[:16]
+        snap_path = self.root / source_id / f"{short_hash}.snap"
+        meta_path = self.root / source_id / f"{short_hash}.snap.meta.json"
+        return snap_path.exists() and meta_path.exists()
+
     def load(self, snapshot_id: str) -> bytes:
         """Load raw bytes for a snapshot. Raises FileNotFoundError if missing."""
         source_id, short_hash = snapshot_id.split("/", 1)
