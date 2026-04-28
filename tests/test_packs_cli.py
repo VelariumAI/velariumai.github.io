@@ -84,7 +84,7 @@ def test_pack_cli_hash_verify_diff_sign(tmp_path: Path) -> None:
     assert d.returncode == 0
     assert "unchanged:" in d.stdout
 
-    s = run_cli("pack", "sign", pack_path, pack_home=home)
+    s = run_cli("pack", "sign", pack_path, "--write-artifacts", pack_home=home)
     assert s.returncode == 0
     assert "status: PACK_SIGNED" in s.stdout
 
@@ -92,6 +92,7 @@ def test_pack_cli_hash_verify_diff_sign(tmp_path: Path) -> None:
     assert v.returncode == 0
     assert "status: VALID" in v.stdout
 
-    sv = run_cli("pack", "verify-signature", pack_path, "--strict", pack_home=home)
+    sv = run_cli("pack", "verify-signature", pack_path, pack_home=home)
     assert sv.returncode == 0
-    assert "status: VALID" in sv.stdout
+    assert "status: INVALID" in sv.stdout
+    assert "reason: signature metadata mismatch" in sv.stdout

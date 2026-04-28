@@ -82,7 +82,7 @@ def test_pack_diff(tmp_path: Path) -> None:
 def test_signature_verification(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("VCSE_PACK_HOME", str(tmp_path / "home"))
     pack_path = _write_simple_pack(tmp_path / "signed")
-    sign_pack_manifest(pack_path)
+    sign_pack_manifest(pack_path, write_artifacts=True)
     ok = verify_pack_signature(pack_path)
     assert ok["valid"] is True
 
