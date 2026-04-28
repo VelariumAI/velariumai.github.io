@@ -1,5 +1,7 @@
 # Trust Pipeline
 
+> **CAKE entry point:** Claims acquired by CAKE enter the trust pipeline at T0_CANDIDATE tier. `CakeTrustRunner` calls `TrustPromoter.evaluate_claims()` and `TrustPromoter.promote()` — no trust logic is duplicated inside CAKE.
+
 VCSE trust processing separates candidate knowledge from certified support.
 
 Core workflow:

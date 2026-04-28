@@ -1,5 +1,7 @@
 # Knowledge Automation
 
+> **Upstream:** VCSE 2.7.0 adds CAKE as an upstream acquisition source. CAKE extracts `List[KnowledgeClaim]` and hands them to the knowledge normalizer and pipeline. See [CAKE.md](CAKE.md).
+
 VCSE knowledge automation turns local structured and semi-structured sources into verified knowledge packs.
 
 The flow is deterministic:

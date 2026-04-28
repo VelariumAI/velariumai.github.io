@@ -55,6 +55,11 @@ Input JSON / CLI demo
   for tamper-evident auditing.
 - Verifiers: judge claims, constraints, contradictions, and goal satisfaction.
 - Renderer: prints evaluated state with no inference or decision logic.
+- CAKE (v2.7.0): Controlled Acquisition of Knowledge Engine — deterministic
+  acquisition frontend that fetches, snapshots, extracts, and routes structured
+  claims into the normalization → trust → ledger → pack pipeline. Owns: source
+  config, transport (file/HTTP), immutable snapshots, deterministic extractors.
+  Delegates to existing knowledge/trust/ledger/pack systems. Boundary: `List[KnowledgeClaim]`.
 
 ## Guardrails
 

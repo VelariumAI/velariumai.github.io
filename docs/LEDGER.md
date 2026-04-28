@@ -1,5 +1,7 @@
 # Immutable Ledger
 
+> **CAKE ledger events:** CAKE acquisition runs may emit the following event types: `CAKE_FETCH`, `CAKE_SNAPSHOT`, `CAKE_INGEST`. These are recorded via the standard `LedgerStore.append()` API.
+
 VCSE ledger is append-only and tamper-evident.
 
 This is not a blockchain system:

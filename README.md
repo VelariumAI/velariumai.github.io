@@ -68,6 +68,18 @@ vcse ask "Can Socrates die?" --pack vrm.logic.basic
 vcse trust evaluate examples/trust/cross_supported_claims.jsonl
 vcse trust promote examples/packs/trusted_basic
 vcse ledger verify examples/packs/trusted_basic
+
+## CAKE — Knowledge Acquisition
+
+VCSE 2.7.0 adds CAKE (Controlled Acquisition of Knowledge Engine), a deterministic pipeline for collecting structured knowledge from approved sources.
+
+```bash
+vcse cake validate --source examples/cake/general_world_sources.json
+vcse cake run --source examples/cake/general_world_sources.json --dry-run
+vcse cake run --source examples/cake/general_world_sources.json --limit 100
+```
+
+Sources: Wikidata JSON, DBpedia TTL. Allowed domains: wikidata.org, dbpedia.org. All claims pass the trust pipeline before certification.
 ```
 
 Example JSON input:
