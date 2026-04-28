@@ -39,7 +39,7 @@ def test_benchmark_coverage_text_and_json(tmp_path: Path) -> None:
     assert raw.returncode == 0
     payload = json.loads(raw.stdout)
     assert payload["status"] == "COVERAGE_COMPLETE"
-    assert payload["total"] >= 500
+    assert payload["total"] >= 1500
     assert payload["incorrect"] == 0
     assert "explicit_answer_count" in payload
     assert "inverse_inferred_count" in payload
@@ -53,6 +53,8 @@ def test_benchmark_coverage_text_and_json(tmp_path: Path) -> None:
     assert "uncompressed_size" in payload
     assert "load_time_ms" in payload
     assert "query_latency_ms" in payload
+    assert payload["inverse_inferred_count"] > 0
+    assert payload["transitive_inferred_count"] > 0
 
 
 def test_benchmark_coverage_missing_pack_reports_pack_not_found(tmp_path: Path) -> None:
@@ -120,8 +122,8 @@ def test_coverage_classification_counts_and_totals(tmp_path: Path) -> None:
     benchmark_path = tmp_path / "bench.jsonl"
     cases = [
         {"id": "explicit", "subject": "France", "relation": "has_capital", "object": "Paris", "expected": "candidate"},
-        {"id": "inverse", "subject": "Paris", "relation": "capital_of", "object": "France", "expected": "unknown"},
-        {"id": "transitive", "subject": "Paris", "relation": "located_in_region", "object": "Europe", "expected": "unknown"},
+        {"id": "inverse", "subject": "Paris", "relation": "capital_of", "object": "France", "expected": "candidate"},
+        {"id": "transitive", "subject": "Paris", "relation": "located_in_region", "object": "Europe", "expected": "candidate"},
     ]
     benchmark_path.write_text("\n".join(json.dumps(row) for row in cases) + "\n")
 
@@ -163,7 +165,7 @@ def test_coverage_classification_deterministic(tmp_path: Path) -> None:
         "subject": "Paris",
         "relation": "capital_of",
         "object": "France",
-        "expected": "unknown",
+        "expected": "candidate",
     }
     benchmark_path.write_text(json.dumps(benchmark_case) + "\n")
 
