@@ -26,6 +26,7 @@ from vcse.gauntlet import (
 )
 from vcse.generation import GenerationError, VerifiedGenerator, spec_from_dict
 from vcse.inference.inverse import infer_inverse_claims
+from vcse.inference.transitive import infer_transitive_claims
 from vcse.index import SymbolicRetriever
 from vcse.engine import CaseValidationError, build_search, state_from_case
 from vcse.ingestion.pipeline import IngestionError, ingest_file
@@ -347,7 +348,41 @@ def run_ask(
             return inferred_values[0]
         return None
 
+    def _run_continent_lookup() -> str | None:
+        clean = text.strip()
+        low = clean.lower()
+        prefix = "what continent is "
+        suffix = " in?"
+        if not (low.startswith(prefix) and low.endswith(suffix)):
+            return None
+        subject = clean[len(prefix):len(clean) - len(suffix)].strip()
+        if not subject:
+            return None
+        explicit_claims = _knowledge_claims_from_dict_claims(preload_claims or [])
+        explicit_values = sorted(
+            {
+                claim.object
+                for claim in explicit_claims
+                if claim.subject.lower() == subject.lower() and claim.relation.lower() in {"part_of", "located_in_region"}
+            }
+        )
+        if len(explicit_values) == 1:
+            return explicit_values[0]
+        inferred_values = sorted(
+            {
+                claim.object
+                for claim in infer_transitive_claims(explicit_claims)
+                if claim.subject.lower() == subject.lower() and claim.relation.lower() == "located_in_region"
+            }
+        )
+        if len(inferred_values) == 1:
+            return inferred_values[0]
+        return None
+
     def _run() -> str:
+        continent = _run_continent_lookup()
+        if continent is not None:
+            return continent
         inverse_capital = _run_inverse_capital_fact_lookup()
         if inverse_capital is not None:
             return inverse_capital
@@ -1572,6 +1607,10 @@ def _goal_from_normalized_query(
         inferred_index.setdefault((inferred_claim.subject.lower(), inferred_claim.relation.lower()), set()).add(
             inferred_claim.object
         )
+    for inferred_claim in infer_transitive_claims(explicit_knowledge_claims):
+        inferred_index.setdefault((inferred_claim.subject.lower(), inferred_claim.relation.lower()), set()).add(
+            inferred_claim.object
+        )
 
     def _values(subject_key: str, relation_key: str) -> list[str]:
         explicit = sorted(explicit_index.get((subject_key, relation_key), set()))
@@ -1754,6 +1793,46 @@ def run_infer_inverse(pack_spec: str, json_output: bool = False) -> str:
             lines.append(
                 f"  - {claim.subject} {claim.relation} {claim.object} "
                 f"(derived_from={claim.derived_from}, rule={claim.rule}, trust_tier={claim.trust_tier})"
+            )
+    else:
+        lines.append("  - none")
+    return "\n".join(lines)
+
+
+def run_infer_transitive(pack_spec: str, json_output: bool = False) -> str:
+    dsl_bundle, preload_claims, _ = resolve_runtime_inputs(dsl_path=None, pack_values=[pack_spec], packs_csv=None)
+    _ = dsl_bundle
+    inferred = infer_transitive_claims(_knowledge_claims_from_dict_claims(preload_claims))
+    if json_output:
+        payload = {
+            "status": "INFERENCE_COMPLETE",
+            "pack": pack_spec,
+            "inferred_count": len(inferred),
+            "sample": [
+                {
+                    "subject": claim.subject,
+                    "relation": claim.relation,
+                    "object": claim.object,
+                    "derived_from": list(claim.derived_from),
+                    "rule": claim.rule,
+                    "trust_tier": claim.trust_tier,
+                }
+                for claim in inferred[:10]
+            ],
+        }
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        "status: INFERENCE_COMPLETE",
+        f"pack: {pack_spec}",
+        f"inferred_count: {len(inferred)}",
+        "sample:",
+    ]
+    if inferred:
+        for claim in inferred[:10]:
+            lines.append(
+                f"  - {claim.subject} {claim.relation} {claim.object} "
+                f"(derived_from={claim.derived_from[0]},{claim.derived_from[1]}, "
+                f"rule={claim.rule}, trust_tier={claim.trust_tier})"
             )
     else:
         lines.append("  - none")
@@ -2060,6 +2139,9 @@ def main(argv: list[str] | None = None) -> None:
     infer_inverse_parser = infer_subparsers.add_parser("inverse")
     infer_inverse_parser.add_argument("--pack", required=True)
     infer_inverse_parser.add_argument("--json", action="store_true", dest="json_output")
+    infer_transitive_parser = infer_subparsers.add_parser("transitive")
+    infer_transitive_parser.add_argument("--pack", required=True)
+    infer_transitive_parser.add_argument("--json", action="store_true", dest="json_output")
 
     ledger_parser = subparsers.add_parser("ledger")
     ledger_subparsers = ledger_parser.add_subparsers(dest="ledger_command")
@@ -2446,6 +2528,9 @@ def main(argv: list[str] | None = None) -> None:
         if args.command == "infer":
             if args.infer_command == "inverse":
                 print(run_infer_inverse(args.pack, json_output=args.json_output))
+                return
+            if args.infer_command == "transitive":
+                print(run_infer_transitive(args.pack, json_output=args.json_output))
                 return
         if args.command == "ledger":
             if args.ledger_command == "verify":
