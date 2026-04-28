@@ -1,0 +1,31 @@
+{
+  "version": "2.6.0",
+  "workspace": {
+    "id": "export-example-ws",
+    "name": "export-example",
+    "owner": "bob",
+    "created_at": "1700000000.000000",
+    "metadata": {}
+  },
+  "tasks": [
+    {
+      "task_id": "exported-task-001",
+      "workspace_id": "export-example-ws",
+      "plan": {
+        "task_id": "exported-task-001",
+        "steps": [{"id": "s1", "type": "tool", "tool_name": "math_solver", "inputs": {"expression": "2 + 2"}, "status": "COMPLETED", "result": {"result": 4}}]
+      },
+      "state": {
+        "task_id": "exported-task-001",
+        "current_step": 1,
+        "completed_steps": ["s1"],
+        "results": {"s1": {"result": 4}},
+        "status": "COMPLETED"
+      },
+      "created_at": "1700000001.000000",
+      "updated_at": "1700000002.000000"
+    }
+  ],
+  "sessions": [],
+  "ledger_events": []
+}

@@ -62,6 +62,7 @@ from vcse.agent import (
     Plan,
     Task,
     run_task,
+    resume_task,
     plan_task,
     ExecutionState,
 )
@@ -1277,12 +1278,42 @@ def main(argv: list[str] | None = None) -> None:
     agent_run_parser.add_argument("task_file", type=Path)
     agent_run_parser.add_argument("--json", action="store_true", dest="json_output")
     agent_run_parser.add_argument("--debug", action="store_true")
+    agent_run_parser.add_argument("--workspace", dest="workspace_id")
     agent_plan_parser = agent_subparsers.add_parser("plan")
     agent_plan_parser.add_argument("task_file", type=Path)
     agent_plan_parser.add_argument("--json", action="store_true", dest="json_output")
+    agent_resume_parser = agent_subparsers.add_parser("resume")
+    agent_resume_parser.add_argument("task_id")
+    agent_resume_parser.add_argument("--json", action="store_true", dest="json_output")
+    agent_resume_parser.add_argument("--workspace", dest="workspace_id", required=True)
     agent_status_parser = agent_subparsers.add_parser("status")
     agent_status_parser.add_argument("task_id")
+    agent_status_parser.add_argument("--workspace", dest="workspace_id")
     agent_status_parser.add_argument("--json", action="store_true", dest="json_output")
+
+    workspace_parser = subparsers.add_parser("workspace")
+    workspace_subparsers = workspace_parser.add_subparsers(dest="workspace_command")
+    ws_create_parser = workspace_subparsers.add_parser("create")
+    ws_create_parser.add_argument("name")
+    ws_create_parser.add_argument("--owner", required=True)
+    ws_create_parser.add_argument("--id")
+    ws_create_parser.add_argument("--json", action="store_true", dest="json_output")
+    ws_list_parser = workspace_subparsers.add_parser("list")
+    ws_list_parser.add_argument("--json", action="store_true", dest="json_output")
+    ws_delete_parser = workspace_subparsers.add_parser("delete")
+    ws_delete_parser.add_argument("id")
+    ws_delete_parser.add_argument("--json", action="store_true", dest="json_output")
+    ws_export_parser = workspace_subparsers.add_parser("export")
+    ws_export_parser.add_argument("id")
+    ws_export_parser.add_argument("--output", required=True, type=Path)
+    ws_export_parser.add_argument("--json", action="store_true", dest="json_output")
+    ws_import_parser = workspace_subparsers.add_parser("import")
+    ws_import_parser.add_argument("file", type=Path)
+    ws_import_parser.add_argument("--force", action="store_true")
+    ws_import_parser.add_argument("--json", action="store_true", dest="json_output")
+    ws_tasks_parser = workspace_subparsers.add_parser("tasks")
+    ws_tasks_parser.add_argument("id")
+    ws_tasks_parser.add_argument("--json", action="store_true", dest="json_output")
 
     try:
         args = parser.parse_args(argv)
@@ -1556,11 +1587,42 @@ def main(argv: list[str] | None = None) -> None:
                 return
         if args.command == "agent":
             import json as _json
+            from vcse.workspace import WorkspaceManager, WorkspaceNotFound, TaskNotFound
+
+            mgr = WorkspaceManager()
+
             if args.agent_command == "run":
                 try:
                     task_data = _json.loads(Path(args.task_file).read_text())
                     task_obj = Task.from_dict(task_data)
+                    # Persist to workspace if workspace_id provided
+                    ws_id = getattr(args, "workspace_id", None)
+                    if ws_id:
+                        mgr.load_workspace(ws_id)  # validate exists
+                        mgr.save_task(ws_id, task_obj.id, plan_task(task_obj).to_dict(), {
+                            "task_id": task_obj.id,
+                            "current_step": 0,
+                            "completed_steps": [],
+                            "results": {},
+                            "status": "RUNNING",
+                        })
+                        # ledger event
+                        mgr._store.append_ledger_event(ws_id, {
+                            "event": "TASK_PERSISTED",
+                            "workspace_id": ws_id,
+                            "timestamp": f"{__import__('time').time():.6f}",
+                            "payload": {"task_id": task_obj.id, "step_index": 0},
+                        })
                     _, plan, state = run_task(task_obj)
+                    if ws_id:
+                        # Update final state
+                        mgr.save_task(ws_id, task_obj.id, plan.to_dict(), state.to_dict())
+                        mgr._store.append_ledger_event(ws_id, {
+                            "event": "TASK_COMPLETED",
+                            "workspace_id": ws_id,
+                            "timestamp": f"{__import__('time').time():.6f}",
+                            "payload": {"task_id": task_obj.id, "status": state.status.value},
+                        })
                     print(f"status: {state.status.value}")
                     print(f"task_id: {state.task_id}")
                     print(f"completed_steps: {len(state.completed_steps)}")
@@ -1573,8 +1635,8 @@ def main(argv: list[str] | None = None) -> None:
                             "results": state.results,
                             "plan_steps": len(plan.steps),
                         }))
-                except AgentError as exc:
-                    print(f"status: ERROR\nerror_type: {exc.code}\nmessage: {exc.message}")
+                except (AgentError, WorkspaceNotFound) as exc:
+                    print(f"status: ERROR\nerror_type: {exc.code if hasattr(exc, 'code') else 'AGENT_ERROR'}\nmessage: {exc.message if hasattr(exc, 'message') else str(exc)}")
                     raise SystemExit(2)
                 except Exception as exc:
                     print(f"status: ERROR\nmessage: {exc}")
@@ -1599,11 +1661,166 @@ def main(argv: list[str] | None = None) -> None:
                     print(f"status: ERROR\nmessage: {exc}")
                     raise SystemExit(2)
                 return
+            if args.agent_command == "resume":
+                try:
+                    ws_id = args.workspace_id
+                    task_data = mgr.load_task(ws_id, args.task_id)
+                    plan_dict = task_data.plan
+                    state_dict = task_data.state
+
+                    from vcse.agent.task import Plan as AgentPlan, ExecutionState as AgentExecState, Task as AgentTask
+                    plan = AgentPlan.from_dict(plan_dict)
+                    state = AgentExecState.from_dict(state_dict)
+                    task = AgentTask(id=task_data.task_id, description="resumed", inputs={}, goal={})
+
+                    # Use resume_task to execute only remaining steps
+                    _, final_plan, final_state = resume_task(task, plan, state)
+                    # Update persisted state
+                    mgr.save_task(ws_id, task_data.task_id, final_plan.to_dict(), final_state.to_dict())
+                    mgr._store.append_ledger_event(ws_id, {
+                        "event": "TASK_RESUMED",
+                        "workspace_id": ws_id,
+                        "timestamp": f"{__import__('time').time():.6f}",
+                        "payload": {"task_id": task_data.task_id, "step_index": final_state.current_step},
+                    })
+                    print(f"status: {final_state.status.value}")
+                    print(f"task_id: {final_state.task_id}")
+                    print(f"completed_steps: {len(final_state.completed_steps)}")
+                    print(f"results: {_json.dumps(final_state.results, sort_keys=True)}")
+                    if args.json_output:
+                        print(_json.dumps({
+                            "status": final_state.status.value,
+                            "task_id": final_state.task_id,
+                            "completed_steps": len(final_state.completed_steps),
+                            "results": final_state.results,
+                        }))
+                except (WorkspaceNotFound, TaskNotFound, AgentError) as exc:
+                    print(f"status: ERROR\nerror_type: {exc.code if hasattr(exc, 'code') else 'AGENT_ERROR'}\nmessage: {exc.message if hasattr(exc, 'message') else str(exc)}")
+                    raise SystemExit(2)
+                except Exception as exc:
+                    print(f"status: ERROR\nmessage: {exc}")
+                    raise SystemExit(2)
+                return
             if args.agent_command == "status":
-                # Status lookup by task_id — for now report not found (state not persisted)
-                print(f"status: UNKNOWN")
-                print(f"task_id: {args.task_id}")
-                print(f"message: task state not persisted (in-memory only)")
+                ws_id = getattr(args, "workspace_id", None)
+                if ws_id:
+                    try:
+                        mgr.load_workspace(ws_id)
+                        task = mgr.load_task(ws_id, args.task_id)
+                        state = ExecutionState.from_dict(task.state)
+                        print(f"status: {state.status.value}")
+                        print(f"task_id: {state.task_id}")
+                        print(f"current_step: {state.current_step}")
+                        print(f"completed_steps: {len(state.completed_steps)}")
+                        if args.json_output:
+                            print(_json.dumps(task.state, sort_keys=True))
+                    except (WorkspaceNotFound, TaskNotFound):
+                        print(f"status: UNKNOWN")
+                        print(f"task_id: {args.task_id}")
+                        print(f"message: task not found in workspace")
+                else:
+                    print(f"status: UNKNOWN")
+                    print(f"task_id: {args.task_id}")
+                    print(f"message: --workspace required for persisted status lookup")
+                return
+        if args.command == "workspace":
+            import json as _json
+            from vcse.workspace import (
+                WorkspaceManager,
+                WorkspaceNotFound,
+                WorkspaceExists,
+                ImportError,
+            )
+            mgr = WorkspaceManager()
+
+            if args.workspace_command == "create":
+                try:
+                    ws = mgr.create_workspace(name=args.name, owner=args.owner, workspace_id=args.id)
+                    print(f"status: WORKSPACE_CREATED")
+                    print(f"workspace_id: {ws.id}")
+                    print(f"name: {ws.name}")
+                    print(f"owner: {ws.owner}")
+                    if args.json_output:
+                        print(_json.dumps(ws.to_dict(), sort_keys=True))
+                except WorkspaceExists as exc:
+                    print(f"status: ERROR\nerror_type: WORKSPACE_EXISTS\nmessage: {exc}")
+                    raise SystemExit(2)
+                except Exception as exc:
+                    print(f"status: ERROR\nmessage: {exc}")
+                    raise SystemExit(2)
+                return
+            if args.workspace_command == "list":
+                try:
+                    workspaces = mgr.list_workspaces()
+                    if args.json_output:
+                        print(_json.dumps([w.to_dict() for w in workspaces], sort_keys=True))
+                    else:
+                        print("workspaces:")
+                        for ws in workspaces:
+                            print(f"  - {ws.id} ({ws.name}, owner={ws.owner})")
+                except Exception as exc:
+                    print(f"status: ERROR\nmessage: {exc}")
+                    raise SystemExit(2)
+                return
+            if args.workspace_command == "delete":
+                try:
+                    mgr.delete_workspace(args.id)
+                    print(f"status: WORKSPACE_DELETED")
+                    print(f"workspace_id: {args.id}")
+                except WorkspaceNotFound:
+                    print(f"status: ERROR\nerror_type: WORKSPACE_NOT_FOUND\nmessage: workspace not found: {args.id}")
+                    raise SystemExit(2)
+                except Exception as exc:
+                    print(f"status: ERROR\nmessage: {exc}")
+                    raise SystemExit(2)
+                return
+            if args.workspace_command == "export":
+                try:
+                    mgr.export_workspace(args.id, str(args.output))
+                    print(f"status: WORKSPACE_EXPORTED")
+                    print(f"workspace_id: {args.id}")
+                    print(f"output: {args.output}")
+                    if args.json_output:
+                        print(_json.dumps({"status": "EXPORTED", "workspace_id": args.id, "output": str(args.output)}, sort_keys=True))
+                except WorkspaceNotFound:
+                    print(f"status: ERROR\nerror_type: WORKSPACE_NOT_FOUND\nmessage: workspace not found: {args.id}")
+                    raise SystemExit(2)
+                except Exception as exc:
+                    print(f"status: ERROR\nmessage: {exc}")
+                    raise SystemExit(2)
+                return
+            if args.workspace_command == "import":
+                try:
+                    ws = mgr.import_workspace(str(args.file), force=args.force)
+                    print(f"status: WORKSPACE_IMPORTED")
+                    print(f"workspace_id: {ws.id}")
+                    print(f"name: {ws.name}")
+                    if args.json_output:
+                        print(_json.dumps(ws.to_dict(), sort_keys=True))
+                except ImportError as exc:
+                    print(f"status: ERROR\nerror_type: IMPORT_ERROR\nmessage: {exc}")
+                    raise SystemExit(2)
+                except Exception as exc:
+                    print(f"status: ERROR\nmessage: {exc}")
+                    raise SystemExit(2)
+                return
+            if args.workspace_command == "tasks":
+                try:
+                    tasks = mgr.list_tasks(args.id)
+                    if args.json_output:
+                        print(_json.dumps([t.to_dict() for t in tasks], sort_keys=True))
+                    else:
+                        print(f"workspace_id: {args.id}")
+                        print(f"task_count: {len(tasks)}")
+                        for t in tasks:
+                            print(f"  - {t.task_id} (updated: {t.updated_at})")
+                except WorkspaceNotFound:
+                    print(f"status: ERROR\nerror_type: WORKSPACE_NOT_FOUND\nmessage: workspace not found: {args.id}")
+                    raise SystemExit(2)
+                except Exception as exc:
+                    print(f"status: ERROR\nmessage: {exc}")
+                    raise SystemExit(2)
+                return
                 return
         if args.command == "dsl":
             if args.dsl_command == "validate":

@@ -305,6 +305,84 @@ def run_task(
     return t, final_plan, final_state
 
 
+def resume_task(
+    task: Task,
+    plan: Plan,
+    initial_state: ExecutionState,
+    tool_registry=None,
+    ledger_logger=None,
+) -> tuple[Task, Plan, ExecutionState]:
+    """
+    Resume a task from saved plan and state.
+
+    Skips completed steps, executes only remaining steps.
+    Returns (task, final_plan, final_state).
+    """
+    if tool_registry is None:
+        tool_registry = get_registry()
+    if ledger_logger is None:
+        ledger_logger = default_ledger_logger
+
+    # Filter to remaining steps
+    completed_ids = set(initial_state.completed_steps)
+    remaining_steps = [s for s in plan.steps if s.id not in completed_ids]
+    if not remaining_steps:
+        return task, plan, initial_state
+
+    state = initial_state
+    updated_steps: list[Step] = []
+
+    for step in remaining_steps:
+        try:
+            updated_step, state = execute_step(step, state, tool_registry, ledger_logger)
+            updated_steps.append(updated_step)
+            if updated_step.status == StepStatus.FAILED:
+                break
+        except ExecutionError:
+            updated_steps.append(step)
+            break
+        except Exception as exc:
+            failed_step = Step(
+                id=step.id,
+                type=step.type,
+                tool_name=step.tool_name,
+                inputs=step.inputs,
+                expected_output=step.expected_output,
+                status=StepStatus.FAILED,
+                result={"error": str(exc)},
+            )
+            updated_steps.append(failed_step)
+            state = StateManager.update(state, failed_step)
+            break
+
+    # Build final plan: original completed steps + newly executed
+    completed_original = [s for s in plan.steps if s.id in completed_ids]
+    final_steps = tuple(completed_original) + tuple(updated_steps)
+
+    if any(s.status == StepStatus.FAILED for s in updated_steps):
+        final_status = ExecutionStatus.FAILED
+    elif updated_steps:
+        final_status = ExecutionStatus.COMPLETED
+    else:
+        final_status = initial_state.status
+
+    final_state = ExecutionState(
+        task_id=state.task_id,
+        current_step=state.current_step,
+        completed_steps=state.completed_steps,
+        results=state.results,
+        status=final_status,
+    )
+
+    final_plan = Plan(
+        task_id=plan.task_id,
+        steps=final_steps,
+        created_at=plan.created_at,
+    )
+
+    return task, final_plan, final_state
+
+
 def default_ledger_logger(event_type: str, payload: dict[str, Any]) -> None:
     """
     Default ledger logger — logs to stdout.

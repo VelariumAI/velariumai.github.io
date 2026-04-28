@@ -10,7 +10,7 @@ from vcse.agent.errors import (
     UnknownToolError,
     ValidationError,
 )
-from vcse.agent.executor import execute_plan, execute_step, run_task
+from vcse.agent.executor import execute_plan, execute_step, run_task, resume_task
 from vcse.agent.planner import plan_task
 from vcse.agent.state import ExecutionState, StateManager
 from vcse.agent.task import (
@@ -62,6 +62,7 @@ __all__ = [
     "execute_plan",
     "execute_step",
     "run_task",
+    "resume_task",
     # validation
     "validate_task",
     "validate_step",
