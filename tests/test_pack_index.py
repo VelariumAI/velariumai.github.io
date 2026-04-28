@@ -55,6 +55,8 @@ def test_build_and_query_index(tmp_path: Path) -> None:
     assert exact["claim_count"] == 2
     assert exact["certified_count"] == 1
     assert exact["candidate_count"] == 1
+    assert exact["region_count"] >= 1
+    assert exact["avg_region_size"] > 0
 
 
 def test_build_index_marks_stale_entries(tmp_path: Path) -> None:

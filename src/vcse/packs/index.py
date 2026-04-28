@@ -35,6 +35,38 @@ def _parse_semver(value: str) -> tuple[int, int, int]:
     return int(parts[0]), int(parts[1]), int(parts[2])
 
 
+def _subject_group_key(subject: str) -> str | None:
+    for separator in (":", "/", "#"):
+        if separator in subject:
+            prefix = subject.split(separator, 1)[0].strip()
+            if prefix:
+                return prefix
+    return None
+
+
+def _secondary_group_key(claim: dict[str, Any]) -> str | None:
+    qualifiers = claim.get("qualifiers", {})
+    if isinstance(qualifiers, dict):
+        category = str(qualifiers.get("category", "")).strip()
+        if category:
+            return f"category:{category}"
+    subject_prefix = _subject_group_key(str(claim.get("subject", "")))
+    if subject_prefix:
+        return f"subject_prefix:{subject_prefix}"
+    return None
+
+
+def _compute_region_stats(claims: list[dict[str, Any]]) -> tuple[int, float]:
+    buckets: set[tuple[str, str | None]] = set()
+    for claim in claims:
+        relation = str(claim.get("relation", "")).strip()
+        key = (relation, _secondary_group_key(claim))
+        buckets.add(key)
+    region_count = len(buckets)
+    avg_region_size = 0.0 if region_count == 0 else len(claims) / region_count
+    return region_count, avg_region_size
+
+
 class PackIndex:
     def __init__(self, index_path: Path | None = None) -> None:
         self.index_path = Path(index_path) if index_path else _default_index_path()
@@ -87,6 +119,7 @@ class PackIndex:
         claim_count = len(claims)
         certified_count = sum(1 for claim in claims if claim.get("trust_tier") == "T5_CERTIFIED")
         candidate_count = claim_count - certified_count
+        region_count, avg_region_size = _compute_region_stats(claims)
 
         source_ids = sorted(
             {
@@ -142,6 +175,8 @@ class PackIndex:
             "compression_ratio": ratio,
             "compressed_size": compressed_size,
             "uncompressed_size": uncompressed_size,
+            "region_count": region_count,
+            "avg_region_size": avg_region_size,
         }
         return key, entry
 
