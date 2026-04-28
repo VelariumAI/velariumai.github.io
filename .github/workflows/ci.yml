@@ -58,6 +58,20 @@ jobs:
       - name: Verify import/version
         run: python -c "import vcse; print(vcse.__version__)"
 
+      - name: Enforce version consistency
+        run: |
+          python - <<'EOF'
+          import pathlib
+          import tomllib
+          import vcse
+
+          pyproject = tomllib.loads(pathlib.Path("pyproject.toml").read_text())
+          pkg_version = pyproject["project"]["version"]
+          code_version = vcse.__version__
+          if pkg_version != code_version:
+              raise SystemExit(f"Version mismatch: pyproject={pkg_version}, code={code_version}")
+          EOF
+
       - name: Run full pytest
         run: python -m pytest -q
 
