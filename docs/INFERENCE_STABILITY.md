@@ -1,6 +1,6 @@
 # Inference Stability and Promotion
 
-VCSE v3.8.0 adds a deterministic runtime framework for measuring inferred-claim stability from benchmark executions.
+VCSE v4.1.0 adds a deterministic runtime framework for measuring inferred-claim stability from benchmark executions and producing candidate promotion packs.
 
 ## Scope
 
@@ -53,19 +53,47 @@ Writes `promoted_claims.jsonl` (or `--output <path>`) with full provenance field
 - `inference_type`
 - `promoted_at` (ISO timestamp)
 
-Optional candidate pack generation:
+Candidate pack generation:
 
 ```bash
-vcse infer promote --pack general_world --threshold 2 --write --as-pack <pack_id>
+vcse infer promote --pack general_world --threshold 2 --as-pack <pack_id>
 ```
 
 Creates:
 
+- `examples/packs/<pack_id>/pack.json`
 - `examples/packs/<pack_id>/claims.jsonl`
 - `examples/packs/<pack_id>/provenance.jsonl`
-- `examples/packs/<pack_id>/pack.json` (`lifecycle_status: candidate`, `version: 0.1.0`)
+- `examples/packs/<pack_id>/metrics.json`
+- `examples/packs/<pack_id>/trust_report.json`
+
+Pack rules:
+
+- `lifecycle_status = candidate`
+- `version = 0.1.0`
+- deterministic claim ordering
+- full provenance retained for each promoted claim
 
 Promotion is always explicit and does not modify existing packs.
+
+### Candidate Pack Review and Validation
+
+```bash
+vcse pack review <pack_id>
+vcse pack validate <pack_id>
+```
+
+`pack review` provides:
+
+- claim count
+- inference type breakdown
+- sample claims
+
+`pack validate` enforces:
+
+- no duplicate claims
+- full per-claim provenance
+- structural correctness of generated artifacts
 
 ## Benchmark Coverage Output
 
