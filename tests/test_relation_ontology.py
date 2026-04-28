@@ -71,3 +71,16 @@ def test_infer_inverse_cli_reports_inferred_claims() -> None:
     assert result.returncode == 0
     assert "status: INFERENCE_COMPLETE" in result.stdout
     assert "inferred_count:" in result.stdout
+
+
+def test_continent_query_works_via_transitive_inference_for_general_world_pack() -> None:
+    result = _run_cli("ask", "What continent is Paris in?", "--pack", "general_world")
+    assert result.returncode == 0
+    assert "Europe" in result.stdout
+
+
+def test_infer_transitive_cli_reports_inferred_claims() -> None:
+    result = _run_cli("infer", "transitive", "--pack", "general_world")
+    assert result.returncode == 0
+    assert "status: INFERENCE_COMPLETE" in result.stdout
+    assert "inferred_count:" in result.stdout
