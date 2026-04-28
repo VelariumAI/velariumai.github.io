@@ -48,6 +48,8 @@ def test_benchmark_coverage_text_and_json(tmp_path: Path) -> None:
     assert "unsupported_query_count" in payload
     assert "total_queries" in payload
     assert "false_verified_count" in payload
+    assert "stable_inferred_count" in payload
+    assert "stability_threshold_used" in payload
     assert "compression_ratio" in payload
     assert "compressed_size" in payload
     assert "uncompressed_size" in payload
@@ -55,6 +57,7 @@ def test_benchmark_coverage_text_and_json(tmp_path: Path) -> None:
     assert "query_latency_ms" in payload
     assert payload["inverse_inferred_count"] > 0
     assert payload["transitive_inferred_count"] > 0
+    assert payload["stability_threshold_used"] == 2
 
 
 def test_benchmark_coverage_missing_pack_reports_pack_not_found(tmp_path: Path) -> None:
