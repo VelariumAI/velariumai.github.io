@@ -171,3 +171,89 @@ def test_allowed_constants():
     assert "dbpedia_ttl" in ALLOWED_FORMATS
     assert "wikidata.org" in ALLOWED_DOMAINS
     assert "dbpedia.org" in ALLOWED_DOMAINS
+
+
+def test_duplicate_source_ids_raises(tmp_path):
+    cfg = _write_config(tmp_path, {
+        "version": "1.0.0",
+        "description": "test",
+        "sources": [
+            {"id": "same_id", "source_type": "local_file", "format": "json", "path_or_url": "a.json"},
+            {"id": "same_id", "source_type": "local_file", "format": "json", "path_or_url": "b.json"},
+        ],
+    })
+    with pytest.raises(CakeConfigError) as exc_info:
+        load_source_config(cfg)
+    assert exc_info.value.error_type == "DUPLICATE_SOURCE_ID"
+    assert "same_id" in exc_info.value.reason
+
+
+def test_invalid_url_scheme_file_raises(tmp_path):
+    cfg = _write_config(tmp_path, {
+        "version": "1.0.0",
+        "description": "test",
+        "sources": [
+            {
+                "id": "bad_scheme",
+                "source_type": "http_static",
+                "format": "wikidata_json",
+                "path_or_url": "file:///data/wikidata.json",
+            }
+        ],
+    })
+    with pytest.raises(CakeConfigError) as exc_info:
+        load_source_config(cfg)
+    assert exc_info.value.error_type == "INVALID_URL_SCHEME"
+
+
+def test_invalid_url_scheme_ftp_raises(tmp_path):
+    cfg = _write_config(tmp_path, {
+        "version": "1.0.0",
+        "description": "test",
+        "sources": [
+            {
+                "id": "ftp_src",
+                "source_type": "http_static",
+                "format": "wikidata_json",
+                "path_or_url": "ftp://wikidata.org/data.json",
+            }
+        ],
+    })
+    with pytest.raises(CakeConfigError) as exc_info:
+        load_source_config(cfg)
+    assert exc_info.value.error_type == "INVALID_URL_SCHEME"
+
+
+def test_missing_scheme_raises(tmp_path):
+    cfg = _write_config(tmp_path, {
+        "version": "1.0.0",
+        "description": "test",
+        "sources": [
+            {
+                "id": "no_scheme",
+                "source_type": "http_static",
+                "format": "wikidata_json",
+                "path_or_url": "wikidata.org/wiki/Special:EntityData/Q90.json",
+            }
+        ],
+    })
+    with pytest.raises(CakeConfigError) as exc_info:
+        load_source_config(cfg)
+    assert exc_info.value.error_type == "INVALID_URL_SCHEME"
+
+
+def test_valid_https_scheme_passes(tmp_path):
+    cfg = _write_config(tmp_path, {
+        "version": "1.0.0",
+        "description": "test",
+        "sources": [
+            {
+                "id": "https_src",
+                "source_type": "http_static",
+                "format": "wikidata_json",
+                "path_or_url": "https://www.wikidata.org/wiki/Special:EntityData/Q90.json",
+            }
+        ],
+    })
+    config = load_source_config(cfg)
+    assert config.sources[0].id == "https_src"

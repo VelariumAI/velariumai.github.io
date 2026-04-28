@@ -60,6 +60,19 @@ def load_source_config(path: str | Path) -> CakeSourceConfig:
         validate_source(source)
         sources.append(source)
 
+    # Detect duplicate source IDs before returning
+    seen_ids: set[str] = set()
+    duplicate_ids: list[str] = []
+    for source in sources:
+        if source.id in seen_ids:
+            duplicate_ids.append(source.id)
+        seen_ids.add(source.id)
+    if duplicate_ids:
+        raise CakeConfigError(
+            "DUPLICATE_SOURCE_ID",
+            f"duplicate source ids detected: {sorted(set(duplicate_ids))}",
+        )
+
     return CakeSourceConfig(sources=sources, version=version, description=description)
 
 
@@ -97,16 +110,28 @@ def validate_source(source: CakeSource) -> None:
         _validate_domain(source.path_or_url)
 
 
+_ALLOWED_SCHEMES: frozenset[str] = frozenset({"http", "https"})
+
+
 def _validate_domain(url: str) -> None:
     try:
         parsed = urlparse(url)
-        netloc = parsed.netloc.lower()
-        if netloc not in ALLOWED_DOMAINS:
-            raise CakeConfigError(
-                "DISALLOWED_DOMAIN",
-                f"domain '{netloc}' not in allowlist {sorted(ALLOWED_DOMAINS)}",
-            )
-    except CakeConfigError:
-        raise
     except Exception as exc:
         raise CakeConfigError("INVALID_URL", f"cannot parse URL: {url}") from exc
+
+    if parsed.scheme not in _ALLOWED_SCHEMES:
+        raise CakeConfigError(
+            "INVALID_URL_SCHEME",
+            f"http_static sources require http or https scheme; got: '{parsed.scheme or '(none)'}' in URL: {url}",
+        )
+    netloc = parsed.netloc.lower()
+    if not netloc:
+        raise CakeConfigError(
+            "INVALID_URL_SCHEME",
+            f"http_static URL has no netloc (missing host?): {url}",
+        )
+    if netloc not in ALLOWED_DOMAINS:
+        raise CakeConfigError(
+            "DISALLOWED_DOMAIN",
+            f"domain '{netloc}' not in allowlist {sorted(ALLOWED_DOMAINS)}",
+        )
