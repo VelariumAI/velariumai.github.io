@@ -78,6 +78,8 @@ from vcse.agent import (
     plan_task,
     ExecutionState,
 )
+from vcse.knowledge.pack_model import KnowledgeClaim
+from vcse.semantic.runtime_regions import RuntimeRegionIndex
 
 
 def build_logic_demo_state() -> WorldStateMemory:
@@ -977,6 +979,8 @@ def run_pack_info(pack_id: str, version: str | None = None, json_output: bool = 
                 f"compression_ratio: {metadata.get('compression_ratio', 0)}",
                 f"compressed_size: {metadata.get('compressed_size', 0)}",
                 f"uncompressed_size: {metadata.get('uncompressed_size', 0)}",
+                f"region_count: {metadata.get('region_count', 0)}",
+                f"avg_region_size: {metadata.get('avg_region_size', 0)}",
                 f"pack_path: {metadata.get('pack_path')}",
                 f"last_updated: {metadata.get('last_updated')}",
             ]
@@ -1014,6 +1018,69 @@ def run_benchmark_coverage(pack_id: str, benchmark_path: Path, json_output: bool
     if json_output:
         return json.dumps(summary, sort_keys=True)
     return format_coverage_text(summary)
+
+
+def _load_pack_claim_models(pack_spec: str) -> tuple[list[KnowledgeClaim], Path]:
+    pack_path = resolve_pack_path(pack_spec)
+    claims_path = pack_path / "claims.jsonl"
+    if not claims_path.exists():
+        raise PackError("PACK_NOT_FOUND", f"missing claims.jsonl in {pack_path}")
+    claims: list[KnowledgeClaim] = []
+    for line in claims_path.read_text().splitlines():
+        if not line.strip():
+            continue
+        claims.append(KnowledgeClaim.from_dict(json.loads(line)))
+    return claims, pack_path
+
+
+def run_region_list(pack_spec: str, json_output: bool = False) -> str:
+    claims, _ = _load_pack_claim_models(pack_spec)
+    regions = sorted(RuntimeRegionIndex(claims).regions, key=lambda item: item.region_id)
+    if json_output:
+        payload = [
+            {
+                "region_id": region.region_id,
+                "relations": sorted(region.relations),
+                "size": region.size,
+                "sample_subjects": sorted(region.subjects)[:5],
+            }
+            for region in regions
+        ]
+        return json.dumps(payload, sort_keys=True)
+    lines = ["status: REGION_LIST", "regions:"]
+    if not regions:
+        lines.append("  - none")
+    else:
+        for region in regions:
+            lines.append(f"  - region_id: {region.region_id}")
+            lines.append(f"    relations: {','.join(sorted(region.relations))}")
+            lines.append(f"    size: {region.size}")
+            lines.append(f"    sample_subjects: {','.join(sorted(region.subjects)[:5])}")
+    return "\n".join(lines)
+
+
+def run_region_info(region_id: str, pack_spec: str, json_output: bool = False) -> str:
+    claims, _ = _load_pack_claim_models(pack_spec)
+    match = next((item for item in RuntimeRegionIndex(claims).regions if item.region_id == region_id), None)
+    if match is None:
+        raise PackError("REGION_NOT_FOUND", f"region not found: {region_id}")
+    payload = {
+        "region_id": match.region_id,
+        "relations": sorted(match.relations),
+        "size": match.size,
+        "sample_subjects": sorted(match.subjects)[:10],
+    }
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(
+        [
+            "status: REGION_INFO",
+            f"region_id: {payload['region_id']}",
+            f"relations: {','.join(payload['relations'])}",
+            f"size: {payload['size']}",
+            f"sample_subjects: {','.join(payload['sample_subjects'])}",
+        ]
+    )
 
 
 def run_pack_audit(target: str, json_output: bool = False) -> str:
@@ -1817,6 +1884,22 @@ def main(argv: list[str] | None = None) -> None:
     pack_verify_sig_parser.add_argument("--json", action="store_true", dest="json_output")
     pack_verify_sig_parser.add_argument("--strict", action="store_true")
 
+    region_parser = subparsers.add_parser("region")
+    region_subparsers = region_parser.add_subparsers(dest="region_command")
+    region_list_parser = region_subparsers.add_parser(
+        "list",
+        help="List semantic regions (grouped by exact relation, no inverse merging).",
+    )
+    region_list_parser.add_argument("--pack", required=True, dest="pack_spec")
+    region_list_parser.add_argument("--json", action="store_true", dest="json_output")
+    region_info_parser = region_subparsers.add_parser(
+        "info",
+        help="Inspect one semantic region (grouped by exact relation, no inverse merging).",
+    )
+    region_info_parser.add_argument("region_id")
+    region_info_parser.add_argument("--pack", required=True, dest="pack_spec")
+    region_info_parser.add_argument("--json", action="store_true", dest="json_output")
+
     trust_parser = subparsers.add_parser("trust")
     trust_subparsers = trust_parser.add_subparsers(dest="trust_command")
     trust_eval_parser = trust_subparsers.add_parser("evaluate")
@@ -2183,6 +2266,13 @@ def main(argv: list[str] | None = None) -> None:
                             raise SystemExit(2)
                     elif "status: VALID" not in text:
                         raise SystemExit(2)
+                return
+        if args.command == "region":
+            if args.region_command == "list":
+                print(run_region_list(args.pack_spec, json_output=args.json_output))
+                return
+            if args.region_command == "info":
+                print(run_region_info(args.region_id, args.pack_spec, json_output=args.json_output))
                 return
         if args.command == "trust":
             if args.trust_command == "evaluate":

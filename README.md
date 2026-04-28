@@ -36,6 +36,13 @@ Input
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+## Semantic Regions (v3.1)
+
+- Deterministic grouping by relation
+- Inverse relations currently treated independently
+- Full ontology normalization planned for v3.2
+
+
 ## Install
 
 ```bash
