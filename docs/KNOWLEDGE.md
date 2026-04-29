@@ -126,4 +126,17 @@ vcse compile knowledge \
   --pack-id compiled_geography \
   --output-root examples/packs \
   --benchmark-output benchmarks/compiled_geography_knowledge.jsonl
+
+vcse adapter run \
+  --type json \
+  --source examples/knowledge/general_world_expanded.json \
+  --output /tmp/general_world_normalized.jsonl
+
+vcse compile knowledge \
+  --adapter json \
+  --source examples/knowledge/general_world_expanded.json \
+  --mapping examples/compiler/geography_mapping.json \
+  --domain domains/geography.yaml \
+  --pack-id compiled_geography_v49 \
+  --output-root examples/packs
 ```
