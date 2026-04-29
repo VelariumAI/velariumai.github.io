@@ -16,6 +16,7 @@ from vcse.benchmark_coverage import CoverageBenchmarkError, format_coverage_text
 from vcse.benchmark_inference_classification import InferenceType, classify_resolution_for_claim
 from vcse.config import load_settings
 from vcse.domain.loader import DomainSpecError, load_domain_spec
+from vcse.compiler import CompilerError, KnowledgeCompiler, compile_report_to_dict
 from vcse.dsl import DSLCompiler, DSLLoader, DSLValidator, GLOBAL_REGISTRY
 from vcse.dsl.errors import DSLError
 from vcse.gauntlet import (
@@ -2664,6 +2665,69 @@ def run_domain_validate(path: Path, json_output: bool = False) -> str:
     return "\n".join(lines)
 
 
+def run_compiler_validate_mapping(mapping_path: Path, domain_path: Path, json_output: bool = False) -> str:
+    compiler = KnowledgeCompiler()
+    try:
+        mapping = compiler._load_mapping(mapping_path)
+        compiler.validate_mapping(mapping, domain_path)
+    except CompilerError as exc:
+        payload = {
+            "status": "COMPILE_FAILED",
+            "mapping": str(mapping_path),
+            "domain": str(domain_path),
+            "reasons": [str(exc)],
+        }
+        return json.dumps(payload, sort_keys=True) if json_output else "\n".join(
+            ["status: COMPILE_FAILED", f"mapping: {mapping_path}", f"domain: {domain_path}", f"reason: {exc}"]
+        )
+    payload = {
+        "status": "COMPILE_PASSED",
+        "mapping": str(mapping_path),
+        "domain": str(domain_path),
+        "reasons": [],
+    }
+    return json.dumps(payload, sort_keys=True) if json_output else "\n".join(
+        ["status: COMPILE_PASSED", f"mapping: {mapping_path}", f"domain: {domain_path}"]
+    )
+
+
+def run_compile_knowledge(
+    source_path: Path,
+    mapping_path: Path,
+    domain_path: Path,
+    pack_id: str,
+    output_root: Path,
+    benchmark_output: Path | None = None,
+    json_output: bool = False,
+) -> str:
+    compiler = KnowledgeCompiler()
+    report = compiler.compile(
+        source_path=source_path,
+        mapping_path=mapping_path,
+        domain_spec_path=domain_path,
+        output_pack_id=pack_id,
+        output_root=output_root,
+        benchmark_output=benchmark_output,
+    )
+    payload = compile_report_to_dict(report)
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(
+        [
+            f"status: {report.status}",
+            f"domain_id: {report.domain_id}",
+            f"source_id: {report.source_id}",
+            f"pack_id: {report.pack_id}",
+            f"input_record_count: {report.input_record_count}",
+            f"claim_count: {report.claim_count}",
+            f"duplicate_count: {report.duplicate_count}",
+            f"provenance_count: {report.provenance_count}",
+            f"benchmark_count: {report.benchmark_count}",
+            f"output_path: {report.output_path}",
+        ]
+    )
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="vcse")
     parser.add_argument("--config")
@@ -2794,6 +2858,24 @@ def main(argv: list[str] | None = None) -> None:
     knowledge_build_parser.add_argument("--domain", default="general")
     knowledge_stats_parser = knowledge_subparsers.add_parser("stats")
     knowledge_stats_parser.add_argument("pack")
+
+    compile_parser = subparsers.add_parser("compile")
+    compile_subparsers = compile_parser.add_subparsers(dest="compile_command")
+    compile_knowledge_parser = compile_subparsers.add_parser("knowledge")
+    compile_knowledge_parser.add_argument("--source", required=True, type=Path)
+    compile_knowledge_parser.add_argument("--mapping", required=True, type=Path)
+    compile_knowledge_parser.add_argument("--domain", required=True, type=Path)
+    compile_knowledge_parser.add_argument("--pack-id", required=True)
+    compile_knowledge_parser.add_argument("--output-root", required=True, type=Path)
+    compile_knowledge_parser.add_argument("--benchmark-output", type=Path)
+    compile_knowledge_parser.add_argument("--json", action="store_true", dest="json_output")
+
+    compiler_parser = subparsers.add_parser("compiler")
+    compiler_subparsers = compiler_parser.add_subparsers(dest="compiler_command")
+    compiler_validate_parser = compiler_subparsers.add_parser("validate-mapping")
+    compiler_validate_parser.add_argument("--mapping", required=True, type=Path)
+    compiler_validate_parser.add_argument("--domain", required=True, type=Path)
+    compiler_validate_parser.add_argument("--json", action="store_true", dest="json_output")
 
     pack_parser = subparsers.add_parser("pack")
     pack_subparsers = pack_parser.add_subparsers(dest="pack_command")
@@ -3214,6 +3296,35 @@ def main(argv: list[str] | None = None) -> None:
                 return
             if args.knowledge_command == "stats":
                 print(run_knowledge_stats(Path(args.pack)))
+                return
+        if args.command == "compile":
+            if args.compile_command == "knowledge":
+                print(
+                    run_compile_knowledge(
+                        source_path=args.source,
+                        mapping_path=args.mapping,
+                        domain_path=args.domain,
+                        pack_id=args.pack_id,
+                        output_root=args.output_root,
+                        benchmark_output=args.benchmark_output,
+                        json_output=args.json_output,
+                    )
+                )
+                return
+        if args.command == "compiler":
+            if args.compiler_command == "validate-mapping":
+                text = run_compiler_validate_mapping(
+                    mapping_path=args.mapping,
+                    domain_path=args.domain,
+                    json_output=args.json_output,
+                )
+                print(text)
+                if args.json_output:
+                    payload = json.loads(text)
+                    if payload.get("status") != "COMPILE_PASSED":
+                        raise SystemExit(2)
+                elif "status: COMPILE_PASSED" not in text:
+                    raise SystemExit(2)
                 return
         if args.command == "pack":
             if args.pack_command == "validate":
@@ -3865,6 +3976,7 @@ def main(argv: list[str] | None = None) -> None:
         LedgerError,
         CoverageBenchmarkError,
         DomainSpecError,
+        CompilerError,
     ) as exc:
         error_type = getattr(exc, "error_type", None)
         reason = getattr(exc, "reason", None)
