@@ -1166,15 +1166,36 @@ def run_pack_merge(
 
 
 def run_pack_compile(pack_id: str, output: Path | None = None, force: bool = False, json_output: bool = False) -> str:
+    return run_pack_compile_with_mode(
+        pack_id=pack_id,
+        output=output,
+        force=force,
+        incremental=False,
+        stats=True,
+        json_output=json_output,
+    )
+
+
+def run_pack_compile_with_mode(
+    pack_id: str,
+    output: Path | None = None,
+    force: bool = False,
+    incremental: bool = False,
+    stats: bool = False,
+    json_output: bool = False,
+) -> str:
     pack_path = _resolve_pack_reference(pack_id)
     pack_meta = json.loads((pack_path / "pack.json").read_text())
     resolved_pack_id = str(pack_meta.get("id") or pack_meta.get("pack_id") or pack_path.name)
     default_output = runtime_store_path_for_pack(resolved_pack_id)
     output_path = output or default_output
-    if output_path.exists() and not force:
+    if output_path.exists() and not force and not incremental:
         raise PackError("STORE_EXISTS", f"runtime store already exists: {output_path}")
     compiler = RuntimeStoreCompiler()
-    report: RuntimeStoreReport = compiler.compile_pack(pack_path=pack_path, output_path=output_path)
+    if incremental:
+        report = compiler.compile_incremental(pack_path=pack_path, output_path=output_path)
+    else:
+        report = compiler.compile_pack(pack_path=pack_path, output_path=output_path)
     payload = {
         "pack_id": report.pack_id,
         "pack_path": report.pack_path,
@@ -1185,6 +1206,15 @@ def run_pack_compile(pack_id: str, output: Path | None = None, force: bool = Fal
         "status": report.status,
         "reasons": report.reasons,
     }
+    if stats:
+        payload.update(
+            {
+                "compile_time_ms": report.compile_time_ms,
+                "load_time_ms": report.load_time_ms,
+                "avg_query_latency_ms": report.avg_query_latency_ms,
+                "backend": report.backend,
+            }
+        )
     if json_output:
         return json.dumps(payload, sort_keys=True)
     lines = [
@@ -1196,6 +1226,15 @@ def run_pack_compile(pack_id: str, output: Path | None = None, force: bool = Fal
         f"provenance_count: {report.provenance_count}",
         f"store_size_bytes: {report.store_size_bytes}",
     ]
+    if stats:
+        lines.extend(
+            [
+                f"compile_time_ms: {report.compile_time_ms}",
+                f"load_time_ms: {report.load_time_ms}",
+                f"avg_query_latency_ms: {report.avg_query_latency_ms}",
+                f"backend: {report.backend}",
+            ]
+        )
     if report.reasons:
         lines.append("reasons:")
         for reason in report.reasons:
@@ -1222,6 +1261,10 @@ def run_pack_store_info(pack_id: str, json_output: bool = False) -> str:
         "claim_count": stats["claim_count"],
         "provenance_count": stats["provenance_count"],
         "store_size_bytes": stats["store_size_bytes"],
+        "compile_time_ms": stats.get("compile_time_ms", 0.0),
+        "load_time_ms": stats.get("load_time_ms", 0.0),
+        "avg_query_latency_ms": stats.get("avg_query_latency_ms", 0.0),
+        "backend": stats.get("backend", "sqlite"),
         "pack_hash": stats["pack_hash"],
         "output_path": str(db_path),
     }
@@ -1236,6 +1279,10 @@ def run_pack_store_info(pack_id: str, json_output: bool = False) -> str:
             f"claim_count: {payload['claim_count']}",
             f"provenance_count: {payload['provenance_count']}",
             f"store_size_bytes: {payload['store_size_bytes']}",
+            f"compile_time_ms: {payload['compile_time_ms']}",
+            f"load_time_ms: {payload['load_time_ms']}",
+            f"avg_query_latency_ms: {payload['avg_query_latency_ms']}",
+            f"backend: {payload['backend']}",
             f"pack_hash: {payload['pack_hash']}",
             f"output_path: {payload['output_path']}",
         ]
@@ -2613,6 +2660,8 @@ def main(argv: list[str] | None = None) -> None:
     pack_compile_parser.add_argument("pack_id")
     pack_compile_parser.add_argument("--output", type=Path)
     pack_compile_parser.add_argument("--force", action="store_true")
+    pack_compile_parser.add_argument("--incremental", action="store_true")
+    pack_compile_parser.add_argument("--stats", action="store_true")
     pack_compile_parser.add_argument("--json", action="store_true", dest="json_output")
     pack_store_info_parser = pack_subparsers.add_parser("store-info")
     pack_store_info_parser.add_argument("pack_id")
@@ -3032,18 +3081,20 @@ def main(argv: list[str] | None = None) -> None:
                     raise SystemExit(2)
                 return
             if args.pack_command == "compile":
-                text = run_pack_compile(
+                text = run_pack_compile_with_mode(
                     args.pack_id,
                     output=args.output,
                     force=args.force,
+                    incremental=args.incremental,
+                    stats=args.stats,
                     json_output=args.json_output,
                 )
                 print(text)
                 if args.json_output:
                     payload = json.loads(text)
-                    if payload.get("status") != "STORE_COMPILE_PASSED":
+                    if payload.get("status") not in {"REBUILT", "NO_CHANGES"}:
                         raise SystemExit(2)
-                elif "status: STORE_COMPILE_PASSED" not in text:
+                elif "status: REBUILT" not in text and "status: NO_CHANGES" not in text:
                     raise SystemExit(2)
                 return
             if args.pack_command == "store-info":
