@@ -391,4 +391,8 @@ Disable explanation output for inferred answers:
 
 ```bash
 vcse ask "What continent is Paris in?" --pack general_world --no-explain
+
+# Opt-in planned shard-aware execution (v4.6 pilot)
+vcse ask "What is the capital of France?" --pack general_world --planned
+vcse benchmark coverage --pack general_world --planned --json
 ```
