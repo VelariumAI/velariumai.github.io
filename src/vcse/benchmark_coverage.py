@@ -8,9 +8,12 @@ from pathlib import Path
 from typing import Any
 
 from vcse.benchmark_inference_classification import InferenceType, classify_resolution_for_claim
+from vcse.inference.inverse import infer_inverse_claims
+from vcse.inference.transitive import infer_transitive_claims
 from vcse.inference.stability import InferenceStabilityTracker
 from vcse.knowledge.pack_model import KnowledgeClaim
-from vcse.packs.runtime_store import load_runtime_claim_objects_if_valid
+from vcse.packs.runtime_store import RuntimeStore, load_runtime_claim_objects_if_valid, runtime_store_path_for_pack
+from vcse.query.planner import QueryPlanner
 
 
 class CoverageBenchmarkError(ValueError):
@@ -20,7 +23,7 @@ class CoverageBenchmarkError(ValueError):
         self.reason = reason
 
 
-def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, Any]:
+def run_coverage_benchmark(pack_path: Path, benchmark_path: Path, planned: bool = False) -> dict[str, Any]:
     load_started = time.perf_counter()
     runtime_claims = load_runtime_claim_objects_if_valid(pack_path, pack_path.name)
     backend_used = "sqlite" if runtime_claims is not None else "jsonl"
@@ -45,61 +48,140 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
     unknown_count = 0
     unsupported_query_count = 0
     false_verified_count = 0
+    planned_rows_examined_total = 0
+    planned_shards_total = 0
+    planned_fallback_count = 0
+    planned_cases = 0
+    planned_plan_time_ms = 0.0
+    planned_explicit_lookup_ms = 0.0
+    planned_inference_lookup_ms = 0.0
+    planned_fallback_ms = 0.0
+    planned_render_ms = 0.0
+    planned_total_query_ms = 0.0
     stability_threshold_used = 2
     tracker = InferenceStabilityTracker()
+    planner = QueryPlanner()
+    runtime_store: RuntimeStore | None = None
+    inverse_map: dict[tuple[str, str], set[str]] = {}
+    transitive_map: dict[tuple[str, str], set[str]] = {}
+    if planned:
+        pack_json = pack_path / "pack.json"
+        pack_id = pack_path.name
+        if pack_json.exists():
+            try:
+                payload = json.loads(pack_json.read_text())
+                pack_id = str(payload.get("id") or payload.get("pack_id") or pack_id)
+            except Exception:
+                pass
+        db_path = runtime_store_path_for_pack(pack_id)
+        if db_path.exists():
+            runtime_store = RuntimeStore(db_path)
+    if planned:
+        inverse_map = _build_inference_map(infer_inverse_claims(claim_models))
+        transitive_map = _build_inference_map(infer_transitive_claims(claim_models))
 
-    for case in cases:
-        key = (case["subject"], case["relation"], case["object"])
-        hit = claim_map.get(key)
-        resolution_type = classify_resolution_for_claim(
-            claim_models,
-            subject=case["subject"],
-            relation=case["relation"],
-            object_=case["object"],
-        )
+    try:
+        for case in cases:
+            key = (case["subject"], case["relation"], case["object"])
+            hit = claim_map.get(key)
+            resolution_type = classify_resolution_for_claim(
+                claim_models,
+                subject=case["subject"],
+                relation=case["relation"],
+                object_=case["object"],
+            )
 
-        if hit is None and resolution_type in {InferenceType.INVERSE, InferenceType.TRANSITIVE}:
-            observed = "candidate"
-            candidate += 1
-        elif hit is None:
-            observed = "unknown"
-            unknown += 1
-        elif str(hit.get("trust_tier", "")) == "T5_CERTIFIED":
-            observed = "verified"
-            verified += 1
-        else:
-            observed = "candidate"
-            candidate += 1
+            if planned and runtime_store is not None:
+                query_started = time.perf_counter()
+                plan_started = time.perf_counter()
+                plan = planner.plan_for_claim(case["subject"], case["relation"])
+                planned_plan_time_ms += (time.perf_counter() - plan_started) * 1000
 
-        expected = case["expected"]
-        ok = observed == expected
-        if not ok:
-            incorrect += 1
-        if expected == "unknown" and observed in {"verified", "candidate"}:
-            false_verified_count += 1
+                rows_examined = 0
+                touched_shards = 0
+                fallback_used = True
+                explicit_started = time.perf_counter()
+                if plan is not None:
+                    for shard_id in plan.required_shards:
+                        rows, row_count = runtime_store.get_claim_with_metrics(
+                            case["subject"],
+                            case["relation"],
+                            shard_id=shard_id,
+                        )
+                        rows_examined += row_count
+                        touched_shards += 1
+                        if rows:
+                            fallback_used = False
+                            break
+                planned_explicit_lookup_ms += (time.perf_counter() - explicit_started) * 1000
 
-        if resolution_type == InferenceType.EXPLICIT:
-            explicit_answer_count += 1
-        elif resolution_type == InferenceType.INVERSE:
-            inverse_inferred_count += 1
-            tracker.record("|".join(key), InferenceType.INVERSE.value)
-        elif resolution_type == InferenceType.TRANSITIVE:
-            transitive_inferred_count += 1
-            tracker.record("|".join(key), InferenceType.TRANSITIVE.value)
-        elif resolution_type == InferenceType.UNSUPPORTED:
-            unsupported_query_count += 1
-        else:
-            unknown_count += 1
+                inference_started = time.perf_counter()
+                if fallback_used and plan is not None:
+                    lookup_key = (case["subject"].lower(), case["relation"].lower())
+                    inferred_objects = inverse_map.get(lookup_key, set()) | transitive_map.get(lookup_key, set())
+                    if case["object"].lower() in inferred_objects:
+                        fallback_used = False
+                planned_inference_lookup_ms += (time.perf_counter() - inference_started) * 1000
 
-        results.append(
-            {
-                "id": case["id"],
-                "expected": expected,
-                "observed": observed,
-                "resolution_type": resolution_type.value,
-                "status": "PASS" if ok else "FAIL",
-            }
-        )
+                fallback_started = time.perf_counter()
+                if fallback_used:
+                    planned_fallback_count += 1
+                planned_fallback_ms += (time.perf_counter() - fallback_started) * 1000
+
+                render_started = time.perf_counter()
+                _ = (rows_examined, touched_shards)
+                planned_render_ms += (time.perf_counter() - render_started) * 1000
+
+                planned_rows_examined_total += rows_examined
+                planned_shards_total += touched_shards
+                planned_cases += 1
+                planned_total_query_ms += (time.perf_counter() - query_started) * 1000
+
+            if hit is None and resolution_type in {InferenceType.INVERSE, InferenceType.TRANSITIVE}:
+                observed = "candidate"
+                candidate += 1
+            elif hit is None:
+                observed = "unknown"
+                unknown += 1
+            elif str(hit.get("trust_tier", "")) == "T5_CERTIFIED":
+                observed = "verified"
+                verified += 1
+            else:
+                observed = "candidate"
+                candidate += 1
+
+            expected = case["expected"]
+            ok = observed == expected
+            if not ok:
+                incorrect += 1
+            if expected == "unknown" and observed in {"verified", "candidate"}:
+                false_verified_count += 1
+
+            if resolution_type == InferenceType.EXPLICIT:
+                explicit_answer_count += 1
+            elif resolution_type == InferenceType.INVERSE:
+                inverse_inferred_count += 1
+                tracker.record("|".join(key), InferenceType.INVERSE.value)
+            elif resolution_type == InferenceType.TRANSITIVE:
+                transitive_inferred_count += 1
+                tracker.record("|".join(key), InferenceType.TRANSITIVE.value)
+            elif resolution_type == InferenceType.UNSUPPORTED:
+                unsupported_query_count += 1
+            else:
+                unknown_count += 1
+
+            results.append(
+                {
+                    "id": case["id"],
+                    "expected": expected,
+                    "observed": observed,
+                    "resolution_type": resolution_type.value,
+                    "status": "PASS" if ok else "FAIL",
+                }
+            )
+    finally:
+        if runtime_store is not None:
+            runtime_store.close()
 
     total = len(cases)
     answered = verified + candidate
@@ -135,6 +217,17 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
         "load_time_ms": load_time_ms,
         "query_latency_ms": query_latency_ms,
         "backend_used": backend_used,
+        "avg_rows_examined": (planned_rows_examined_total / planned_cases) if planned_cases else 0.0,
+        "avg_touched_shards": (planned_shards_total / planned_cases) if planned_cases else 0.0,
+        "fallback_rate": (planned_fallback_count / planned_cases) if planned_cases else 0.0,
+        "planned_timing_breakdown_ms": {
+            "plan_time_ms": round(planned_plan_time_ms, 3),
+            "explicit_lookup_ms": round(planned_explicit_lookup_ms, 3),
+            "inference_lookup_ms": round(planned_inference_lookup_ms, 3),
+            "fallback_ms": round(planned_fallback_ms, 3),
+            "render_ms": round(planned_render_ms, 3),
+            "total_query_ms": round(planned_total_query_ms, 3),
+        },
         "results": results,
     }
 
@@ -168,6 +261,9 @@ def format_coverage_text(summary: dict[str, Any]) -> str:
         f"load_time_ms: {summary['load_time_ms']}",
         f"query_latency_ms: {summary['query_latency_ms']}",
         f"backend_used: {summary.get('backend_used', 'jsonl')}",
+        f"avg_rows_examined: {summary.get('avg_rows_examined', 0.0)}",
+        f"avg_touched_shards: {summary.get('avg_touched_shards', 0.0)}",
+        f"fallback_rate: {summary.get('fallback_rate', 0.0)}",
     ]
     return "\n".join(lines)
 
@@ -224,6 +320,14 @@ def _load_cases(path: Path) -> list[dict[str, str]]:
 
 def _rate(numerator: int, denominator: int) -> float:
     return numerator / denominator if denominator else 0.0
+
+
+def _build_inference_map(claims: list[KnowledgeClaim]) -> dict[tuple[str, str], set[str]]:
+    out: dict[tuple[str, str], set[str]] = {}
+    for claim in claims:
+        key = (claim.subject.lower(), claim.relation.lower())
+        out.setdefault(key, set()).add(claim.object.lower())
+    return out
 
 
 def _compression_metrics(pack_path: Path) -> dict[str, float | int]:
