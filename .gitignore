@@ -11,3 +11,7 @@ build/
 # VCSE generated integrity artifacts
 examples/packs/**/manifest.json
 examples/packs/**/pack_signature.json
+
+# Promotion outputs
+promoted_claims.jsonl
+examples/packs/promoted_*
