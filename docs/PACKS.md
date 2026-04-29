@@ -59,6 +59,7 @@ SQLite runtime store for faster lookup:
 ```bash
 vcse pack compile <pack_id>
 vcse pack compile <pack_id> --force
+vcse pack compile <pack_id> --incremental
 vcse pack store-info <pack_id>
 ```
 
@@ -67,11 +68,21 @@ Behavior:
 - runtime store output is generated under `.vcse/runtime_stores/<pack_id>.sqlite`
 - compile is read-only for pack files (`pack.json`, `claims.jsonl`, `provenance.jsonl`)
 - without `--force`, compile fails if the output store already exists
+- with `--incremental`, VCSE compares `claims_hash` + `provenance_hash`:
+  - unchanged: compile returns `NO_CHANGES` and skips rebuild
+  - changed: compile returns `REBUILT` (full deterministic rebuild)
 - runtime loading uses store only when:
   - store exists
-  - store hash matches current pack hash
+  - store hash and content hashes match current pack files
   - `VCSE_DISABLE_RUNTIME_STORE` is not set to `1`
 - otherwise VCSE falls back to canonical JSONL loading
+
+`vcse pack store-info` reports runtime metadata including:
+
+- `schema_version`, `claim_count`, `provenance_count`
+- `store_size_bytes`
+- `compile_time_ms`, `load_time_ms`, `avg_query_latency_ms`
+- `backend` (`sqlite`)
 
 ## Candidate Certification
 
