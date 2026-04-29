@@ -10,6 +10,7 @@ from typing import Any
 from vcse.benchmark_inference_classification import InferenceType, classify_resolution_for_claim
 from vcse.inference.stability import InferenceStabilityTracker
 from vcse.knowledge.pack_model import KnowledgeClaim
+from vcse.packs.runtime_store import load_runtime_claim_objects_if_valid
 
 
 class CoverageBenchmarkError(ValueError):
@@ -21,7 +22,9 @@ class CoverageBenchmarkError(ValueError):
 
 def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, Any]:
     load_started = time.perf_counter()
-    claims = _load_claims(pack_path)
+    runtime_claims = load_runtime_claim_objects_if_valid(pack_path, pack_path.name)
+    backend_used = "sqlite" if runtime_claims is not None else "jsonl"
+    claims = runtime_claims if runtime_claims is not None else _load_claims(pack_path)
     claim_models = _load_claim_models(claims)
     cases = _load_cases(benchmark_path)
     load_time_ms = round((time.perf_counter() - load_started) * 1000, 3)
@@ -131,6 +134,7 @@ def run_coverage_benchmark(pack_path: Path, benchmark_path: Path) -> dict[str, A
         "uncompressed_size": compression_metrics["uncompressed_size"],
         "load_time_ms": load_time_ms,
         "query_latency_ms": query_latency_ms,
+        "backend_used": backend_used,
         "results": results,
     }
 
@@ -163,6 +167,7 @@ def format_coverage_text(summary: dict[str, Any]) -> str:
         f"uncompressed_size: {summary['uncompressed_size']}",
         f"load_time_ms: {summary['load_time_ms']}",
         f"query_latency_ms: {summary['query_latency_ms']}",
+        f"backend_used: {summary.get('backend_used', 'jsonl')}",
     ]
     return "\n".join(lines)
 
