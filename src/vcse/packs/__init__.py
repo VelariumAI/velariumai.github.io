@@ -9,6 +9,7 @@ from vcse.packs.installer import InstallResult, PackInstaller
 from vcse.packs.lifecycle import PackLifecycleError, PackLifecycleManager
 from vcse.packs.loader import load_manifest
 from vcse.packs.manifest import PackDependency, PackIntegrity, PackManifest
+from vcse.packs.merge import MergeReport, merge_certified_pack
 from vcse.packs.registry import InstalledPackRecord, PackRegistry, pack_home, pack_store_dir, registry_path
 from vcse.packs.resolver import DependencyResolution, DependencyResolver, ResolvedPack, parse_pack_spec
 from vcse.packs.validator import PackValidationResult, PackValidator
@@ -21,6 +22,7 @@ __all__ = [
     "DependencyResolver",
     "InstallResult",
     "InstalledPackRecord",
+    "MergeReport",
     "PackActivator",
     "PackAuditor",
     "PackDependency",
@@ -38,6 +40,7 @@ __all__ = [
     "ResolvedPack",
     "load_manifest",
     "certify_candidate_pack",
+    "merge_certified_pack",
     "pack_home",
     "pack_store_dir",
     "parse_pack_spec",

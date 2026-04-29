@@ -51,7 +51,9 @@ from vcse.packs import (
     PackActivator,
     PackAuditor,
     CertificationReport,
+    MergeReport,
     certify_candidate_pack,
+    merge_certified_pack,
     PackError,
     PackInstaller,
     PackIndex,
@@ -1108,6 +1110,49 @@ def run_pack_certify(pack_id: str, output_pack_id: str, json_output: bool = Fals
         f"missing_provenance_count: {report.missing_provenance_count}",
         f"certified_claim_count: {report.certified_claim_count}",
         f"output_pack_path: {Path('examples') / 'packs' / output_pack_id}",
+    ]
+    if report.reasons:
+        lines.append("reasons:")
+        for reason in report.reasons:
+            lines.append(f"  - {reason}")
+    return "\n".join(lines)
+
+
+def run_pack_merge(
+    source_pack_id: str,
+    target_pack_id: str,
+    output_pack_id: str | None = None,
+    json_output: bool = False,
+) -> str:
+    report, snapshot_path, output_pack_path = merge_certified_pack(
+        source_pack_id,
+        target_pack_id,
+        output_pack_id=output_pack_id,
+    )
+    payload = {
+        "source_pack_id": report.source_pack_id,
+        "target_pack_id": report.target_pack_id,
+        "output_pack_id": output_pack_id or target_pack_id,
+        "status": report.status,
+        "merged_claim_count": report.merged_claim_count,
+        "skipped_duplicate_count": report.skipped_duplicate_count,
+        "final_claim_count": report.final_claim_count,
+        "snapshot_path": str(snapshot_path) if str(snapshot_path) else "",
+        "output_pack_path": str(output_pack_path),
+        "reasons": report.reasons,
+    }
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        f"status: {report.status}",
+        f"source_pack_id: {report.source_pack_id}",
+        f"target_pack_id: {report.target_pack_id}",
+        f"output_pack_id: {output_pack_id or target_pack_id}",
+        f"merged_claim_count: {report.merged_claim_count}",
+        f"skipped_duplicate_count: {report.skipped_duplicate_count}",
+        f"final_claim_count: {report.final_claim_count}",
+        f"snapshot_path: {snapshot_path}",
+        f"output_pack_path: {output_pack_path}",
     ]
     if report.reasons:
         lines.append("reasons:")
@@ -2473,6 +2518,11 @@ def main(argv: list[str] | None = None) -> None:
     pack_certify_parser.add_argument("pack_id")
     pack_certify_parser.add_argument("--output", required=True, dest="output_pack_id")
     pack_certify_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_merge_parser = pack_subparsers.add_parser("merge")
+    pack_merge_parser.add_argument("source_pack_id")
+    pack_merge_parser.add_argument("--into", required=True, dest="target_pack_id")
+    pack_merge_parser.add_argument("--output", dest="output_pack_id")
+    pack_merge_parser.add_argument("--json", action="store_true", dest="json_output")
     pack_review_parser = pack_subparsers.add_parser("review")
     pack_review_parser.add_argument("pack_ref")
     pack_review_parser.add_argument("--json", action="store_true", dest="json_output")
@@ -2871,6 +2921,21 @@ def main(argv: list[str] | None = None) -> None:
                 return
             if args.pack_command == "review":
                 print(run_pack_review(args.pack_ref, json_output=args.json_output))
+                return
+            if args.pack_command == "merge":
+                text = run_pack_merge(
+                    args.source_pack_id,
+                    args.target_pack_id,
+                    output_pack_id=args.output_pack_id,
+                    json_output=args.json_output,
+                )
+                print(text)
+                if args.json_output:
+                    payload = json.loads(text)
+                    if payload.get("status") != "MERGE_PASSED":
+                        raise SystemExit(2)
+                elif "status: MERGE_PASSED" not in text:
+                    raise SystemExit(2)
                 return
             if args.pack_command == "install":
                 print(run_pack_install(Path(args.pack_path), force=args.force, json_output=args.json_output))
