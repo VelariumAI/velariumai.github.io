@@ -50,6 +50,8 @@ from vcse.memory.world_state import TruthStatus, WorldStateMemory
 from vcse.packs import (
     PackActivator,
     PackAuditor,
+    CertificationReport,
+    certify_candidate_pack,
     PackError,
     PackInstaller,
     PackIndex,
@@ -1079,6 +1081,38 @@ def run_pack_validate(path: Path, json_output: bool = False) -> str:
         lines.append("warnings:")
         for warning in validation.warnings:
             lines.append(f"  - {warning}")
+    return "\n".join(lines)
+
+
+def run_pack_certify(pack_id: str, output_pack_id: str, json_output: bool = False) -> str:
+    report: CertificationReport = certify_candidate_pack(pack_id, output_pack_id)
+    payload = {
+        "source_pack_id": report.source_pack_id,
+        "output_pack_id": report.output_pack_id,
+        "status": report.status,
+        "claim_count": report.claim_count,
+        "duplicate_count": report.duplicate_count,
+        "missing_provenance_count": report.missing_provenance_count,
+        "certified_claim_count": report.certified_claim_count,
+        "reasons": report.reasons,
+        "output_pack_path": str(Path("examples") / "packs" / output_pack_id),
+    }
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        f"status: {report.status}",
+        f"source_pack_id: {report.source_pack_id}",
+        f"output_pack_id: {report.output_pack_id}",
+        f"claim_count: {report.claim_count}",
+        f"duplicate_count: {report.duplicate_count}",
+        f"missing_provenance_count: {report.missing_provenance_count}",
+        f"certified_claim_count: {report.certified_claim_count}",
+        f"output_pack_path: {Path('examples') / 'packs' / output_pack_id}",
+    ]
+    if report.reasons:
+        lines.append("reasons:")
+        for reason in report.reasons:
+            lines.append(f"  - {reason}")
     return "\n".join(lines)
 
 
@@ -2435,6 +2469,10 @@ def main(argv: list[str] | None = None) -> None:
     pack_validate_parser = pack_subparsers.add_parser("validate")
     pack_validate_parser.add_argument("pack_ref")
     pack_validate_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_certify_parser = pack_subparsers.add_parser("certify")
+    pack_certify_parser.add_argument("pack_id")
+    pack_certify_parser.add_argument("--output", required=True, dest="output_pack_id")
+    pack_certify_parser.add_argument("--json", action="store_true", dest="json_output")
     pack_review_parser = pack_subparsers.add_parser("review")
     pack_review_parser.add_argument("pack_ref")
     pack_review_parser.add_argument("--json", action="store_true", dest="json_output")
@@ -2820,6 +2858,16 @@ def main(argv: list[str] | None = None) -> None:
                     payload = json.loads(text)
                     if not payload.get("passed", False):
                         raise SystemExit(2)
+                return
+            if args.pack_command == "certify":
+                text = run_pack_certify(args.pack_id, args.output_pack_id, json_output=args.json_output)
+                print(text)
+                if args.json_output:
+                    payload = json.loads(text)
+                    if payload.get("status") != "CERTIFICATION_PASSED":
+                        raise SystemExit(2)
+                elif "status: CERTIFICATION_PASSED" not in text:
+                    raise SystemExit(2)
                 return
             if args.pack_command == "review":
                 print(run_pack_review(args.pack_ref, json_output=args.json_output))

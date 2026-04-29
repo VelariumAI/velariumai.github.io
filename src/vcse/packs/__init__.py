@@ -2,6 +2,7 @@
 
 from vcse.packs.activator import ActivationResult, PackActivator
 from vcse.packs.auditor import AuditReport, PackAuditor
+from vcse.packs.certification import CertificationReport, certify_candidate_pack
 from vcse.packs.errors import PackError
 from vcse.packs.index import PackIndex, PackIndexError
 from vcse.packs.installer import InstallResult, PackInstaller
@@ -15,6 +16,7 @@ from vcse.packs.validator import PackValidationResult, PackValidator
 __all__ = [
     "ActivationResult",
     "AuditReport",
+    "CertificationReport",
     "DependencyResolution",
     "DependencyResolver",
     "InstallResult",
@@ -35,6 +37,7 @@ __all__ = [
     "PackValidator",
     "ResolvedPack",
     "load_manifest",
+    "certify_candidate_pack",
     "pack_home",
     "pack_store_dir",
     "parse_pack_spec",
