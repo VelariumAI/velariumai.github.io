@@ -7,10 +7,12 @@ import io
 import json
 import sys
 import time
+import tempfile
 from contextlib import redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
 
+from vcse.adapters import get_adapter
 from vcse.benchmark import BenchmarkCaseError, format_benchmark_text, run_benchmark
 from vcse.benchmark_coverage import CoverageBenchmarkError, format_coverage_text, run_coverage_benchmark
 from vcse.benchmark_inference_classification import InferenceType, classify_resolution_for_claim
@@ -2698,17 +2700,32 @@ def run_compile_knowledge(
     pack_id: str,
     output_root: Path,
     benchmark_output: Path | None = None,
+    adapter_type: str | None = None,
     json_output: bool = False,
 ) -> str:
     compiler = KnowledgeCompiler()
-    report = compiler.compile(
-        source_path=source_path,
-        mapping_path=mapping_path,
-        domain_spec_path=domain_path,
-        output_pack_id=pack_id,
-        output_root=output_root,
-        benchmark_output=benchmark_output,
-    )
+    compile_source_path = source_path
+    temp_path: Path | None = None
+    if adapter_type is not None:
+        adapter = get_adapter(adapter_type)
+        records = adapter.run(source_path)
+        with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False) as handle:
+            for row in records:
+                handle.write(json.dumps(row, sort_keys=True) + "\n")
+            temp_path = Path(handle.name)
+            compile_source_path = temp_path
+    try:
+        report = compiler.compile(
+            source_path=compile_source_path,
+            mapping_path=mapping_path,
+            domain_spec_path=domain_path,
+            output_pack_id=pack_id,
+            output_root=output_root,
+            benchmark_output=benchmark_output,
+        )
+    finally:
+        if temp_path is not None and temp_path.exists():
+            temp_path.unlink()
     payload = compile_report_to_dict(report)
     if json_output:
         return json.dumps(payload, sort_keys=True)
@@ -2726,6 +2743,59 @@ def run_compile_knowledge(
             f"output_path: {report.output_path}",
         ]
     )
+
+
+def run_adapter_run(adapter_type: str, source_path: Path, output_path: Path, json_output: bool = False) -> str:
+    adapter = get_adapter(adapter_type)
+    records = adapter.run(source_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in records))
+    payload = {
+        "status": "ADAPTER_RUN_COMPLETE",
+        "adapter": adapter_type,
+        "source": str(source_path),
+        "output": str(output_path),
+        "record_count": len(records),
+    }
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(
+        [
+            "status: ADAPTER_RUN_COMPLETE",
+            f"adapter: {adapter_type}",
+            f"source: {source_path}",
+            f"output: {output_path}",
+            f"record_count: {len(records)}",
+        ]
+    )
+
+
+def run_adapter_inspect(adapter_type: str, source_path: Path, json_output: bool = False) -> str:
+    adapter = get_adapter(adapter_type)
+    records = adapter.run(source_path)
+    sample = records[:3]
+    payload = {
+        "status": "ADAPTER_INSPECT",
+        "adapter": adapter_type,
+        "source": str(source_path),
+        "record_count": len(records),
+        "sample_records": sample,
+    }
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        "status: ADAPTER_INSPECT",
+        f"adapter: {adapter_type}",
+        f"source: {source_path}",
+        f"record_count: {len(records)}",
+        "sample_records:",
+    ]
+    if sample:
+        for row in sample:
+            lines.append(f"  - {json.dumps(row, sort_keys=True)}")
+    else:
+        lines.append("  - none")
+    return "\n".join(lines)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -2868,6 +2938,7 @@ def main(argv: list[str] | None = None) -> None:
     compile_knowledge_parser.add_argument("--pack-id", required=True)
     compile_knowledge_parser.add_argument("--output-root", required=True, type=Path)
     compile_knowledge_parser.add_argument("--benchmark-output", type=Path)
+    compile_knowledge_parser.add_argument("--adapter", choices=["json", "jsonl", "csv"])
     compile_knowledge_parser.add_argument("--json", action="store_true", dest="json_output")
 
     compiler_parser = subparsers.add_parser("compiler")
@@ -2876,6 +2947,18 @@ def main(argv: list[str] | None = None) -> None:
     compiler_validate_parser.add_argument("--mapping", required=True, type=Path)
     compiler_validate_parser.add_argument("--domain", required=True, type=Path)
     compiler_validate_parser.add_argument("--json", action="store_true", dest="json_output")
+
+    adapter_parser = subparsers.add_parser("adapter")
+    adapter_subparsers = adapter_parser.add_subparsers(dest="adapter_command")
+    adapter_run_parser = adapter_subparsers.add_parser("run")
+    adapter_run_parser.add_argument("--type", required=True, choices=["json", "jsonl", "csv"], dest="adapter_type")
+    adapter_run_parser.add_argument("--source", required=True, type=Path)
+    adapter_run_parser.add_argument("--output", required=True, type=Path)
+    adapter_run_parser.add_argument("--json", action="store_true", dest="json_output")
+    adapter_inspect_parser = adapter_subparsers.add_parser("inspect")
+    adapter_inspect_parser.add_argument("--type", required=True, choices=["json", "jsonl", "csv"], dest="adapter_type")
+    adapter_inspect_parser.add_argument("--source", required=True, type=Path)
+    adapter_inspect_parser.add_argument("--json", action="store_true", dest="json_output")
 
     pack_parser = subparsers.add_parser("pack")
     pack_subparsers = pack_parser.add_subparsers(dest="pack_command")
@@ -3307,6 +3390,7 @@ def main(argv: list[str] | None = None) -> None:
                         pack_id=args.pack_id,
                         output_root=args.output_root,
                         benchmark_output=args.benchmark_output,
+                        adapter_type=args.adapter,
                         json_output=args.json_output,
                     )
                 )
@@ -3325,6 +3409,26 @@ def main(argv: list[str] | None = None) -> None:
                         raise SystemExit(2)
                 elif "status: COMPILE_PASSED" not in text:
                     raise SystemExit(2)
+                return
+        if args.command == "adapter":
+            if args.adapter_command == "run":
+                print(
+                    run_adapter_run(
+                        adapter_type=args.adapter_type,
+                        source_path=args.source,
+                        output_path=args.output,
+                        json_output=args.json_output,
+                    )
+                )
+                return
+            if args.adapter_command == "inspect":
+                print(
+                    run_adapter_inspect(
+                        adapter_type=args.adapter_type,
+                        source_path=args.source,
+                        json_output=args.json_output,
+                    )
+                )
                 return
         if args.command == "pack":
             if args.pack_command == "validate":
