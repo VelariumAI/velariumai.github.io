@@ -1,0 +1,178 @@
+domain_id: geography
+name: Geography
+version: 1.0.0
+
+relations:
+  - relation: has_capital
+    canonical: has_capital
+    inverse: capital_of
+    domain: Country
+    range: City
+    functional: true
+    symmetric: false
+    transitive: false
+    shard: geography.capitals
+  - relation: capital_of
+    canonical: has_capital
+    inverse: capital_of
+    domain: City
+    range: Country
+    functional: false
+    symmetric: false
+    transitive: false
+    shard: geography.capitals
+  - relation: located_in_country
+    canonical: located_in_country
+    inverse: null
+    domain: Place
+    range: Country
+    functional: false
+    symmetric: false
+    transitive: false
+    shard: geography.location
+  - relation: located_in_region
+    canonical: located_in_region
+    inverse: null
+    domain: Place
+    range: Region
+    functional: false
+    symmetric: false
+    transitive: false
+    shard: geography.location
+  - relation: located_in_subregion
+    canonical: located_in_subregion
+    inverse: null
+    domain: Place
+    range: Region
+    functional: false
+    symmetric: false
+    transitive: false
+    shard: geography.location
+  - relation: part_of
+    canonical: part_of
+    inverse: null
+    domain: Place
+    range: Place
+    functional: false
+    symmetric: false
+    transitive: true
+    shard: geography.location
+  - relation: uses_currency
+    canonical: uses_currency
+    inverse: null
+    domain: Country
+    range: Currency
+    functional: false
+    symmetric: false
+    transitive: false
+    shard: geography.currency
+  - relation: language_of
+    canonical: language_of
+    inverse: null
+    domain: Language
+    range: Place
+    functional: false
+    symmetric: false
+    transitive: false
+    shard: geography.language
+  - relation: has_country_code
+    canonical: has_country_code
+    inverse: null
+    domain: Country
+    range: CountryCode
+    functional: true
+    symmetric: false
+    transitive: false
+    shard: geography.codes
+  - relation: shares_border_with
+    canonical: shares_border_with
+    inverse: shares_border_with
+    domain: Country
+    range: Country
+    functional: false
+    symmetric: true
+    transitive: false
+    shard: geography.borders
+
+shard_rules:
+  - shard_id: geography.capitals
+    relations: [has_capital, capital_of]
+  - shard_id: geography.location
+    relations: [located_in_country, located_in_region, located_in_subregion, part_of]
+  - shard_id: geography.currency
+    relations: [uses_currency]
+  - shard_id: geography.language
+    relations: [language_of]
+  - shard_id: geography.codes
+    relations: [has_country_code]
+  - shard_id: geography.borders
+    relations: [shares_border_with]
+  - shard_id: misc.unknown
+    relations: []
+
+query_patterns:
+  - pattern: "What is the capital of {subject}?"
+    relation: has_capital
+    query_type: wh
+    subject_slot: subject
+    object_slot: object
+  - pattern: "What is {subject} the capital of?"
+    relation: capital_of
+    query_type: wh
+    subject_slot: subject
+    object_slot: object
+  - pattern: "What currency does {subject} use?"
+    relation: uses_currency
+    query_type: wh
+    subject_slot: subject
+    object_slot: object
+  - pattern: "What language is spoken in {subject}?"
+    relation: language_of
+    query_type: wh
+    subject_slot: subject
+    object_slot: object
+  - pattern: "What is the country code of {subject}?"
+    relation: has_country_code
+    query_type: wh
+    subject_slot: subject
+    object_slot: object
+  - pattern: "What region is {subject} in?"
+    relation: located_in_region
+    query_type: wh
+    subject_slot: subject
+    object_slot: object
+  - pattern: "What continent is {subject} in?"
+    relation: located_in_region
+    query_type: wh
+    subject_slot: subject
+    object_slot: object
+
+inference_rules:
+  - rule_id: inverse_relation
+    output_relation: has_capital
+    required_relations: [has_capital, capital_of]
+    max_hops: 1
+  - rule_id: transitive_location_containment
+    output_relation: located_in_region
+    required_relations: [located_in_country, located_in_region, located_in_subregion, part_of]
+    max_hops: 2
+
+benchmark_templates:
+  - relation: has_capital
+    template: "What is the capital of {subject}?"
+    expected_slot: object
+  - relation: capital_of
+    template: "What is {subject} the capital of?"
+    expected_slot: object
+  - relation: uses_currency
+    template: "What currency does {subject} use?"
+    expected_slot: object
+  - relation: language_of
+    template: "What language is spoken in {subject}?"
+    expected_slot: object
+  - relation: has_country_code
+    template: "What is the country code of {subject}?"
+    expected_slot: object
+  - relation: located_in_region
+    template: "What continent is {subject} in?"
+    expected_slot: object
