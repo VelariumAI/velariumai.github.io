@@ -12,6 +12,7 @@ from vcse.packs.manifest import PackDependency, PackIntegrity, PackManifest
 from vcse.packs.merge import MergeReport, merge_certified_pack
 from vcse.packs.registry import InstalledPackRecord, PackRegistry, pack_home, pack_store_dir, registry_path
 from vcse.packs.resolver import DependencyResolution, DependencyResolver, ResolvedPack, parse_pack_spec
+from vcse.packs.runtime_store import RuntimeStore, RuntimeStoreCompiler, RuntimeStoreReport
 from vcse.packs.validator import PackValidationResult, PackValidator
 
 __all__ = [
@@ -38,6 +39,9 @@ __all__ = [
     "PackValidationResult",
     "PackValidator",
     "ResolvedPack",
+    "RuntimeStore",
+    "RuntimeStoreCompiler",
+    "RuntimeStoreReport",
     "load_manifest",
     "certify_candidate_pack",
     "merge_certified_pack",

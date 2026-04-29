@@ -61,6 +61,9 @@ from vcse.packs import (
     PackLifecycleManager,
     PackRegistry,
     PackValidator,
+    RuntimeStore,
+    RuntimeStoreCompiler,
+    RuntimeStoreReport,
 )
 from vcse.packs.integrity import (
     compute_pack_hash,
@@ -70,6 +73,7 @@ from vcse.packs.integrity import (
     verify_pack_integrity,
     verify_pack_signature,
 )
+from vcse.packs.runtime_store import load_runtime_claims_if_valid, runtime_store_path_for_pack
 from vcse.perf import profile_result, profile_run
 from vcse.ledger import LedgerError, LedgerStore, build_integrity, export_ledger, verify_ledger, verify_pack_ledger
 from vcse.renderer.explanation import ExplanationRenderer
@@ -1159,6 +1163,83 @@ def run_pack_merge(
         for reason in report.reasons:
             lines.append(f"  - {reason}")
     return "\n".join(lines)
+
+
+def run_pack_compile(pack_id: str, output: Path | None = None, force: bool = False, json_output: bool = False) -> str:
+    pack_path = _resolve_pack_reference(pack_id)
+    pack_meta = json.loads((pack_path / "pack.json").read_text())
+    resolved_pack_id = str(pack_meta.get("id") or pack_meta.get("pack_id") or pack_path.name)
+    default_output = runtime_store_path_for_pack(resolved_pack_id)
+    output_path = output or default_output
+    if output_path.exists() and not force:
+        raise PackError("STORE_EXISTS", f"runtime store already exists: {output_path}")
+    compiler = RuntimeStoreCompiler()
+    report: RuntimeStoreReport = compiler.compile_pack(pack_path=pack_path, output_path=output_path)
+    payload = {
+        "pack_id": report.pack_id,
+        "pack_path": report.pack_path,
+        "output_path": report.output_path,
+        "claim_count": report.claim_count,
+        "provenance_count": report.provenance_count,
+        "store_size_bytes": report.store_size_bytes,
+        "status": report.status,
+        "reasons": report.reasons,
+    }
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        f"status: {report.status}",
+        f"pack_id: {report.pack_id}",
+        f"pack_path: {report.pack_path}",
+        f"output_path: {report.output_path}",
+        f"claim_count: {report.claim_count}",
+        f"provenance_count: {report.provenance_count}",
+        f"store_size_bytes: {report.store_size_bytes}",
+    ]
+    if report.reasons:
+        lines.append("reasons:")
+        for reason in report.reasons:
+            lines.append(f"  - {reason}")
+    return "\n".join(lines)
+
+
+def run_pack_store_info(pack_id: str, json_output: bool = False) -> str:
+    pack_path = _resolve_pack_reference(pack_id)
+    pack_meta = json.loads((pack_path / "pack.json").read_text())
+    resolved_pack_id = str(pack_meta.get("id") or pack_meta.get("pack_id") or pack_path.name)
+    db_path = runtime_store_path_for_pack(resolved_pack_id)
+    if not db_path.exists():
+        raise PackError("STORE_NOT_FOUND", f"runtime store not found: {db_path}")
+    store = RuntimeStore(db_path)
+    try:
+        stats = store.stats()
+    finally:
+        store.close()
+    payload = {
+        "pack_id": stats["pack_id"] or resolved_pack_id,
+        "pack_path": str(pack_path),
+        "schema_version": stats["schema_version"],
+        "claim_count": stats["claim_count"],
+        "provenance_count": stats["provenance_count"],
+        "store_size_bytes": stats["store_size_bytes"],
+        "pack_hash": stats["pack_hash"],
+        "output_path": str(db_path),
+    }
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    return "\n".join(
+        [
+            "status: STORE_INFO",
+            f"pack_id: {payload['pack_id']}",
+            f"pack_path: {payload['pack_path']}",
+            f"schema_version: {payload['schema_version']}",
+            f"claim_count: {payload['claim_count']}",
+            f"provenance_count: {payload['provenance_count']}",
+            f"store_size_bytes: {payload['store_size_bytes']}",
+            f"pack_hash: {payload['pack_hash']}",
+            f"output_path: {payload['output_path']}",
+        ]
+    )
 
 
 def _resolve_pack_reference(ref: str) -> Path:
@@ -2342,9 +2423,14 @@ def resolve_pack_activation(pack_values: list[str] | None, packs_csv: str | None
         fallback_claims: list[dict[str, str]] = []
         for spec in specs:
             metadata = PackIndex().get_pack_metadata(spec)
-            claims_path = Path(str(metadata.get("pack_path", ""))) / "claims.jsonl"
-            if not claims_path.exists():
+            pack_path = Path(str(metadata.get("pack_path", "")))
+            claims_path = pack_path / "claims.jsonl"
+            if not claims_path.exists() or not pack_path.exists():
                 raise PackError("PACK_NOT_FOUND", f"pack not found: {spec}")
+            runtime_claims = load_runtime_claims_if_valid(pack_path, str(metadata.get("pack_id", spec)))
+            if runtime_claims is not None:
+                fallback_claims.extend(runtime_claims)
+                continue
             for line in claims_path.read_text().splitlines():
                 if not line.strip():
                     continue
@@ -2523,6 +2609,14 @@ def main(argv: list[str] | None = None) -> None:
     pack_merge_parser.add_argument("--into", required=True, dest="target_pack_id")
     pack_merge_parser.add_argument("--output", dest="output_pack_id")
     pack_merge_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_compile_parser = pack_subparsers.add_parser("compile")
+    pack_compile_parser.add_argument("pack_id")
+    pack_compile_parser.add_argument("--output", type=Path)
+    pack_compile_parser.add_argument("--force", action="store_true")
+    pack_compile_parser.add_argument("--json", action="store_true", dest="json_output")
+    pack_store_info_parser = pack_subparsers.add_parser("store-info")
+    pack_store_info_parser.add_argument("pack_id")
+    pack_store_info_parser.add_argument("--json", action="store_true", dest="json_output")
     pack_review_parser = pack_subparsers.add_parser("review")
     pack_review_parser.add_argument("pack_ref")
     pack_review_parser.add_argument("--json", action="store_true", dest="json_output")
@@ -2936,6 +3030,24 @@ def main(argv: list[str] | None = None) -> None:
                         raise SystemExit(2)
                 elif "status: MERGE_PASSED" not in text:
                     raise SystemExit(2)
+                return
+            if args.pack_command == "compile":
+                text = run_pack_compile(
+                    args.pack_id,
+                    output=args.output,
+                    force=args.force,
+                    json_output=args.json_output,
+                )
+                print(text)
+                if args.json_output:
+                    payload = json.loads(text)
+                    if payload.get("status") != "STORE_COMPILE_PASSED":
+                        raise SystemExit(2)
+                elif "status: STORE_COMPILE_PASSED" not in text:
+                    raise SystemExit(2)
+                return
+            if args.pack_command == "store-info":
+                print(run_pack_store_info(args.pack_id, json_output=args.json_output))
                 return
             if args.pack_command == "install":
                 print(run_pack_install(Path(args.pack_path), force=args.force, json_output=args.json_output))

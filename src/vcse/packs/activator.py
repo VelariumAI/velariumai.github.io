@@ -14,6 +14,7 @@ from vcse.packs.errors import PackError
 from vcse.packs.loader import load_manifest
 from vcse.packs.registry import PackRegistry
 from vcse.packs.resolver import DependencyResolver
+from vcse.packs.runtime_store import load_runtime_claims_if_valid
 
 
 @dataclass(frozen=True)
@@ -76,18 +77,22 @@ class PackActivator:
                 except Exception:
                     compressed_claims_loaded = False
             if not compressed_claims_loaded:
-                for rel_path in manifest.artifacts.get("claims", []):
-                    for line in (root / rel_path).read_text().splitlines():
-                        if not line.strip():
-                            continue
-                        payload = json.loads(line)
-                        knowledge_claims.append(
-                            {
-                                "subject": str(payload.get("subject", "")),
-                                "relation": str(payload.get("relation", "")),
-                                "object": str(payload.get("object", "")),
-                            }
-                        )
+                runtime_claims = load_runtime_claims_if_valid(root, manifest.id)
+                if runtime_claims is not None:
+                    knowledge_claims.extend(runtime_claims)
+                else:
+                    for rel_path in manifest.artifacts.get("claims", []):
+                        for line in (root / rel_path).read_text().splitlines():
+                            if not line.strip():
+                                continue
+                            payload = json.loads(line)
+                            knowledge_claims.append(
+                                {
+                                    "subject": str(payload.get("subject", "")),
+                                    "relation": str(payload.get("relation", "")),
+                                    "object": str(payload.get("object", "")),
+                                }
+                            )
             for rel_path in manifest.artifacts.get("constraints", []):
                 for line in (root / rel_path).read_text().splitlines():
                     if not line.strip():
