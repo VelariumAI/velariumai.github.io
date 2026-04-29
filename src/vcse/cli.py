@@ -6,6 +6,7 @@ import argparse
 import io
 import json
 import sys
+import time
 from contextlib import redirect_stdout
 from pathlib import Path
 from types import SimpleNamespace
@@ -205,12 +206,18 @@ def run_ask(
     allow_query_normalization: bool = True,
     explain_inferred: bool = True,
     return_resolution_type: bool = False,
+    planned: bool = False,
+    planned_debug: bool = False,
+    planned_store_path: Path | None = None,
 ) -> str | tuple[str, InferenceType]:
     """Handle vcse ask command."""
     from vcse.interaction.session import Session, TurnRecord
     from vcse.interaction.response_modes import QueryType, ResponseMode, render_response
     from vcse.interaction.frames import FrameParseResult, FrameStatus, ClaimFrame, GoalFrame
     from vcse.interaction.query_normalizer import normalize_query
+    from vcse.packs.runtime_store import RuntimeStore
+    from vcse.query.executor import QueryExecutor
+    from vcse.query.planner import QueryPlanner
 
     query_type = _classify_query_type(text)
 
@@ -423,6 +430,26 @@ def run_ask(
         return None
 
     def _run() -> tuple[str, InferenceType]:
+        if planned and planned_store_path is not None and allow_query_normalization:
+            normalized = normalize_query(text)
+            plan = QueryPlanner().plan(normalized)
+            if plan is not None:
+                store = RuntimeStore(planned_store_path)
+                try:
+                    planned_result = QueryExecutor().execute(plan, store)
+                finally:
+                    store.close()
+                if planned_result.answer_claim is not None and not planned_result.fallback_used:
+                    answer = _render_planned_answer(plan.target_relation, planned_result.answer_claim)
+                    if planned_debug:
+                        answer += (
+                            "\nplanned_metrics:"
+                            f"\n  rows_examined: {planned_result.rows_examined}"
+                            f"\n  touched_shards: {list(planned_result.touched_shards)}"
+                            f"\n  touched_indexes: {list(planned_result.touched_indexes)}"
+                            f"\n  fallback_used: {planned_result.fallback_used}"
+                        )
+                    return answer, InferenceType.EXPLICIT
         continent = _run_continent_lookup()
         if continent is not None:
             answer, inferred_explanation, resolution_type = continent
@@ -831,6 +858,22 @@ def run_generate(
     return "\n".join(lines)
 
 
+def _render_planned_answer(relation: str, claim: dict[str, str]) -> str:
+    subject = str(claim.get("subject", ""))
+    object_ = str(claim.get("object", ""))
+    if relation in {"has_capital", "capital_of"}:
+        return f"{object_} is the capital of {subject}."
+    if relation == "uses_currency":
+        return f"{subject} uses the {object_}."
+    if relation == "language_of":
+        return f"{object_} is a language of {subject}."
+    if relation == "has_country_code":
+        return f"{subject} has country code {object_}."
+    if relation in {"part_of", "located_in_region"}:
+        return object_
+    return object_
+
+
 def run_gauntlet(
     target_path: Path,
     search_backend: str = "beam",
@@ -1203,8 +1246,10 @@ def run_pack_compile_with_mode(
         "claim_count": report.claim_count,
         "provenance_count": report.provenance_count,
         "store_size_bytes": report.store_size_bytes,
+        "compile_time_ms": report.compile_time_ms,
         "status": report.status,
         "reasons": report.reasons,
+        "stage_timings_ms": report.stage_timings_ms,
     }
     if stats:
         payload.update(
@@ -1249,9 +1294,12 @@ def run_pack_store_info(pack_id: str, json_output: bool = False) -> str:
     db_path = runtime_store_path_for_pack(resolved_pack_id)
     if not db_path.exists():
         raise PackError("STORE_NOT_FOUND", f"runtime store not found: {db_path}")
+    sqlite_open_started = time.perf_counter()
     store = RuntimeStore(db_path)
+    sqlite_open_ms = round((time.perf_counter() - sqlite_open_started) * 1000, 3)
     try:
         stats = store.stats()
+        profile = store.profile_store_info()
     finally:
         store.close()
     payload = {
@@ -1265,8 +1313,17 @@ def run_pack_store_info(pack_id: str, json_output: bool = False) -> str:
         "load_time_ms": stats.get("load_time_ms", 0.0),
         "avg_query_latency_ms": stats.get("avg_query_latency_ms", 0.0),
         "backend": stats.get("backend", "sqlite"),
+        "shard_count": stats.get("shard_count", 0),
+        "entity_dictionary_count": stats.get("entity_dictionary_count", 0),
+        "relation_dictionary_count": stats.get("relation_dictionary_count", 0),
         "pack_hash": stats["pack_hash"],
         "output_path": str(db_path),
+        "store_info_timings_ms": {
+            "sqlite_open_ms": sqlite_open_ms,
+            "metadata_load_ms": profile.get("metadata_load_ms", 0.0),
+            "sample_query_ms": profile.get("sample_query_ms", 0.0),
+            "stats_query_ms": profile.get("stats_query_ms", 0.0),
+        },
     }
     if json_output:
         return json.dumps(payload, sort_keys=True)
@@ -1283,6 +1340,9 @@ def run_pack_store_info(pack_id: str, json_output: bool = False) -> str:
             f"load_time_ms: {payload['load_time_ms']}",
             f"avg_query_latency_ms: {payload['avg_query_latency_ms']}",
             f"backend: {payload['backend']}",
+            f"shard_count: {payload['shard_count']}",
+            f"entity_dictionary_count: {payload['entity_dictionary_count']}",
+            f"relation_dictionary_count: {payload['relation_dictionary_count']}",
             f"pack_hash: {payload['pack_hash']}",
             f"output_path: {payload['output_path']}",
         ]
@@ -1495,9 +1555,9 @@ def _resolve_indexed_pack_path(pack_id: str) -> Path:
     return pack_path
 
 
-def run_benchmark_coverage(pack_id: str, benchmark_path: Path, json_output: bool = False) -> str:
+def run_benchmark_coverage(pack_id: str, benchmark_path: Path, json_output: bool = False, planned: bool = False) -> str:
     pack_path = _resolve_indexed_pack_path(pack_id)
-    summary = run_coverage_benchmark(pack_path=pack_path, benchmark_path=benchmark_path)
+    summary = run_coverage_benchmark(pack_path=pack_path, benchmark_path=benchmark_path, planned=planned)
     if json_output:
         return json.dumps(summary, sort_keys=True)
     return format_coverage_text(summary)
@@ -2514,6 +2574,24 @@ def resolve_runtime_inputs(
     return merged_bundle, list(activation.knowledge_claims), list(activation.constraints)
 
 
+def _resolve_planned_store_path(pack_values: list[str] | None, packs_csv: str | None) -> Path | None:
+    specs: list[str] = []
+    for value in pack_values or []:
+        clean = value.strip()
+        if clean:
+            specs.append(clean)
+    if packs_csv:
+        specs.extend(item.strip() for item in packs_csv.split(",") if item.strip())
+    if len(specs) != 1:
+        return None
+    metadata = PackIndex().get_pack_metadata(specs[0])
+    pack_id = str(metadata.get("pack_id", specs[0]))
+    path = runtime_store_path_for_pack(pack_id)
+    if not path.exists():
+        return None
+    return path
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="vcse")
     parser.add_argument("--config")
@@ -2540,6 +2618,7 @@ def main(argv: list[str] | None = None) -> None:
     benchmark_parser.add_argument("--top-k", type=int, dest="top_k_rules")
     benchmark_parser.add_argument("--top-k-packs", type=int, dest="top_k_packs")
     benchmark_parser.add_argument("--benchmark")
+    benchmark_parser.add_argument("--planned", action="store_true")
 
     ingest_parser = subparsers.add_parser("ingest")
     ingest_parser.add_argument("path")
@@ -2596,6 +2675,8 @@ def main(argv: list[str] | None = None) -> None:
     ask_parser.add_argument("--top-k-packs", type=int, dest="top_k_packs")
     ask_parser.add_argument("--profile", action="store_true")
     ask_parser.add_argument("--no-explain", action="store_true")
+    ask_parser.add_argument("--planned", action="store_true")
+    ask_parser.add_argument("--planned-debug", action="store_true")
 
     normalize_parser = subparsers.add_parser("normalize")
     normalize_parser.add_argument("text", nargs="*", default=[])
@@ -2897,7 +2978,12 @@ def main(argv: list[str] | None = None) -> None:
                 if len(pack_values) != 1:
                     raise ValueError("INVALID_BENCHMARK_COVERAGE: benchmark coverage requires exactly one --pack <pack_id>")
                 benchmark_file = Path(args.benchmark) if args.benchmark else (Path("benchmarks") / "general_knowledge.jsonl")
-                output = run_benchmark_coverage(pack_values[0], benchmark_file, json_output=args.json_output)
+                output = run_benchmark_coverage(
+                    pack_values[0],
+                    benchmark_file,
+                    json_output=args.json_output,
+                    planned=args.planned,
+                )
                 print(output)
                 return
             if not args.path:
@@ -3021,6 +3107,11 @@ def main(argv: list[str] | None = None) -> None:
                     preload_constraints=preload_constraints,
                     allow_query_normalization=(args.dsl is None),
                     explain_inferred=(not args.no_explain),
+                    planned=args.planned,
+                    planned_debug=args.planned_debug,
+                    planned_store_path=(
+                        _resolve_planned_store_path(args.pack_values, args.packs) if args.planned else None
+                    ),
                 )
             )
             return

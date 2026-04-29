@@ -127,12 +127,15 @@ def test_store_info_works(tmp_path: Path) -> None:
     assert info.returncode == 0
     payload = json.loads(info.stdout)
     assert payload["pack_id"] == "sample_pack"
-    assert payload["schema_version"] == 1
+    assert payload["schema_version"] == 2
     assert payload["claim_count"] == 2
     assert payload["provenance_count"] == 2
     assert payload["store_size_bytes"] > 0
     assert payload["pack_hash"]
     assert payload["backend"] == "sqlite"
+    assert payload["shard_count"] >= 1
+    assert payload["entity_dictionary_count"] >= 1
+    assert payload["relation_dictionary_count"] >= 1
 
 
 def test_fallback_when_store_missing(tmp_path: Path) -> None:

@@ -13,8 +13,9 @@ from pathlib import Path
 from typing import Any
 
 from vcse.packs.integrity import compute_pack_hash
+from vcse.packs.sharding import SHARD_DEFINITIONS, assign_shard
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 @dataclass(frozen=True)
@@ -31,6 +32,7 @@ class RuntimeStoreReport:
     backend: str
     status: str
     reasons: list[str]
+    stage_timings_ms: dict[str, float]
 
 
 def runtime_store_dir() -> Path:
@@ -82,6 +84,7 @@ class RuntimeStoreCompiler:
                         backend="sqlite",
                         status="NO_CHANGES",
                         reasons=[],
+                        stage_timings_ms={},
                     )
             except Exception:
                 pass
@@ -90,6 +93,7 @@ class RuntimeStoreCompiler:
 
     def _compile_full(self, pack_path: Path, output_path: Path, status_on_success: str) -> RuntimeStoreReport:
         started = time.perf_counter()
+        stage_timings_ms: dict[str, float] = {}
         reasons: list[str] = []
         pack_root = Path(pack_path)
         output = Path(output_path)
@@ -117,8 +121,10 @@ class RuntimeStoreCompiler:
                 backend="sqlite",
                 status="STORE_COMPILE_FAILED",
                 reasons=sorted(reasons),
+                stage_timings_ms=stage_timings_ms,
             )
 
+        read_pack_started = time.perf_counter()
         try:
             pack_meta = json.loads(pack_json.read_text())
         except json.JSONDecodeError as exc:
@@ -135,16 +141,21 @@ class RuntimeStoreCompiler:
                 backend="sqlite",
                 status="STORE_COMPILE_FAILED",
                 reasons=[f"invalid pack.json: {exc.msg}"],
+                stage_timings_ms=stage_timings_ms,
             )
+        stage_timings_ms["read_pack_json_ms"] = round((time.perf_counter() - read_pack_started) * 1000, 3)
 
         pack_id = str(pack_meta.get("id") or pack_meta.get("pack_id") or pack_root.name)
         pack_version = str(pack_meta.get("version", ""))
+        metadata_hash_started = time.perf_counter()
         pack_hash = compute_pack_hash(pack_root).pack_hash
         compiled_at = datetime.now(UTC).isoformat()
         claims_hash = _content_hash(claims_path)
         provenance_hash = _content_hash(provenance_path)
+        stage_timings_ms["metadata_hash_ms"] = round((time.perf_counter() - metadata_hash_started) * 1000, 3)
 
         claim_rows: list[dict[str, Any]] = []
+        read_claims_started = time.perf_counter()
         for idx, line in enumerate(claims_path.read_text().splitlines(), start=1):
             if not line.strip():
                 continue
@@ -164,6 +175,7 @@ class RuntimeStoreCompiler:
                     backend="sqlite",
                     status="STORE_COMPILE_FAILED",
                     reasons=[f"invalid claims.jsonl line {idx}: {exc.msg}"],
+                    stage_timings_ms=stage_timings_ms,
                 )
             if not isinstance(item, dict):
                 return RuntimeStoreReport(
@@ -179,10 +191,13 @@ class RuntimeStoreCompiler:
                     backend="sqlite",
                     status="STORE_COMPILE_FAILED",
                     reasons=[f"invalid claims.jsonl line {idx}: expected object"],
+                    stage_timings_ms=stage_timings_ms,
                 )
             claim_rows.append(item)
+        stage_timings_ms["read_claims_ms"] = round((time.perf_counter() - read_claims_started) * 1000, 3)
 
         prov_rows: list[dict[str, Any]] = []
+        read_provenance_started = time.perf_counter()
         for idx, line in enumerate(provenance_path.read_text().splitlines(), start=1):
             if not line.strip():
                 continue
@@ -202,6 +217,7 @@ class RuntimeStoreCompiler:
                     backend="sqlite",
                     status="STORE_COMPILE_FAILED",
                     reasons=[f"invalid provenance.jsonl line {idx}: {exc.msg}"],
+                    stage_timings_ms=stage_timings_ms,
                 )
             if not isinstance(item, dict):
                 return RuntimeStoreReport(
@@ -217,8 +233,10 @@ class RuntimeStoreCompiler:
                     backend="sqlite",
                     status="STORE_COMPILE_FAILED",
                     reasons=[f"invalid provenance.jsonl line {idx}: expected object"],
+                    stage_timings_ms=stage_timings_ms,
                 )
             prov_rows.append(item)
+        stage_timings_ms["read_provenance_ms"] = round((time.perf_counter() - read_provenance_started) * 1000, 3)
 
         output.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(str(output))
@@ -228,6 +246,7 @@ class RuntimeStoreCompiler:
             conn.execute("PRAGMA foreign_keys=OFF")
             conn.execute("BEGIN")
             self._create_schema(conn)
+            shard_assign_started = time.perf_counter()
             claim_records = sorted(
                 [
                     (
@@ -235,6 +254,10 @@ class RuntimeStoreCompiler:
                         str(row.get("subject", "")),
                         str(row.get("relation", "")),
                         str(row.get("object", "")),
+                        assign_shard(row),
+                        "",  # subject_id
+                        "",  # relation_id
+                        "",  # object_id
                         str(row.get("trust_tier", "")),
                         json.dumps(row, sort_keys=True),
                     )
@@ -242,13 +265,54 @@ class RuntimeStoreCompiler:
                 ],
                 key=lambda item: item[0],
             )
+            stage_timings_ms["shard_assignment_ms"] = round((time.perf_counter() - shard_assign_started) * 1000, 3)
+            dict_build_started = time.perf_counter()
+            entity_dict = _build_dictionary([record[1] for record in claim_records] + [record[3] for record in claim_records])
+            relation_dict = _build_dictionary([record[2] for record in claim_records])
+            claim_records = [
+                (
+                    record[0],
+                    record[1],
+                    record[2],
+                    record[3],
+                    record[4],
+                    entity_dict.get(record[1], ""),
+                    relation_dict.get(record[2], ""),
+                    entity_dict.get(record[3], ""),
+                    record[8],
+                    record[9],
+                )
+                for record in claim_records
+            ]
+            stage_timings_ms["dictionary_build_ms"] = round((time.perf_counter() - dict_build_started) * 1000, 3)
+            claims_insert_started = time.perf_counter()
             conn.executemany(
                 (
-                    "INSERT INTO claims (claim_key, subject, relation, object, trust_tier, raw_json) "
-                    "VALUES (?, ?, ?, ?, ?, ?)"
+                    "INSERT INTO claims (claim_key, subject, relation, object, shard_id, subject_id, relation_id, object_id, trust_tier, raw_json) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 ),
                 claim_records,
             )
+            stage_timings_ms["claims_insert_ms"] = round((time.perf_counter() - claims_insert_started) * 1000, 3)
+            dictionary_insert_started = time.perf_counter()
+            conn.executemany(
+                "INSERT INTO entity_dictionary (entity_id, entity_text) VALUES (?, ?)",
+                sorted(((v, k) for k, v in entity_dict.items()), key=lambda item: item[0]),
+            )
+            conn.executemany(
+                "INSERT INTO relation_dictionary (relation_id, relation_text) VALUES (?, ?)",
+                sorted(((v, k) for k, v in relation_dict.items()), key=lambda item: item[0]),
+            )
+            stage_timings_ms["dictionary_insert_ms"] = round((time.perf_counter() - dictionary_insert_started) * 1000, 3)
+            shard_insert_started = time.perf_counter()
+            conn.executemany(
+                "INSERT INTO shards (shard_id, domain, pack_id, description) VALUES (?, ?, ?, ?)",
+                sorted(
+                    [(item.shard_id, item.domain, pack_id, item.description) for item in SHARD_DEFINITIONS],
+                    key=lambda item: item[0],
+                ),
+            )
+            stage_timings_ms["shard_insert_ms"] = round((time.perf_counter() - shard_insert_started) * 1000, 3)
 
             claim_keys_by_index = [_claim_key(row) for row in claim_rows]
             prov_records = sorted(
@@ -264,6 +328,7 @@ class RuntimeStoreCompiler:
                 ],
                 key=lambda item: (item[0], item[1]),
             )
+            provenance_insert_started = time.perf_counter()
             conn.executemany(
                 (
                     "INSERT INTO provenance (claim_key, source_id, inference_type, source_claims, raw_json) "
@@ -271,6 +336,7 @@ class RuntimeStoreCompiler:
                 ),
                 prov_records,
             )
+            stage_timings_ms["provenance_insert_ms"] = round((time.perf_counter() - provenance_insert_started) * 1000, 3)
             metadata_rows = sorted(
                 [
                     ("pack_id", pack_id),
@@ -287,6 +353,9 @@ class RuntimeStoreCompiler:
                 key=lambda item: item[0],
             )
             conn.executemany("INSERT INTO metadata (key, value) VALUES (?, ?)", metadata_rows)
+            index_build_started = time.perf_counter()
+            self._create_indexes(conn)
+            stage_timings_ms["index_build_ms"] = round((time.perf_counter() - index_build_started) * 1000, 3)
             conn.commit()
         except Exception:
             conn.rollback()
@@ -296,11 +365,13 @@ class RuntimeStoreCompiler:
 
         load_time_ms, avg_query_latency_ms = _measure_store_performance(output)
         compile_time_ms = round((time.perf_counter() - started) * 1000, 3)
+        stage_timings_ms["total_compile_ms"] = compile_time_ms
         _update_runtime_metrics_metadata(
             output,
             compile_time_ms=compile_time_ms,
             load_time_ms=load_time_ms,
             avg_query_latency_ms=avg_query_latency_ms,
+            stage_timings_ms=stage_timings_ms,
         )
 
         return RuntimeStoreReport(
@@ -316,6 +387,7 @@ class RuntimeStoreCompiler:
             backend="sqlite",
             status=status_on_success,
             reasons=[],
+            stage_timings_ms=stage_timings_ms,
         )
 
     def _create_schema(self, conn: sqlite3.Connection) -> None:
@@ -324,6 +396,9 @@ class RuntimeStoreCompiler:
             DROP TABLE IF EXISTS metadata;
             DROP TABLE IF EXISTS claims;
             DROP TABLE IF EXISTS provenance;
+            DROP TABLE IF EXISTS entity_dictionary;
+            DROP TABLE IF EXISTS relation_dictionary;
+            DROP TABLE IF EXISTS shards;
 
             CREATE TABLE metadata (
                 key TEXT PRIMARY KEY,
@@ -335,12 +410,28 @@ class RuntimeStoreCompiler:
                 subject TEXT NOT NULL,
                 relation TEXT NOT NULL,
                 object TEXT NOT NULL,
+                shard_id TEXT NOT NULL,
+                subject_id TEXT,
+                relation_id TEXT,
+                object_id TEXT,
                 trust_tier TEXT,
                 raw_json TEXT NOT NULL
             );
-            CREATE INDEX idx_claim_subject_relation ON claims(subject, relation);
-            CREATE INDEX idx_claim_relation ON claims(relation);
-            CREATE INDEX idx_claim_object ON claims(object);
+
+            CREATE TABLE entity_dictionary (
+                entity_id TEXT PRIMARY KEY,
+                entity_text TEXT NOT NULL UNIQUE
+            );
+            CREATE TABLE relation_dictionary (
+                relation_id TEXT PRIMARY KEY,
+                relation_text TEXT NOT NULL UNIQUE
+            );
+            CREATE TABLE shards (
+                shard_id TEXT PRIMARY KEY,
+                domain TEXT NOT NULL,
+                pack_id TEXT NOT NULL,
+                description TEXT NOT NULL
+            );
 
             CREATE TABLE provenance (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -350,6 +441,19 @@ class RuntimeStoreCompiler:
                 source_claims TEXT,
                 raw_json TEXT NOT NULL
             );
+            """
+        )
+
+    def _create_indexes(self, conn: sqlite3.Connection) -> None:
+        conn.executescript(
+            """
+            CREATE INDEX idx_claim_subject_relation ON claims(subject, relation);
+            CREATE INDEX idx_claim_relation ON claims(relation);
+            CREATE INDEX idx_claim_object ON claims(object);
+            CREATE INDEX idx_claim_shard ON claims(shard_id);
+            CREATE INDEX idx_claim_subject_relation_ids ON claims(subject_id, relation_id);
+            CREATE INDEX idx_claim_relation_object_ids ON claims(relation_id, object_id);
+            CREATE INDEX idx_claim_shard_relation ON claims(shard_id, relation_id);
             CREATE INDEX idx_provenance_claim_key ON provenance(claim_key);
             CREATE INDEX idx_provenance_source_id ON provenance(source_id);
             """
@@ -377,6 +481,27 @@ class RuntimeStore:
                 (subject, relation, object),
             )
         return [json.loads(row["raw_json"]) for row in cur.fetchall()]
+
+    def get_claim_with_metrics(
+        self,
+        subject: str,
+        relation: str,
+        *,
+        shard_id: str | None = None,
+    ) -> tuple[list[dict[str, Any]], int]:
+        params: tuple[str, ...]
+        if shard_id is None:
+            query = "SELECT raw_json FROM claims WHERE subject = ? AND relation = ? ORDER BY claim_key"
+            params = (subject, relation)
+        else:
+            query = (
+                "SELECT raw_json FROM claims WHERE shard_id = ? AND subject = ? AND relation = ? "
+                "ORDER BY claim_key"
+            )
+            params = (shard_id, subject, relation)
+        cur = self._conn.execute(query, params)
+        rows = cur.fetchall()
+        return [json.loads(row["raw_json"]) for row in rows], len(rows)
 
     def get_claim_by_key(self, claim_key: str) -> dict[str, Any] | None:
         cur = self._conn.execute("SELECT raw_json FROM claims WHERE claim_key = ?", (claim_key,))
@@ -410,6 +535,18 @@ class RuntimeStore:
         cur = self._conn.execute("SELECT raw_json FROM claims ORDER BY claim_key")
         return [json.loads(row["raw_json"]) for row in cur.fetchall()]
 
+    def entity_dictionary_count(self) -> int:
+        row = self._conn.execute("SELECT COUNT(*) AS n FROM entity_dictionary").fetchone()
+        return int(row["n"]) if row is not None else 0
+
+    def relation_dictionary_count(self) -> int:
+        row = self._conn.execute("SELECT COUNT(*) AS n FROM relation_dictionary").fetchone()
+        return int(row["n"]) if row is not None else 0
+
+    def shard_count(self) -> int:
+        row = self._conn.execute("SELECT COUNT(*) AS n FROM shards").fetchone()
+        return int(row["n"]) if row is not None else 0
+
     def metadata(self) -> dict[str, str]:
         cur = self._conn.execute("SELECT key, value FROM metadata ORDER BY key")
         return {str(row["key"]): str(row["value"]) for row in cur.fetchall()}
@@ -433,8 +570,25 @@ class RuntimeStore:
             "load_time_ms": float(meta.get("load_time_ms", "0") or 0),
             "avg_query_latency_ms": float(meta.get("avg_query_latency_ms", "0") or 0),
             "backend": meta.get("backend", "sqlite") or "sqlite",
+            "shard_count": self.shard_count(),
+            "entity_dictionary_count": self.entity_dictionary_count(),
+            "relation_dictionary_count": self.relation_dictionary_count(),
             "store_size_bytes": self.db_path.stat().st_size if self.db_path.exists() else 0,
         }
+
+    def profile_store_info(self) -> dict[str, float]:
+        timings: dict[str, float] = {}
+        metadata_started = time.perf_counter()
+        _ = self.metadata()
+        timings["metadata_load_ms"] = round((time.perf_counter() - metadata_started) * 1000, 3)
+        sample_started = time.perf_counter()
+        self._conn.execute("SELECT claim_key FROM claims ORDER BY claim_key LIMIT 1").fetchone()
+        timings["sample_query_ms"] = round((time.perf_counter() - sample_started) * 1000, 3)
+        stats_started = time.perf_counter()
+        self._conn.execute("SELECT COUNT(*) AS n FROM claims").fetchone()
+        self._conn.execute("SELECT COUNT(*) AS n FROM provenance").fetchone()
+        timings["stats_query_ms"] = round((time.perf_counter() - stats_started) * 1000, 3)
+        return timings
 
 
 def resolve_runtime_store_for_pack(pack_root: Path, pack_id: str) -> Path:
@@ -521,6 +675,11 @@ def _content_hash(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _build_dictionary(values: list[str]) -> dict[str, str]:
+    unique = sorted({str(value) for value in values if str(value)})
+    return {value: f"d{idx + 1}" for idx, value in enumerate(unique)}
+
+
 def _measure_store_performance(db_path: Path) -> tuple[float, float]:
     load_started = time.perf_counter()
     conn = sqlite3.connect(str(db_path))
@@ -542,6 +701,7 @@ def _update_runtime_metrics_metadata(
     compile_time_ms: float,
     load_time_ms: float,
     avg_query_latency_ms: float,
+    stage_timings_ms: dict[str, float] | None = None,
 ) -> None:
     conn = sqlite3.connect(str(db_path))
     try:
@@ -561,6 +721,11 @@ def _update_runtime_metrics_metadata(
             "INSERT OR REPLACE INTO metadata (key, value) VALUES (?, ?)",
             ("backend", "sqlite"),
         )
+        for key, value in (stage_timings_ms or {}).items():
+            conn.execute(
+                "INSERT OR REPLACE INTO metadata (key, value) VALUES (?, ?)",
+                (f"timing_{key}", str(value)),
+            )
         conn.commit()
     finally:
         conn.close()
