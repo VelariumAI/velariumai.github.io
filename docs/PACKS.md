@@ -67,6 +67,30 @@ Behavior:
 - certified output is always a new pack directory
 - output lifecycle is `certified` with `version: 1.0.0`
 
+## Controlled Certified Merge
+
+Certified packs can be merged into a canonical target pack explicitly:
+
+```bash
+vcse pack merge <source_pack_id> --into <target_pack_id>
+vcse pack merge <source_pack_id> --into <target_pack_id> --output <new_pack_id>
+```
+
+Behavior:
+
+- source pack must exist and have `lifecycle_status: certified`
+- merge is explicit CLI-only (no automatic merge path)
+- duplicates are skipped by deterministic `subject|relation|object` claim key
+- provenance is preserved and appended (existing target rows are never overwritten)
+- snapshot is mandatory before mutation:
+  - `examples/packs/<target_pack_id>_snapshot_<timestamp>/`
+- default writes back to target pack after snapshot protection
+- optional `--output` writes merged result to a new pack id
+- `pack.json` is updated with:
+  - minor version bump (for example `2.0.0 -> 2.1.0`)
+  - updated `claim_count`
+  - `merged_from: <source_pack_id>`
+
 ## Runtime Activation
 
 Use packs per command:
