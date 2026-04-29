@@ -51,6 +51,28 @@ vcse pack uninstall vrm.logic.basic --version 1.0.0
 
 JSON output is supported with `--json` on validate/install/list/info/audit/uninstall.
 
+## Runtime Store Compilation
+
+VCSE keeps JSONL as the canonical pack source of truth and can generate an
+SQLite runtime store for faster lookup:
+
+```bash
+vcse pack compile <pack_id>
+vcse pack compile <pack_id> --force
+vcse pack store-info <pack_id>
+```
+
+Behavior:
+
+- runtime store output is generated under `.vcse/runtime_stores/<pack_id>.sqlite`
+- compile is read-only for pack files (`pack.json`, `claims.jsonl`, `provenance.jsonl`)
+- without `--force`, compile fails if the output store already exists
+- runtime loading uses store only when:
+  - store exists
+  - store hash matches current pack hash
+  - `VCSE_DISABLE_RUNTIME_STORE` is not set to `1`
+- otherwise VCSE falls back to canonical JSONL loading
+
 ## Candidate Certification
 
 Candidate packs can be certified explicitly through the CLI:
