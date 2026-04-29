@@ -85,3 +85,45 @@ activation, see [docs/PACKS.md](PACKS.md).
 For trust tiers, cross-source validation, conflict/staleness handling, and
 immutable certification history, see [docs/TRUST.md](TRUST.md) and
 [docs/LEDGER.md](LEDGER.md).
+
+## Knowledge Compiler (v4.8)
+
+VCSE 4.8.0 adds a deterministic Knowledge Compiler for structured source records
+and domain specs:
+
+```text
+domain spec + source records + mapping -> claims + provenance + benchmarks + candidate pack
+```
+
+Compiler outputs:
+
+```text
+examples/packs/<pack_id>/
+  pack.json
+  claims.jsonl
+  provenance.jsonl
+  metrics.json
+  trust_report.json
+```
+
+Optional benchmark output:
+
+```text
+benchmarks/<pack_id>_knowledge.jsonl
+```
+
+CLI:
+
+```bash
+vcse compiler validate-mapping \
+  --mapping examples/compiler/geography_mapping.json \
+  --domain domains/geography.yaml
+
+vcse compile knowledge \
+  --source examples/knowledge/general_world_expanded.json \
+  --mapping examples/compiler/geography_mapping.json \
+  --domain domains/geography.yaml \
+  --pack-id compiled_geography \
+  --output-root examples/packs \
+  --benchmark-output benchmarks/compiled_geography_knowledge.jsonl
+```

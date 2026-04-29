@@ -75,6 +75,8 @@ vcse ask "Can Socrates die?" --pack vrm.logic.basic
 vcse trust evaluate examples/trust/cross_supported_claims.jsonl
 vcse trust promote examples/packs/trusted_basic
 vcse ledger verify examples/packs/trusted_basic
+vcse compiler validate-mapping --mapping examples/compiler/geography_mapping.json --domain domains/geography.yaml
+vcse compile knowledge --source examples/knowledge/general_world_expanded.json --mapping examples/compiler/geography_mapping.json --domain domains/geography.yaml --pack-id compiled_geography --output-root examples/packs --benchmark-output benchmarks/compiled_geography_knowledge.jsonl --json
 
 ## CAKE — Knowledge Acquisition
 
