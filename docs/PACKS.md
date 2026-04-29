@@ -51,6 +51,22 @@ vcse pack uninstall vrm.logic.basic --version 1.0.0
 
 JSON output is supported with `--json` on validate/install/list/info/audit/uninstall.
 
+## Candidate Certification
+
+Candidate packs can be certified explicitly through the CLI:
+
+```bash
+vcse pack certify <candidate_pack_id> --output <certified_pack_id>
+```
+
+Behavior:
+
+- source pack must exist and have `lifecycle_status: candidate`
+- certification is validation-gated (duplicates, provenance completeness, trust/metrics artifacts)
+- source pack is never mutated
+- certified output is always a new pack directory
+- output lifecycle is `certified` with `version: 1.0.0`
+
 ## Runtime Activation
 
 Use packs per command:
