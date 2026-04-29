@@ -55,6 +55,7 @@ def test_benchmark_coverage_text_and_json(tmp_path: Path) -> None:
     assert "uncompressed_size" in payload
     assert "load_time_ms" in payload
     assert "query_latency_ms" in payload
+    assert payload["backend_used"] in {"jsonl", "sqlite"}
     assert payload["inverse_inferred_count"] > 0
     assert payload["transitive_inferred_count"] > 0
     assert payload["stability_threshold_used"] == 2

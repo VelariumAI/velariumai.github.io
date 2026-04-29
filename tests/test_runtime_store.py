@@ -102,9 +102,10 @@ def test_compile_creates_sqlite_store_and_inserts_claims_and_provenance(tmp_path
     pack_dir = _write_pack(tmp_path)
     store_path = runtime_store_path_for_pack("sample_pack")
     report = RuntimeStoreCompiler().compile_pack(pack_dir, tmp_path / store_path)
-    assert report.status == "STORE_COMPILE_PASSED"
+    assert report.status == "REBUILT"
     assert report.claim_count == 2
     assert report.provenance_count == 2
+    assert report.backend == "sqlite"
     assert (tmp_path / store_path).exists()
 
     store = RuntimeStore(tmp_path / store_path)
@@ -131,6 +132,7 @@ def test_store_info_works(tmp_path: Path) -> None:
     assert payload["provenance_count"] == 2
     assert payload["store_size_bytes"] > 0
     assert payload["pack_hash"]
+    assert payload["backend"] == "sqlite"
 
 
 def test_fallback_when_store_missing(tmp_path: Path) -> None:
