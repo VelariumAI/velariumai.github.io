@@ -18,3 +18,12 @@ examples/packs/promoted_*
 
 # Pack merge snapshots
 examples/packs/*_snapshot_*/
+
+# VCSE runtime stores
+.vcse/runtime_stores/
+*.vcseidx
+*.vcsebin
+*.vcsemap
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
