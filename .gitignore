@@ -27,3 +27,8 @@ examples/packs/*_snapshot_*/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+
+# VCSE pipeline outputs
+.vcse/pipeline_runs/
+examples/packs/compiled_*_pipeline/
+benchmarks/compiled_*_pipeline.jsonl

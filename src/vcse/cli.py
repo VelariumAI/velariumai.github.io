@@ -104,6 +104,8 @@ from vcse.agent import (
 )
 from vcse.knowledge.pack_model import KnowledgeClaim
 from vcse.semantic.runtime_regions import RuntimeRegionIndex
+from vcse.pipeline import PackPipelineRunner
+from vcse.pipeline.runner import PipelineError
 
 
 def build_logic_demo_state() -> WorldStateMemory:
@@ -2798,6 +2800,66 @@ def run_adapter_inspect(adapter_type: str, source_path: Path, json_output: bool 
     return "\n".join(lines)
 
 
+def run_pipeline_run(
+    config_path: Path,
+    *,
+    json_output: bool = False,
+    run_id: str | None = None,
+    output_dir: Path | None = None,
+) -> str:
+    runner = PackPipelineRunner(output_root=output_dir, run_id=run_id)
+    report = runner.run(config_path)
+    payload = report.to_dict()
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        f"status: {payload['status']}",
+        f"pipeline_id: {payload['pipeline_id']}",
+        f"run_id: {payload['run_id']}",
+        f"pack_id: {payload['pack_id']}",
+        f"output_dir: {payload['output_dir']}",
+        "stages:",
+    ]
+    for stage in payload["stages"]:
+        lines.append(f"  - {stage['stage']}: {stage['status']}")
+    if payload["reasons"]:
+        lines.append("reasons:")
+        for reason in payload["reasons"]:
+            lines.append(f"  - {reason}")
+    return "\n".join(lines)
+
+
+def run_pipeline_inspect(
+    run_id: str,
+    *,
+    json_output: bool = False,
+    output_dir: Path | None = None,
+) -> str:
+    root = output_dir if output_dir is not None else (Path(".vcse") / "pipeline_runs")
+    report_path = root / run_id / "pipeline_report.json"
+    if not report_path.exists():
+        raise PipelineError(f"pipeline report not found: {report_path}")
+    payload = json.loads(report_path.read_text())
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        f"status: {payload.get('status', 'UNKNOWN')}",
+        f"pipeline_id: {payload.get('pipeline_id', '')}",
+        f"run_id: {payload.get('run_id', run_id)}",
+        f"pack_id: {payload.get('pack_id', '')}",
+        f"output_dir: {payload.get('output_dir', str(report_path.parent))}",
+        "stages:",
+    ]
+    for stage in payload.get("stages", []):
+        lines.append(f"  - {stage.get('stage', 'unknown')}: {stage.get('status', 'UNKNOWN')}")
+    reasons = payload.get("reasons", [])
+    if reasons:
+        lines.append("reasons:")
+        for reason in reasons:
+            lines.append(f"  - {reason}")
+    return "\n".join(lines)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="vcse")
     parser.add_argument("--config")
@@ -2959,6 +3021,18 @@ def main(argv: list[str] | None = None) -> None:
     adapter_inspect_parser.add_argument("--type", required=True, choices=["json", "jsonl", "csv"], dest="adapter_type")
     adapter_inspect_parser.add_argument("--source", required=True, type=Path)
     adapter_inspect_parser.add_argument("--json", action="store_true", dest="json_output")
+
+    pipeline_parser = subparsers.add_parser("pipeline")
+    pipeline_subparsers = pipeline_parser.add_subparsers(dest="pipeline_command")
+    pipeline_run_parser = pipeline_subparsers.add_parser("run")
+    pipeline_run_parser.add_argument("pipeline_config", type=Path)
+    pipeline_run_parser.add_argument("--json", action="store_true", dest="json_output")
+    pipeline_run_parser.add_argument("--run-id")
+    pipeline_run_parser.add_argument("--output-dir", type=Path)
+    pipeline_inspect_parser = pipeline_subparsers.add_parser("inspect")
+    pipeline_inspect_parser.add_argument("run_id")
+    pipeline_inspect_parser.add_argument("--json", action="store_true", dest="json_output")
+    pipeline_inspect_parser.add_argument("--output-dir", type=Path)
 
     pack_parser = subparsers.add_parser("pack")
     pack_subparsers = pack_parser.add_subparsers(dest="pack_command")
@@ -3429,6 +3503,24 @@ def main(argv: list[str] | None = None) -> None:
                         json_output=args.json_output,
                     )
                 )
+                return
+        if args.command == "pipeline":
+            if args.pipeline_command == "run":
+                text = run_pipeline_run(
+                    args.pipeline_config,
+                    json_output=args.json_output,
+                    run_id=args.run_id,
+                    output_dir=args.output_dir,
+                )
+                print(text)
+                payload = json.loads(text) if args.json_output else None
+                if (payload and payload.get("status") != "PIPELINE_PASSED") or (
+                    not args.json_output and "status: PIPELINE_PASSED" not in text
+                ):
+                    raise SystemExit(2)
+                return
+            if args.pipeline_command == "inspect":
+                print(run_pipeline_inspect(args.run_id, json_output=args.json_output, output_dir=args.output_dir))
                 return
         if args.command == "pack":
             if args.pack_command == "validate":
@@ -4081,6 +4173,7 @@ def main(argv: list[str] | None = None) -> None:
         CoverageBenchmarkError,
         DomainSpecError,
         CompilerError,
+        PipelineError,
     ) as exc:
         error_type = getattr(exc, "error_type", None)
         reason = getattr(exc, "reason", None)
