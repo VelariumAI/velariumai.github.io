@@ -15,3 +15,6 @@ examples/packs/**/pack_signature.json
 # Promotion outputs
 promoted_claims.jsonl
 examples/packs/promoted_*
+
+# Pack merge snapshots
+examples/packs/*_snapshot_*/
