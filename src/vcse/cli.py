@@ -15,6 +15,7 @@ from vcse.benchmark import BenchmarkCaseError, format_benchmark_text, run_benchm
 from vcse.benchmark_coverage import CoverageBenchmarkError, format_coverage_text, run_coverage_benchmark
 from vcse.benchmark_inference_classification import InferenceType, classify_resolution_for_claim
 from vcse.config import load_settings
+from vcse.domain.loader import DomainSpecError, load_domain_spec
 from vcse.dsl import DSLCompiler, DSLLoader, DSLValidator, GLOBAL_REGISTRY
 from vcse.dsl.errors import DSLError
 from vcse.gauntlet import (
@@ -2592,6 +2593,77 @@ def _resolve_planned_store_path(pack_values: list[str] | None, packs_csv: str | 
     return path
 
 
+def _domain_spec_summary(spec, source: Path) -> dict[str, object]:
+    return {
+        "domain_id": spec.domain_id,
+        "name": spec.name,
+        "version": spec.version,
+        "source": str(source),
+        "relation_count": len(spec.relations),
+        "query_pattern_count": len(spec.query_patterns),
+        "shard_rule_count": len(spec.shard_rules),
+        "inference_rule_count": len(spec.inference_rules),
+        "benchmark_template_count": len(spec.benchmark_templates),
+    }
+
+
+def run_domain_list(json_output: bool = False) -> str:
+    candidates = sorted(Path("domains").glob("*.y*ml"))
+    rows: list[dict[str, object]] = []
+    for source in sorted(candidates, key=lambda p: str(p)):
+        spec = load_domain_spec(source)
+        rows.append(_domain_spec_summary(spec, source))
+    if json_output:
+        return json.dumps({"domains": rows}, sort_keys=True)
+    lines = [f"domain_count: {len(rows)}"]
+    for row in rows:
+        lines.append(f"- domain_id: {row['domain_id']}")
+        lines.append(f"  relation_count: {row['relation_count']}")
+        lines.append(f"  query_pattern_count: {row['query_pattern_count']}")
+        lines.append(f"  shard_rule_count: {row['shard_rule_count']}")
+        lines.append(f"  inference_rule_count: {row['inference_rule_count']}")
+        lines.append(f"  benchmark_template_count: {row['benchmark_template_count']}")
+    return "\n".join(lines)
+
+
+def run_domain_inspect(domain_id: str, json_output: bool = False) -> str:
+    target = Path("domains") / f"{domain_id}.yaml"
+    spec = load_domain_spec(target)
+    payload = _domain_spec_summary(spec, target)
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        f"domain_id: {payload['domain_id']}",
+        f"name: {payload['name']}",
+        f"version: {payload['version']}",
+        f"source: {payload['source']}",
+        f"relation_count: {payload['relation_count']}",
+        f"query_pattern_count: {payload['query_pattern_count']}",
+        f"shard_rule_count: {payload['shard_rule_count']}",
+        f"inference_rule_count: {payload['inference_rule_count']}",
+        f"benchmark_template_count: {payload['benchmark_template_count']}",
+    ]
+    return "\n".join(lines)
+
+
+def run_domain_validate(path: Path, json_output: bool = False) -> str:
+    spec = load_domain_spec(path)
+    payload = _domain_spec_summary(spec, path)
+    payload["status"] = "VALID"
+    if json_output:
+        return json.dumps(payload, sort_keys=True)
+    lines = [
+        "status: VALID",
+        f"domain_id: {payload['domain_id']}",
+        f"relation_count: {payload['relation_count']}",
+        f"query_pattern_count: {payload['query_pattern_count']}",
+        f"shard_rule_count: {payload['shard_rule_count']}",
+        f"inference_rule_count: {payload['inference_rule_count']}",
+        f"benchmark_template_count: {payload['benchmark_template_count']}",
+    ]
+    return "\n".join(lines)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="vcse")
     parser.add_argument("--config")
@@ -2822,6 +2894,17 @@ def main(argv: list[str] | None = None) -> None:
     region_info_parser.add_argument("region_id")
     region_info_parser.add_argument("--pack", required=True, dest="pack_spec")
     region_info_parser.add_argument("--json", action="store_true", dest="json_output")
+
+    domain_parser = subparsers.add_parser("domain")
+    domain_subparsers = domain_parser.add_subparsers(dest="domain_command")
+    domain_list_parser = domain_subparsers.add_parser("list")
+    domain_list_parser.add_argument("--json", action="store_true", dest="json_output")
+    domain_inspect_parser = domain_subparsers.add_parser("inspect")
+    domain_inspect_parser.add_argument("domain_id")
+    domain_inspect_parser.add_argument("--json", action="store_true", dest="json_output")
+    domain_validate_parser = domain_subparsers.add_parser("validate")
+    domain_validate_parser.add_argument("path", type=Path)
+    domain_validate_parser.add_argument("--json", action="store_true", dest="json_output")
 
     trust_parser = subparsers.add_parser("trust")
     trust_subparsers = trust_parser.add_subparsers(dest="trust_command")
@@ -3283,6 +3366,16 @@ def main(argv: list[str] | None = None) -> None:
                 return
             if args.region_command == "info":
                 print(run_region_info(args.region_id, args.pack_spec, json_output=args.json_output))
+                return
+        if args.command == "domain":
+            if args.domain_command == "list":
+                print(run_domain_list(json_output=args.json_output))
+                return
+            if args.domain_command == "inspect":
+                print(run_domain_inspect(args.domain_id, json_output=args.json_output))
+                return
+            if args.domain_command == "validate":
+                print(run_domain_validate(args.path, json_output=args.json_output))
                 return
         if args.command == "trust":
             if args.trust_command == "evaluate":
@@ -3771,6 +3864,7 @@ def main(argv: list[str] | None = None) -> None:
         TrustError,
         LedgerError,
         CoverageBenchmarkError,
+        DomainSpecError,
     ) as exc:
         error_type = getattr(exc, "error_type", None)
         reason = getattr(exc, "reason", None)
