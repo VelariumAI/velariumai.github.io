@@ -1,0 +1,61 @@
+{
+  "generated_at": "2026-04-30T05:37:13Z",
+  "projects": {
+    "pdv": {
+      "repo": "VelariumAI/pdv",
+      "name": "PDV",
+      "url": "https://github.com/VelariumAI/pdv",
+      "description": "PDV is a self-hosted download manager with a persistent queue, retry/backoff worker engine, REST API, and CLI.",
+      "latest_release": null,
+      "updated_at": "2026-04-22T06:54:38Z"
+    },
+    "alembic-cli": {
+      "repo": "VelariumAI/alembic-cli",
+      "name": "Alembic CLI",
+      "url": "https://github.com/VelariumAI/alembic-cli",
+      "description": "Project Alembic \u2013 Universal Transformer-to-SSM distillation with in-training CompreSSM compression (ICLR 2026).",
+      "latest_release": null,
+      "updated_at": "2026-04-10T05:01:36Z"
+    },
+    "go-webinspect": {
+      "repo": "VelariumAI/go-webinspect",
+      "name": "Go WebInspect",
+      "url": "https://github.com/VelariumAI/go-webinspect",
+      "description": "go-webinspect is a professional-grade, open-source framework written entirely in Go that provides a complete,  high-powered suite of web inspection, traffic analysis, and reverse-engineering tools.",
+      "latest_release": null,
+      "updated_at": "2026-04-08T06:45:40Z"
+    },
+    "go-ddgs": {
+      "repo": "VelariumAI/go-ddgs",
+      "name": "Go DDGS",
+      "url": "https://github.com/VelariumAI/go-ddgs",
+      "description": "DuckDuckGoSearch in Go",
+      "latest_release": "v0.2.2",
+      "updated_at": "2026-04-07T05:42:14Z"
+    },
+    "go-ddgs-stealth": {
+      "repo": "VelariumAI/go-ddgs-stealth",
+      "name": "Go DDGS Stealth",
+      "url": "https://github.com/VelariumAI/go-ddgs-stealth",
+      "description": "Advanced stealth web scraping framework for Go, extending go-ddgs with browser-level evasion, StealthyFetcher, and resilient anti-bot capabilities.",
+      "latest_release": "v0.3.1",
+      "updated_at": "2026-04-07T12:53:02Z"
+    },
+    "gorkbot": {
+      "repo": "VelariumAI/gorkbot",
+      "name": "Gorkbot",
+      "url": "https://github.com/VelariumAI/gorkbot",
+      "description": "Gorkbot is an AI-powered orchestration platform that unifies multiple large language models into a single terminal interface.",
+      "latest_release": null,
+      "updated_at": "2026-04-05T02:19:15Z"
+    },
+    "vcse": {
+      "repo": "VRM-AI/vcse",
+      "name": "VCSE",
+      "url": "https://github.com/VRM-AI/vcse",
+      "description": "VCSE \u2014 a Verified Reasoning Model (VRM) runtime.",
+      "latest_release": "v5.0.0",
+      "updated_at": "2026-04-29T22:49:42Z"
+    }
+  }
+}
