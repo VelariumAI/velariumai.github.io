@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-30T08:30:41Z",
+  "generated_at": "2026-04-30T08:36:38Z",
   "projects": {
     "pdv": {
       "repo": "VelariumAI/pdv",
@@ -47,7 +47,7 @@
       "url": "https://github.com/VelariumAI/gorkbot",
       "description": "Gorkbot is an AI-powered orchestration platform that unifies multiple large language models into a single terminal interface.",
       "latest_release": null,
-      "updated_at": "2026-04-05T02:19:15Z"
+      "updated_at": "2026-04-30T08:34:51Z"
     },
     "vcse": {
       "repo": "VRM-AI/vcse",
@@ -55,7 +55,7 @@
       "url": "https://github.com/VRM-AI/vcse",
       "description": "VCSE (Verifier-Centered Symbolic Engine) is the verification and reasoning engine for Correctness Models (CMs).",
       "latest_release": "v5.3.0",
-      "updated_at": "2026-04-30T08:06:32Z"
+      "updated_at": "2026-04-30T08:33:18Z"
     }
   }
 }
