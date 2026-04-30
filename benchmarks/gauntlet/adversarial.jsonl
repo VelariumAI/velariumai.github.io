@@ -1,0 +1,15 @@
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_001", "input": "a equals b. b equals c. a does not equal c.", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_002", "input": "The sky is blue. The sky is red.", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_003", "input": "x >= 5. x <= 4.", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_004", "input": "All dogs bark. No dogs bark.", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_005", "input": "Account is active. Account is inactive.", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_006", "input": "Who is eligible for the thing?", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_007", "input": "Does it meet the requirements?", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_008", "input": "Is there a solution?", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_009", "input": "Is this possible?", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_010", "input": "Can we do it?", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_011", "input": "Roses are flowers. Flowers bloom. Does a rose bloom?", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_012", "input": "Metals conduct electricity. Copper is a metal. Does copper conduct?", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_013", "input": "All squares are rectangles. A rectangle has four sides. Does a square have four sides?", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_014", "input": "Water is wet. Fire is hot.", "mode": "ask", "notes": "adversarial phrasing"}
+{"category": "adversarial", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_adv_015", "input": "Is fire hot?", "mode": "ask", "notes": "adversarial phrasing"}

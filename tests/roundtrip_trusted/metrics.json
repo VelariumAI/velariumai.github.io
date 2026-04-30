@@ -1,0 +1,14 @@
+{
+  "original_claims": 2,
+  "compressed_claims": 2,
+  "unique_strings": 4,
+  "original_size_bytes": 581,
+  "compressed_size_bytes": 144,
+  "intern_table_size_bytes": 142,
+  "total_compressed_size_bytes": 286,
+  "provenance_unique": 2,
+  "provenance_total": 2,
+  "graph_nodes": 2,
+  "graph_edges": 2,
+  "compression_ratio": 0.2478
+}

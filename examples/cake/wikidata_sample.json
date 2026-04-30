@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "Q90": {
+      "id": "Q90",
+      "labels": {"en": {"language": "en", "value": "Paris"}},
+      "claims": {
+        "P36": [
+          {
+            "mainsnak": {
+              "snaktype": "value",
+              "property": "P36",
+              "datatype": "wikibase-item",
+              "datavalue": {"value": {"entity-type": "item", "id": "Q142"}, "type": "wikibase-entityid"}
+            },
+            "type": "statement",
+            "rank": "normal"
+          }
+        ],
+        "P17": [
+          {
+            "mainsnak": {
+              "snaktype": "value",
+              "property": "P17",
+              "datatype": "wikibase-item",
+              "datavalue": {"value": {"entity-type": "item", "id": "Q142"}, "type": "wikibase-entityid"}
+            },
+            "type": "statement",
+            "rank": "normal"
+          }
+        ],
+        "P31": [
+          {
+            "mainsnak": {
+              "snaktype": "value",
+              "property": "P31",
+              "datatype": "wikibase-item",
+              "datavalue": {"value": {"entity-type": "item", "id": "Q515"}, "type": "wikibase-entityid"}
+            },
+            "type": "statement",
+            "rank": "normal"
+          }
+        ]
+      }
+    },
+    "Q142": {
+      "id": "Q142",
+      "labels": {"en": {"language": "en", "value": "France"}},
+      "claims": {}
+    },
+    "Q515": {
+      "id": "Q515",
+      "labels": {"en": {"language": "en", "value": "city"}},
+      "claims": {}
+    }
+  }
+}

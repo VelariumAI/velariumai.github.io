@@ -1,0 +1,15 @@
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_001", "input": "x equals 5. Is x greater than 3?", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_002", "input": "x is greater than 0. Is x positive?", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_003", "input": "x = 10. x > 5.", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_004", "input": "y is less than 100. y is at least 50.", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_005", "input": "z equals 0. z is not negative.", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_006", "input": "n is at most 20. n is at least 10.", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_007", "input": "x = 5. x < 10.", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_008", "input": "x is greater than or equal to 5. Is x >= 5?", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_009", "input": "count is 100. count is less than 200.", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_010", "input": "price is at most 50 dollars.", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_011", "input": "balance equals 1000. balance is positive.", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_012", "input": "x > 0. x < 10.", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_013", "input": "temperature is 98.6 degrees.", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_014", "input": "Is 5 greater than 3?", "mode": "ask", "notes": "arithmetic gauntlet"}
+{"category": "arithmetic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_arith_015", "input": "x is 10. x is less than 20.", "mode": "ask", "notes": "arithmetic gauntlet"}

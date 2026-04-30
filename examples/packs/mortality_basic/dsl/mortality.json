@@ -1,0 +1,17 @@
+{
+  "name": "mortality",
+  "version": "1.0.0",
+  "description": "Mortality synonym rules",
+  "artifacts": [
+    {
+      "id": "syn_die",
+      "type": "synonym",
+      "version": "1.0.0",
+      "description": "die synonyms",
+      "enabled": true,
+      "priority": 10,
+      "patterns": ["die", "can die", "dies", "perish", "pass away"],
+      "replacement": "is mortal"
+    }
+  ]
+}

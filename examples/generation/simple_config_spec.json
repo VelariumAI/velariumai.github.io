@@ -1,0 +1,21 @@
+{
+  "id": "config_001",
+  "artifact_type": "config",
+  "goal": "Create deployment config",
+  "required_fields": {
+    "name": "deploy_config",
+    "enabled": true,
+    "threshold": 3
+  },
+  "constraints": [
+    {"kind": "field_present", "target": "name"},
+    {"kind": "field_present", "target": "enabled"},
+    {"kind": "field_present", "target": "threshold"}
+  ],
+  "success_criteria": [
+    "deploy_config",
+    "threshold"
+  ],
+  "source_text": "Config spec",
+  "mode": "strict"
+}

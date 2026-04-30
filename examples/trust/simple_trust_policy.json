@@ -1,0 +1,8 @@
+{
+  "source_trust_threshold": 0.7,
+  "min_independent_sources": 2,
+  "require_verifier_consistency": true,
+  "require_gauntlet_pass": true,
+  "allow_single_authoritative_source": false,
+  "high_risk_domain": false
+}

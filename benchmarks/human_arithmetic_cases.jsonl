@@ -1,0 +1,60 @@
+{"id": "human_arith_001", "input": "x equals 5. Is x greater than 3?", "expected_status": "VERIFIED", "expected_answer": {"target": "x", "operator": ">", "value": 3}}
+{"id": "human_arith_002", "input": "x is greater than 0. Is x positive?", "expected_status": "VERIFIED", "expected_answer": {"target": "x", "relation": ">", "value": 0}}
+{"id": "human_arith_003", "input": "x = 10. x > 5.", "expected_status": "VERIFIED", "expected_answer": {"target": "x", "operator": ">", "value": 5}}
+{"id": "human_arith_004", "input": "y is less than 100. y is at least 50.", "expected_status": "VERIFIED", "expected_answer": {"target": "y", "operator": ">=", "value": 50}}
+{"id": "human_arith_005", "input": "z equals 0. z is not negative.", "expected_status": "VERIFIED", "expected_answer": {"target": "z", "operator": ">=", "value": 0}}
+{"id": "human_arith_006", "input": "n is at most 20. n is at least 10.", "expected_status": "VERIFIED", "expected_answer": {"target": "n", "operator": ">=", "value": 10}}
+{"id": "human_arith_007", "input": "x = 5. x < 10.", "expected_status": "VERIFIED", "expected_answer": {"target": "x", "operator": "<", "value": 10}}
+{"id": "human_arith_008", "input": "x is greater than or equal to 5. Is x >= 5?", "expected_status": "VERIFIED", "expected_answer": {"target": "x", "operator": ">=", "value": 5}}
+{"id": "human_arith_009", "input": "count is 100. count is less than 200.", "expected_status": "VERIFIED", "expected_answer": {"target": "count", "operator": "<", "value": 200}}
+{"id": "human_arith_010", "input": "price is at most 50 dollars.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_011", "input": "balance equals 1000. balance is positive.", "expected_status": "VERIFIED", "expected_answer": {"target": "balance", "operator": ">", "value": 0}}
+{"id": "human_arith_012", "input": "x > 0. x < 10.", "expected_status": "VERIFIED", "expected_answer": {"target": "x", "operator": "<", "value": 10}}
+{"id": "human_arith_013", "input": "temperature is 98.6 degrees.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_014", "input": "Is 5 greater than 3?", "expected_status": "VERIFIED", "expected_answer": {"target": "5", "operator": ">", "value": 3}}
+{"id": "human_arith_015", "input": "x is 10. x is less than 20.", "expected_status": "VERIFIED", "expected_answer": {"target": "x", "operator": "<", "value": 20}}
+{"id": "human_arith_016", "input": "a equals b. b equals 5.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_017", "input": "value is at least 0 and at most 100.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_018", "input": "x >= 10. x <= 20.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_019", "input": "score equals 100. score is perfect.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_020", "input": "3 is less than 5.", "expected_status": "VERIFIED", "expected_answer": {"target": "3", "operator": "<", "value": 5}}
+{"id": "human_arith_021", "input": "Does 10 exceed 5?", "expected_status": "VERIFIED", "expected_answer": {"target": "10", "operator": ">", "value": 5}}
+{"id": "human_arith_022", "input": "x is 7. x is not 8.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_023", "input": "amount is under 1000.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_024", "input": "total is more than 0.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_025", "input": "quantity is at least 1.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_026", "input": "x > 5. x = 10.", "expected_status": "VERIFIED", "expected_answer": {"target": "x", "operator": "=", "value": 10}}
+{"id": "human_arith_027", "input": "rate is 5 percent.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_028", "input": "height exceeds 100.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_029", "input": "weight is 150 pounds.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_030", "input": "distance is greater than 1000 miles.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_031", "input": "population is at most 10000.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_032", "input": "x = y. y = z. What is x?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_033", "input": "A equals 1. B equals 2. Is A less than B?", "expected_status": "VERIFIED", "expected_answer": {"target": "a", "operator": "<", "value": 2}}
+{"id": "human_arith_034", "input": "Minimum is 5. Maximum is 15.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_035", "input": "x is between 0 and 1.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_036", "input": "threshold is greater than 0.5.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_037", "input": "x <= 100. x >= 50.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_038", "input": "n is 0 or n is 1.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_039", "input": "value is exactly 42.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_040", "input": "pressure is less than atmospheric pressure.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_tpl_001", "input": "x = N. Is x > M?", "expected_status": "VERIFIED", "expected_answer": {"target": "x", "operator": ">", "value": "M"}}
+{"id": "human_arith_tpl_002", "input": "x > A. x < B.", "expected_status": "VERIFIED", "expected_answer": {"target": "x", "operator": "<", "value": "B"}}
+{"id": "human_arith_tpl_003", "input": "value is at least L.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_tpl_004", "input": "n is at most U.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_tpl_005", "input": "x equals MIN. x equals MAX.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_arith_tpl_006", "input": "A > B. Is B < A?", "expected_status": "VERIFIED", "expected_answer": {"target": "b", "operator": "<", "value": "A"}}
+{"id": "human_arith_tpl_007", "input": "x >= 10. x <= 10.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_tpl_008", "input": "count is C. count is D.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_arith_tpl_009", "input": "total > T. total < T.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_arith_tpl_010", "input": "x = 0 or x = 1.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_tpl_011", "input": "A equals B. B equals C. A equals C?", "expected_status": "VERIFIED", "expected_answer": {"target": "a", "operator": "=", "value": "c"}}
+{"id": "human_arith_tpl_012", "input": "x > 0. x < 0.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_arith_tpl_013", "input": "balance = POS. balance = NEG.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_arith_tpl_014", "input": "n is at least 0. n is at most 100.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_tpl_015", "input": "x exceeds Y.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_tpl_016", "input": "pressure is under P.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_tpl_017", "input": "x = 5. x > 3. x < 10.", "expected_status": "VERIFIED", "expected_answer": {"target": "x", "operator": "<", "value": 10}}
+{"id": "human_arith_tpl_018", "input": "temp is T. temp is not T.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_arith_tpl_019", "input": "length is more than L.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_arith_tpl_020", "input": "width is less than W.", "expected_status": "INCONCLUSIVE", "expected_answer": null}

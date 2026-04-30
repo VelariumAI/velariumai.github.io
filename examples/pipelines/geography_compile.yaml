@@ -1,0 +1,15 @@
+pipeline_id: geography_compile
+domain: domains/geography.yaml
+adapter:
+  type: json
+  source: examples/knowledge/general_world_expanded.json
+compiler:
+  mapping: examples/compiler/geography_mapping.json
+  pack_id: compiled_geography_pipeline
+  output_root: examples/packs
+  benchmark_output: benchmarks/compiled_geography_pipeline.jsonl
+validation:
+  validate_pack: true
+  review_pack: true
+runtime_store:
+  compile: false

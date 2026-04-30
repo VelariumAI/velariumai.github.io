@@ -1,0 +1,163 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUNBUFFERED: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+  VCSE_CI: "1"
+  VCSE_NO_NETWORK_TESTS: "1"
+
+jobs:
+  tests:
+    name: tests / py${{ matrix.python-version }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Print environment
+        run: |
+          python --version
+          python -m pip --version
+          pwd
+          echo "VCSE_CI=$VCSE_CI"
+          echo "VCSE_NO_NETWORK_TESTS=$VCSE_NO_NETWORK_TESTS"
+
+      - name: Upgrade packaging tools
+        run: python -m pip install --upgrade pip setuptools wheel
+
+      - name: Install project (dev)
+        run: python -m pip install -e ".[dev]"
+
+      - name: Verify import/version
+        run: python -c "import vcse; print(vcse.__version__)"
+
+      - name: Enforce version consistency
+        run: |
+          python - <<'EOF'
+          import pathlib
+          import tomllib
+          import vcse
+
+          pyproject = tomllib.loads(pathlib.Path("pyproject.toml").read_text())
+          pkg_version = pyproject["project"]["version"]
+          code_version = vcse.__version__
+          if pkg_version != code_version:
+              raise SystemExit(f"Version mismatch: pyproject={pkg_version}, code={code_version}")
+          EOF
+
+      - name: Run full pytest
+        run: python -m pytest -q
+
+      - name: Acceptance checks
+        run: |
+          python -m vcse.cli pack index --dirs examples/packs
+          python -m vcse.cli pack list
+          python -m vcse.cli ask "What is the capital of France?" --pack general_world
+          python -m vcse.cli ask "What currency does France use?" --pack general_world
+          python -m vcse.cli benchmark coverage --pack general_world --json | tee coverage-result.json
+          python -m vcse.cli pack verify examples/packs/general_world
+          python -m vcse.cli pack hash examples/packs/general_world
+          python -m vcse.cli gauntlet benchmarks/gauntlet/ --search mcts --ts3 --index | tee gauntlet-result.txt
+
+      - name: Enforce coverage/telemetry fields
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path("coverage-result.json").read_text())
+          assert payload.get("coverage_rate") == 1.0, payload
+          assert payload.get("incorrect") == 0, payload
+          required = [
+              "compression_ratio",
+              "compressed_size",
+              "uncompressed_size",
+              "load_time_ms",
+              "query_latency_ms",
+          ]
+          for key in required:
+              assert key in payload, f"missing key: {key}"
+          print("coverage and telemetry checks passed")
+          PY
+
+      - name: Enforce clean working tree
+        run: git diff --exit-code
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-failure-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            coverage-result.json
+            gauntlet-result.txt
+            coverage.xml
+            /tmp/cake_report.json
+            .pytest_cache
+          if-no-files-found: ignore
+
+  smoke:
+    name: smoke / py3.11
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Upgrade packaging tools
+        run: python -m pip install --upgrade pip setuptools wheel
+
+      - name: Install project (dev)
+        run: python -m pip install -e ".[dev]"
+
+      - name: CLI smoke checks
+        run: |
+          python -m vcse.cli --help
+          python -m vcse.cli pack index --dirs examples/packs
+          python -m vcse.cli pack list
+          python -m vcse.cli ask "What is the capital of France?" --pack general_world
+          python -m vcse.cli benchmark coverage --pack general_world --json
+
+      - name: Upload smoke artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-failure
+          path: |
+            coverage-result.json
+            gauntlet-result.txt
+            .pytest_cache
+          if-no-files-found: ignore

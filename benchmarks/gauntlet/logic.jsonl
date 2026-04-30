@@ -1,0 +1,15 @@
+{"category": "logic", "expected_answer": "socrates is_a mortal", "expected_status": "VERIFIED", "failure_if": [], "id": "gauntlet_logic_001", "input": "All men are mortal. Socrates is a man. Can Socrates die?", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_002", "input": "Socrates is a man. All men are mortal. Is Socrates mortal?", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_003", "input": "Every bird can fly. Tweety is a bird. Is Tweety mortal?", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_004", "input": "All cats are mammals. All mammals are animals. Fluffy is a cat. Is Fluffy an animal?", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_005", "input": "Socrates is a man. Socrates is mortal.", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_006", "input": "Is Socrates a man?", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_007", "input": "All dogs bark. Max is a dog. Does Max bark?", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_008", "input": "No reptiles can fly. A snake is a reptile. Can snakes fly?", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_009", "input": "All whales are mammals. Moby is a whale. Is Moby a mammal?", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_010", "input": "Trees are plants. Oaks are trees. Is an oak a plant?", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_011", "input": "What is Socrates?", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_012", "input": "Prove Socrates is mortal.", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_013", "input": "A triangle is a shape. A shape has sides.", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_014", "input": "All fruits are edible. An apple is a fruit. Are apples edible?", "mode": "ask", "notes": "logic gauntlet"}
+{"category": "logic", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_logic_015", "input": "Some birds cannot fly. Penguin is a bird. Can penguins fly?", "mode": "ask", "notes": "logic gauntlet"}

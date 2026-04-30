@@ -1,0 +1,1 @@
+{"id":"pack_gauntlet_mortality_001","category":"logic","input":"Can Socrates perish?","mode":"ask","expected_status":"INCONCLUSIVE","failure_if":["VERIFIED"]}

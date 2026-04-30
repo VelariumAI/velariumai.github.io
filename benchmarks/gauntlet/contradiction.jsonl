@@ -1,0 +1,15 @@
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_001", "input": "x equals 3. x equals 4.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_002", "input": "All birds can fly. Penguins are birds. Penguins cannot fly.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_003", "input": "x is greater than 5. x is less than 3.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_004", "input": "Socrates is mortal. Socrates is immortal.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_005", "input": "x = 10. x = 20.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_006", "input": "A is B. A is not B.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_007", "input": "The light is on. The light is off.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_008", "input": "x is greater than 0. x is less than -1.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_009", "input": "All cats are black. Some cats are white.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_010", "input": "x equals y. x does not equal y.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_011", "input": "The door is open. The door is closed.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_012", "input": "x is at least 10. x is at most 5.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_013", "input": "Socrates is a man. Socrates is not a man.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_014", "input": "Water is dry. Water is wet.", "mode": "ask", "notes": "contradiction gauntlet"}
+{"category": "contradiction", "expected_status": "INCONCLUSIVE", "failure_if": [], "id": "gauntlet_contra_015", "input": "x > 0. x < 0.", "mode": "ask", "notes": "contradiction gauntlet"}

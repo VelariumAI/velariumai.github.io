@@ -1,0 +1,14 @@
+{
+  "man": [
+    [
+      "is_a",
+      "mortal"
+    ]
+  ],
+  "socrates": [
+    [
+      "is_a",
+      "man"
+    ]
+  ]
+}

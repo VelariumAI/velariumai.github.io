@@ -1,0 +1,24 @@
+{
+  "version": "1.0.0",
+  "description": "General world knowledge — CI-safe local files only",
+  "sources": [
+    {
+      "id": "wikidata_capitals",
+      "source_type": "local_file",
+      "format": "wikidata_json",
+      "path_or_url": "examples/cake/wikidata_sample.json",
+      "trust_level": "community",
+      "enabled": true,
+      "description": "Sample Wikidata capital claims — Paris capital_of France"
+    },
+    {
+      "id": "dbpedia_countries",
+      "source_type": "local_file",
+      "format": "dbpedia_ttl",
+      "path_or_url": "examples/cake/dbpedia_sample.ttl",
+      "trust_level": "community",
+      "enabled": true,
+      "description": "Sample DBpedia country triples"
+    }
+  ]
+}

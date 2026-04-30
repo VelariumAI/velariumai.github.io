@@ -1,0 +1,70 @@
+{"id": "human_logic_001", "input": "All men are mortal. Socrates is a man. Can Socrates die?", "expected_status": "VERIFIED", "expected_answer": {"subject": "socrates", "relation": "is_a", "object": "mortal"}}
+{"id": "human_logic_002", "input": "Socrates is a man. All men are mortal. Is Socrates mortal?", "expected_status": "VERIFIED", "expected_answer": {"subject": "socrates", "relation": "is_a", "object": "mortal"}}
+{"id": "human_logic_003", "input": "Every bird can fly. Tweety is a bird. Is Tweety mortal?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_004", "input": "All cats are mammals. All mammals are animals. Fluffy is a cat. Is Fluffy an animal?", "expected_status": "VERIFIED", "expected_answer": {"subject": "fluffy", "relation": "is_a", "object": "animal"}}
+{"id": "human_logic_005", "input": "Socrates is a man. Socrates is mortal.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_006", "input": "Is Socrates a man?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_007", "input": "All dogs bark. Max is a dog. Does Max bark?", "expected_status": "VERIFIED", "expected_answer": {"subject": "max", "relation": "barks", "object": null}}
+{"id": "human_logic_008", "input": "No reptiles can fly. A snake is a reptile. Can snakes fly?", "expected_status": "VERIFIED", "expected_answer": {"subject": "snake", "relation": "can_fly", "object": "false"}}
+{"id": "human_logic_009", "input": "All whales are mammals. Moby is a whale. Is Moby a mammal?", "expected_status": "VERIFIED", "expected_answer": {"subject": "moby", "relation": "is_a", "object": "mammal"}}
+{"id": "human_logic_010", "input": "Trees are plants. Oaks are trees. Is an oak a plant?", "expected_status": "VERIFIED", "expected_answer": {"subject": "oak", "relation": "is_a", "object": "plant"}}
+{"id": "human_logic_011", "input": "What is Socrates?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_012", "input": "Prove Socrates is mortal.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_013", "input": "A triangle is a shape. A shape has sides.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_014", "input": "All fruits are edible. An apple is a fruit. Are apples edible?", "expected_status": "VERIFIED", "expected_answer": {"subject": "apple", "relation": "is_a", "object": "edible"}}
+{"id": "human_logic_015", "input": "Some birds cannot fly. Penguin is a bird. Can penguins fly?", "expected_status": "UNSATISFIABLE", "expected_answer": null}
+{"id": "human_logic_016", "input": "Roses are flowers. Flowers bloom. Does a rose bloom?", "expected_status": "VERIFIED", "expected_answer": {"subject": "rose", "relation": "blooms", "object": null}}
+{"id": "human_logic_017", "input": "Metals conduct electricity. Copper is a metal. Does copper conduct?", "expected_status": "VERIFIED", "expected_answer": {"subject": "copper", "relation": "conducts", "object": "electricity"}}
+{"id": "human_logic_018", "input": "All squares are rectangles. A rectangle has four sides. Does a square have four sides?", "expected_status": "VERIFIED", "expected_answer": {"subject": "square", "relation": "has", "object": "four_sides"}}
+{"id": "human_logic_019", "input": "Water is wet. Fire is hot.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_020", "input": "Is fire hot?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_021", "input": "Cars are vehicles. Vehicles transport people.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_022", "input": "A square is a shape. A circle is a shape.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_023", "input": "All mammals breathe air. Dolphins breathe air. Are dolphins mammals?", "expected_status": "VERIFIED", "expected_answer": {"subject": "dolphin", "relation": "is_a", "object": "mammal"}}
+{"id": "human_logic_024", "input": "Nurses help patients. Doctors help patients.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_025", "input": "Determine whether Socrates is mortal.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_026", "input": "Socrates is equal to Socrates.", "expected_status": "VERIFIED", "expected_answer": {"subject": "socrates", "relation": "equals", "object": "socrates"}}
+{"id": "human_logic_027", "input": "The sky is blue.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_028", "input": "Every human is mortal. Plato is human.", "expected_status": "VERIFIED", "expected_answer": {"subject": "plato", "relation": "is_a", "object": "mortal"}}
+{"id": "human_logic_029", "input": "A is B. B is C. Is A C?", "expected_status": "VERIFIED", "expected_answer": {"subject": "a", "relation": "is_a", "object": "c"}}
+{"id": "human_logic_030", "input": "What is a man?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_031", "input": "Can mortals die?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_032", "input": "Is Plato a philosopher?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_033", "input": "All philosophers think. Socrates thinks.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_034", "input": "Socrates is part of philosophy.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_035", "input": "A database stores data.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_036", "input": "Is a database a system?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_037", "input": "All systems have components. A database has components.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_038", "input": "X is the same as Y. Y is the same as Z. Is X Z?", "expected_status": "VERIFIED", "expected_answer": {"subject": "x", "relation": "equals", "object": "z"}}
+{"id": "human_logic_039", "input": "The sun rises in the east.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_040", "input": "All ravens are black. ravens are birds.", "expected_status": "VERIFIED", "expected_answer": {"subject": "raven", "relation": "is_a", "object": "bird"}}
+{"id": "human_logic_tpl_001", "input": "All A are B. X is A. Is X B?", "expected_status": "VERIFIED", "expected_answer": {"subject": "x", "relation": "is_a", "object": "b"}}
+{"id": "human_logic_tpl_002", "input": "All X are Y. All Y are Z. A is X. Is A Z?", "expected_status": "VERIFIED", "expected_answer": {"subject": "a", "relation": "is_a", "object": "z"}}
+{"id": "human_logic_tpl_003", "input": "P is Q. Q is R. Is P R?", "expected_status": "VERIFIED", "expected_answer": {"subject": "p", "relation": "is_a", "object": "r"}}
+{"id": "human_logic_tpl_004", "input": "Every mammal is an animal. Dolphin is a mammal. Is Dolphin an animal?", "expected_status": "VERIFIED", "expected_answer": {"subject": "dolphin", "relation": "is_a", "object": "animal"}}
+{"id": "human_logic_tpl_005", "input": "All vehicles have wheels. A car is a vehicle. Does a car have wheels?", "expected_status": "VERIFIED", "expected_answer": {"subject": "car", "relation": "has", "object": "wheels"}}
+{"id": "human_logic_tpl_006", "input": "X equals Y. Y equals Z. Is X Z?", "expected_status": "VERIFIED", "expected_answer": {"subject": "x", "relation": "equals", "object": "z"}}
+{"id": "human_logic_tpl_007", "input": "All birds lay eggs. A robin is a bird. Does a robin lay eggs?", "expected_status": "VERIFIED", "expected_answer": {"subject": "robin", "relation": "lays", "object": "eggs"}}
+{"id": "human_logic_tpl_008", "input": "All plants need water. A rose needs water. Is a rose a plant?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_tpl_009", "input": "No fish can walk. A shark is a fish. Can sharks walk?", "expected_status": "VERIFIED", "expected_answer": {"subject": "shark", "relation": "can_walk", "object": "false"}}
+{"id": "human_logic_tpl_010", "input": "All fruits have seeds. An apple is a fruit. Does an apple have seeds?", "expected_status": "VERIFIED", "expected_answer": {"subject": "apple", "relation": "has", "object": "seeds"}}
+{"id": "human_logic_tpl_011", "input": "Every student is a learner. Alice is a student. Is Alice a learner?", "expected_status": "VERIFIED", "expected_answer": {"subject": "alice", "relation": "is_a", "object": "learner"}}
+{"id": "human_logic_tpl_012", "input": "All rivers flow to the sea. The Nile is a river. Does the Nile flow to the sea?", "expected_status": "VERIFIED", "expected_answer": {"subject": "nile", "relation": "flows_to", "object": "sea"}}
+{"id": "human_logic_tpl_013", "input": "X is part of Y. Y is part of Z. Is X part of Z?", "expected_status": "VERIFIED", "expected_answer": {"subject": "x", "relation": "part_of", "object": "z"}}
+{"id": "human_logic_tpl_014", "input": "All artists are creative. Bob is an artist. Is Bob creative?", "expected_status": "VERIFIED", "expected_answer": {"subject": "bob", "relation": "is_a", "object": "creative"}}
+{"id": "human_logic_tpl_015", "input": "No reptiles can swim. A lizard is a reptile. Can lizards swim?", "expected_status": "VERIFIED", "expected_answer": {"subject": "lizard", "relation": "can_swim", "object": "false"}}
+{"id": "human_logic_tpl_016", "input": "All books have pages. A novel is a book. Does a novel have pages?", "expected_status": "VERIFIED", "expected_answer": {"subject": "novel", "relation": "has", "object": "pages"}}
+{"id": "human_logic_tpl_017", "input": "A circle is a shape. A shape is abstract.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_tpl_018", "input": "All men are fallible. Socrates is a man. Is Socrates fallible?", "expected_status": "VERIFIED", "expected_answer": {"subject": "socrates", "relation": "is_a", "object": "fallible"}}
+{"id": "human_logic_tpl_019", "input": "All liquids flow. Water is a liquid. Does water flow?", "expected_status": "VERIFIED", "expected_answer": {"subject": "water", "relation": "flows", "object": null}}
+{"id": "human_logic_tpl_020", "input": "No metals are transparent. Steel is a metal. Is steel transparent?", "expected_status": "VERIFIED", "expected_answer": {"subject": "steel", "relation": "is_a", "object": "transparent", "value": "false"}}
+{"id": "human_logic_tpl_021", "input": "A is B. B is C. C is D. Is A D?", "expected_status": "VERIFIED", "expected_answer": {"subject": "a", "relation": "is_a", "object": "d"}}
+{"id": "human_logic_tpl_022", "input": "All planets orbit stars. Earth orbits a star. Is Earth a planet?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_tpl_023", "input": "Every physician has a degree. A doctor has a degree. Is a doctor a physician?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_tpl_024", "input": "All squares have four sides. X has four sides. Is X a square?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_tpl_025", "input": "A being B implies A is not C. A is B. Is A C?", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_logic_tpl_026", "input": "All mammals breathe. A whale breathes. Is a whale a mammal?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_tpl_027", "input": "All computers process data. This machine processes data. Is this machine a computer?", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_logic_tpl_028", "input": "No politicians are honest. Some politicians are honest.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_logic_tpl_029", "input": "A is not B. A is B.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_logic_tpl_030", "input": "All A are B. All B are C. All C are D. Is A D?", "expected_status": "VERIFIED", "expected_answer": {"subject": "a", "relation": "is_a", "object": "d"}}

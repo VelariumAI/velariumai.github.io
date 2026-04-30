@@ -1,0 +1,4 @@
+# DBpedia sample triples — CI-safe, no network required
+<http://dbpedia.org/resource/Paris> <http://dbpedia.org/ontology/capital_of> <http://dbpedia.org/resource/France> .
+<http://dbpedia.org/resource/Paris> <http://dbpedia.org/ontology/country> <http://dbpedia.org/resource/France> .
+<http://dbpedia.org/resource/France> <http://dbpedia.org/ontology/instance_of> <http://dbpedia.org/resource/Country> .

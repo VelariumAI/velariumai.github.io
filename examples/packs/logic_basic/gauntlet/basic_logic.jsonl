@@ -1,0 +1,1 @@
+{"id":"pack_gauntlet_logic_001","category":"logic","input":"All men are mortal. Socrates is a man. Can Socrates die?","mode":"ask","expected_status":"VERIFIED","failure_if":["CONTRADICTORY"]}

@@ -1,0 +1,27 @@
+{
+  "name": "invalid_dupes",
+  "version": "1.0.0",
+  "description": "Duplicate artifact ids",
+  "artifacts": [
+    {
+      "id": "dup",
+      "type": "synonym",
+      "version": "1.0.0",
+      "description": "first",
+      "enabled": true,
+      "priority": 10,
+      "patterns": ["die"],
+      "replacement": "is mortal"
+    },
+    {
+      "id": "dup",
+      "type": "synonym",
+      "version": "1.0.0",
+      "description": "second",
+      "enabled": true,
+      "priority": 20,
+      "patterns": ["perish"],
+      "replacement": "is mortal"
+    }
+  ]
+}

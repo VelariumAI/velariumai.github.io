@@ -1,0 +1,22 @@
+{
+  "id": "code_001",
+  "artifact_type": "simple_code",
+  "goal": "Create add function",
+  "required_fields": {
+    "function_name": "add_numbers",
+    "args": "a, b",
+    "body": "return a + b",
+    "tests": ["assert add_numbers(1,2) == 3"]
+  },
+  "constraints": [
+    {"kind": "field_present", "target": "function_name"},
+    {"kind": "field_present", "target": "args"},
+    {"kind": "field_present", "target": "body"}
+  ],
+  "success_criteria": [
+    "def add_numbers",
+    "return a + b"
+  ],
+  "source_text": "Code spec",
+  "mode": "strict"
+}

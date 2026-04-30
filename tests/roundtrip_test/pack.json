@@ -1,0 +1,39 @@
+{
+  "id": "vrm.logic.basic",
+  "name": "Basic Logic Pack",
+  "version": "1.0.0",
+  "description": "Deterministic logic primitives for VCSE",
+  "domain": "logic",
+  "authors": [
+    "VRM-AI"
+  ],
+  "license": "MIT",
+  "created_at": "2026-04-27T00:00:00Z",
+  "vcse_min_version": "2.2.0",
+  "dependencies": [],
+  "artifacts": {
+    "dsl": [
+      "dsl/basic_logic.json"
+    ],
+    "claims": [
+      "claims.jsonl"
+    ],
+    "provenance": [
+      "provenance.jsonl"
+    ]
+  },
+  "benchmarks": [
+    "benchmarks/basic_logic.jsonl"
+  ],
+  "gauntlet_cases": [
+    "gauntlet/basic_logic.jsonl"
+  ],
+  "provenance": [
+    "provenance.jsonl"
+  ],
+  "integrity": {
+    "hash_algorithm": "sha256",
+    "manifest_hash": "",
+    "artifact_hashes": {}
+  }
+}

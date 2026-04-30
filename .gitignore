@@ -1,0 +1,34 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+dist/
+build/
+*.egg-info/
+
+# VCSE generated integrity artifacts
+examples/packs/**/manifest.json
+examples/packs/**/pack_signature.json
+
+# Promotion outputs
+promoted_claims.jsonl
+examples/packs/promoted_*
+
+# Pack merge snapshots
+examples/packs/*_snapshot_*/
+
+# VCSE runtime stores
+.vcse/runtime_stores/
+*.vcseidx
+*.vcsebin
+*.vcsemap
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# VCSE pipeline outputs
+.vcse/pipeline_runs/
+examples/packs/compiled_*_pipeline/
+benchmarks/compiled_*_pipeline.jsonl

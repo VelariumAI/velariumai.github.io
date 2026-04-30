@@ -1,0 +1,42 @@
+{
+  "merge": {
+    "country_count": 245,
+    "warnings": [
+      "skip missing currency: Antarctica",
+      "skip missing currency: Bouvet Island",
+      "skip missing currency: Heard Island and McDonald Islands",
+      "skip missing capital: Macau",
+      "skip missing currency: Micronesia"
+    ]
+  },
+  "schema": "vcse.general_world.source_validation.v2",
+  "sources": [
+    {
+      "errors": [],
+      "record_count": 250,
+      "sha256": "69e45428770b8750c89a54ac6e6c91131c56cac930ec63551f9ee6d2a179f2da",
+      "source_id": "iso_countries",
+      "status": "ok",
+      "url": "https://raw.githubusercontent.com/mledoze/countries/master/countries.json",
+      "warnings": []
+    },
+    {
+      "errors": [],
+      "record_count": 245,
+      "sha256": "448e7c9be3b58ee5b85bea786e3688c13cb82298f072dcfc1e7bf5d83724ce52",
+      "source_id": "country_capitals",
+      "status": "ok",
+      "url": "https://raw.githubusercontent.com/samayo/country-json/master/src/country-by-capital-city.json",
+      "warnings": []
+    },
+    {
+      "errors": [],
+      "record_count": 233,
+      "sha256": "0b117c3286f6eab64d21f5d95a6e77bd7e180867b2c8a6808d09e47ae84d1506",
+      "source_id": "country_languages",
+      "status": "ok",
+      "url": "https://raw.githubusercontent.com/samayo/country-json/master/src/country-by-languages.json",
+      "warnings": []
+    }
+  ]
+}

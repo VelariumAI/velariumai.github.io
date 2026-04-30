@@ -1,0 +1,8 @@
+[
+  {
+    "id": "contractor_access_policy",
+    "type": "generation_template",
+    "artifact_type": "policy",
+    "required_fields": ["role", "systems", "approver", "duration"]
+  }
+]

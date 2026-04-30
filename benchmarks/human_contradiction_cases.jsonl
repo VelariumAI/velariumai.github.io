@@ -1,0 +1,20 @@
+{"id": "human_contradict_001", "input": "x equals 3. x equals 4.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_002", "input": "All birds can fly. Penguins are birds. Penguins cannot fly.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_003", "input": "x is greater than 5. x is less than 3.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_004", "input": "Socrates is mortal. Socrates is immortal.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_005", "input": "x = 10. x = 20.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_006", "input": "A is B. A is not B.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_007", "input": "The light is on. The light is off.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_008", "input": "x is greater than 0. x is less than -1.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_009", "input": "All cats are black. Some cats are white.", "expected_status": "INCONCLUSIVE", "expected_answer": null}
+{"id": "human_contradict_010", "input": "x equals y. x does not equal y.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_011", "input": "The door is open. The door is closed.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_012", "input": "x is at least 10. x is at most 5.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_013", "input": "Socrates is a man. Socrates is not a man.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_014", "input": "Water is dry. Water is wet.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_015", "input": "x > 0. x < 0.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_016", "input": "a equals b. b equals c. a does not equal c.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_017", "input": "The sky is blue. The sky is red.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_018", "input": "x >= 5. x <= 4.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_019", "input": "All dogs bark. No dogs bark.", "expected_status": "CONTRADICTORY", "expected_answer": null}
+{"id": "human_contradict_020", "input": "Account is active. Account is inactive.", "expected_status": "CONTRADICTORY", "expected_answer": null}

@@ -1,0 +1,31 @@
+{
+  "name": "generation_policy",
+  "version": "1.0.0",
+  "description": "Generation template bundle",
+  "artifacts": [
+    {
+      "id": "contractor_access_policy_dsl",
+      "type": "generation_template",
+      "version": "1.0.0",
+      "description": "Contractor access policy template",
+      "enabled": true,
+      "priority": 10,
+      "artifact_type": "policy",
+      "required_fields": ["role", "systems", "approver", "duration"],
+      "optional_fields": [],
+      "body": {
+        "title": "{role} Access Policy",
+        "sections": [
+          "Access to {systems} requires approval from {approver}.",
+          "Access expires after {duration}."
+        ]
+      },
+      "constraints": [
+        {"kind": "field_present", "target": "role"},
+        {"kind": "field_present", "target": "systems"},
+        {"kind": "field_present", "target": "approver"},
+        {"kind": "field_present", "target": "duration"}
+      ]
+    }
+  ]
+}

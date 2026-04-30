@@ -1,0 +1,75 @@
+{
+  "name": "logic_basic",
+  "version": "1.0.0",
+  "description": "Basic logic domain rules",
+  "artifacts": [
+    {
+      "id": "rel_is_a",
+      "type": "relation_schema",
+      "version": "1.0.0",
+      "description": "is_a relation",
+      "enabled": true,
+      "priority": 10,
+      "name": "is_a",
+      "properties": ["transitive"]
+    },
+    {
+      "id": "pat_all_are",
+      "type": "parser_pattern",
+      "version": "1.0.0",
+      "description": "all x are y",
+      "enabled": true,
+      "priority": 20,
+      "pattern": "all {subject} are {object}",
+      "output": {
+        "frame_type": "claim",
+        "relation": "is_a",
+        "subject": "{subject}",
+        "object": "{object}"
+      }
+    },
+    {
+      "id": "pat_x_is_a_y",
+      "type": "parser_pattern",
+      "version": "1.0.0",
+      "description": "x is a y",
+      "enabled": true,
+      "priority": 30,
+      "pattern": "{subject} is a {object}",
+      "output": {
+        "frame_type": "claim",
+        "relation": "is_a",
+        "subject": "{subject}",
+        "object": "{object}"
+      }
+    },
+    {
+      "id": "transitive_is_a",
+      "type": "proposer_rule",
+      "version": "1.0.0",
+      "description": "transitive closure",
+      "enabled": true,
+      "priority": 40,
+      "when": [
+        {"subject": "{a}", "relation": "is_a", "object": "{b}"},
+        {"subject": "{b}", "relation": "is_a", "object": "{c}"}
+      ],
+      "then": {
+        "action": "AddClaim",
+        "subject": "{a}",
+        "relation": "is_a",
+        "object": "{c}"
+      }
+    },
+    {
+      "id": "render_is_a",
+      "type": "renderer_template",
+      "version": "1.0.0",
+      "description": "is_a formatter",
+      "enabled": true,
+      "priority": 50,
+      "relation": "is_a",
+      "template": "{subject} is {object}"
+    }
+  ]
+}

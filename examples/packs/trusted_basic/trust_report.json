@@ -1,0 +1,91 @@
+{
+  "conflicts": [],
+  "decisions": [
+    {
+      "blocking_issues": [
+        "insufficient independent source support or conflicts present"
+      ],
+      "claim_id": "claim:2",
+      "current_tier": "T0_CANDIDATE",
+      "ledger_events": [
+        {
+          "claim_id": "claim:2",
+          "event_hash": "2b1de28243b8a273659918944b4c044ba471a96c9ba14805acec0393b48533d8",
+          "event_id": "0a076e97-fe14-4a9c-b5e8-df8879befeec",
+          "event_type": "TRUST_PROMOTED",
+          "pack_id": null,
+          "payload": {
+            "blocking_issues": [
+              "insufficient independent source support or conflicts present"
+            ],
+            "current_tier": "T0_CANDIDATE",
+            "reasons": [
+              "provenance present",
+              "source trust >= threshold (0.85)"
+            ],
+            "recommended_tier": "T2_SOURCE_TRUSTED"
+          },
+          "previous_hash": "GENESIS",
+          "timestamp": "2026-04-28T00:20:19.093378+00:00"
+        }
+      ],
+      "passed": false,
+      "reasons": [
+        "provenance present",
+        "source trust >= threshold (0.85)"
+      ],
+      "recommended_tier": "T2_SOURCE_TRUSTED"
+    },
+    {
+      "blocking_issues": [
+        "insufficient independent source support or conflicts present"
+      ],
+      "claim_id": "claim:1",
+      "current_tier": "T0_CANDIDATE",
+      "ledger_events": [
+        {
+          "claim_id": "claim:1",
+          "event_hash": "3eece07706852ed4a7a37cccddb3afd23dfb2c77b0a46c0f289dec35d6a950b3",
+          "event_id": "a3b5bd11-0893-4e04-8266-c951ce45ba81",
+          "event_type": "TRUST_PROMOTED",
+          "pack_id": null,
+          "payload": {
+            "blocking_issues": [
+              "insufficient independent source support or conflicts present"
+            ],
+            "current_tier": "T0_CANDIDATE",
+            "reasons": [
+              "provenance present",
+              "source trust >= threshold (0.9)"
+            ],
+            "recommended_tier": "T2_SOURCE_TRUSTED"
+          },
+          "previous_hash": "GENESIS",
+          "timestamp": "2026-04-28T00:20:19.093441+00:00"
+        }
+      ],
+      "passed": false,
+      "reasons": [
+        "provenance present",
+        "source trust >= threshold (0.9)"
+      ],
+      "recommended_tier": "T2_SOURCE_TRUSTED"
+    }
+  ],
+  "staleness": [
+    {
+      "age_days": 7,
+      "claim_id": "claim:2",
+      "freshness_days": 365,
+      "reason": "fresh",
+      "stale": false
+    },
+    {
+      "age_days": 8,
+      "claim_id": "claim:1",
+      "freshness_days": 365,
+      "reason": "fresh",
+      "stale": false
+    }
+  ]
+}

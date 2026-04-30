@@ -1,0 +1,23 @@
+{
+  "domain_id": "geography",
+  "source_id": "general_world_expanded",
+  "entity_field": "country",
+  "fields": {
+    "capital": "capital",
+    "currency": "currency",
+    "languages": "languages",
+    "region": "region",
+    "subregion": "subregion",
+    "country_code": "country_code",
+    "borders": "borders_cca3"
+  },
+  "relation_map": {
+    "capital": "has_capital",
+    "currency": "uses_currency",
+    "languages": "language_of",
+    "region": "located_in_region",
+    "subregion": "located_in_subregion",
+    "country_code": "has_country_code",
+    "borders": "shares_border_with"
+  }
+}

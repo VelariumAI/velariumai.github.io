@@ -1,0 +1,528 @@
+# COMPREHENSIVE AGENT DIRECTIVE
+## Thorough Repository Codebase Analysis Protocol (v2.1 - Exhaustive Edition)
+
+**Directive ID:** AGENT-DIR-RA-001  
+**Effective Date:** April 27, 2026  
+**Purpose:** This directive transforms the high-level instruction *"perform a thorough repo analysis of the code base"* into an **exhaustive, mandatory, step-by-step protocol**. Every agent MUST adhere to it without omission, deviation, or summarization shortcuts. The analysis must be **bottom-up, detail-oriented, evidence-based, and include precise Lines of Code (LOC) counts at every granularity level** (global, per-language, per-directory, per-file where feasible).
+
+**Core Principles (Non-Negotiable):**
+- **Exhaustiveness:** Analyze from the absolute filesystem root downward. No file, directory, config, or metric may be skipped.
+- **Evidence Mandate:** Every finding must cite exact command output, file path + line numbers, or code excerpts. Never rely on assumptions.
+- **LOC Precision:** LOC is the cornerstone metric. Provide **total lines**, **source LOC** (excluding blanks + comments), **comment LOC**, **blank LOC** — broken down by language, directory, and component.
+- **Tool Usage:** Primary tools = bash (find, grep, wc, du, git, ls), Python (custom LOC counters, JSON/YAML parsers), and any pre-installed analyzers. No external internet calls.
+- **Output Standard:** Structured Markdown report saved to `/home/workdir/artifacts/thorough_repo_analysis_[REPO_NAME]_[TIMESTAMP].md`. Include tables, code blocks, and phase completion markers.
+- **Adaptivity:** Detect stack (Python, JS/TS, Go, Java, Rust, etc.) dynamically and apply language-specific deep dives.
+- **Safety:** Never execute destructive commands. Redact all secrets in reports. Flag but do not expose credentials.
+
+**Pre-Execution Checklist (Run Before Step 1):**
+- Confirm `pwd` == repository root.
+- Verify write access to `/home/workdir/artifacts/`.
+- Run `date` and record analysis start timestamp.
+- If `.git` absent, note "Non-Git repository" and proceed with filesystem-only analysis.
+
+**Robustness & Edge-Case Safeguards (v2.1 Enhancements — Mandatory):**
+- **Massive File Guard:** Never run unbounded `grep -r`, `cat`, or text searches on files >2MB. Always append size filters: `find . -type f -size -2M ...` or `timeout 30s grep ...`. This prevents hangs on binaries, large SQLite DBs, or minified .map files.
+- **Encoding Resilience:** The LOC script below uses multi-encoding fallback (utf-8 → utf-16 → windows-1252 → latin-1). If counts appear suspiciously low on legacy files, manually inspect with `file -i [filepath]` and re-count.
+- **Timeout Guardrails:** For any potentially long-running command (deep recursive searches, dependency parsing, full-repo grep), prefix with `timeout 60s` (or shorter). Example: `timeout 30s grep -r "TODO" --include="*.py" .`
+- **Output Redirection Mandate:** All heavy commands MUST redirect to files (`> /tmp/phaseX_output.txt`) and use `head -100`, `tail -50`, or `grep` to feed summaries back to the agent. Never paste >500 lines of raw terminal output.
+
+---
+
+## v2.1 — Bulletproof Edition Notes
+This version (v2.1) incorporates expert edge-case hardening while preserving the original forensic rigor. All original phases remain mandatory; these safeguards are **non-negotiable additions** to prevent agent hangs, miscounts, or context overflow in real-world environments (including resource-constrained mobile dev setups).
+
+---
+
+## PHASE 1: REPOSITORY INITIALIZATION & METADATA DISCOVERY
+
+**Objective:** Establish baseline identity, version control status, and high-level metadata.
+
+**Mandatory Commands & Actions:**
+1. `pwd && ls -la` (capture all top-level entries including dotfiles).
+2. `du -sh . --exclude=.git` (total size excluding VCS).
+3. Git checks (if applicable):
+   - `git rev-parse --is-inside-work-tree 2>/dev/null && echo "Git repo: YES" || echo "Git repo: NO"`
+   - `git remote -v`
+   - `git branch -a`
+   - `git describe --tags --always 2>/dev/null || echo "No tags"`
+   - `git rev-list --count HEAD 2>/dev/null` (total commits)
+   - `git shortlog -sne | head -30` (top contributors by commits)
+   - `git log --pretty=format:"%h | %ad | %s" --date=short | head -15` (recent activity)
+4. `.git` internals (if present):
+   - `ls -la .git/`
+   - `cat .git/config` (redact URLs if sensitive)
+5. Project identity files:
+   - Read `package.json` (name, version, description, author, license, repository URL)
+   - Read `pyproject.toml` or `setup.py` / `setup.cfg`
+   - Read `Cargo.toml`, `go.mod`, `pom.xml`, `build.gradle`, `Gemfile`, `composer.json` (whichever exist)
+   - Read `LICENSE*`, `COPYING*`, `NOTICE*`
+6. **Metadata Extraction Table** (build this):
+   | Field              | Value                  | Source File          |
+   |--------------------|------------------------|----------------------|
+   | Project Name       | ...                    | package.json / README|
+   | Version            | ...                    | ...                  |
+   | License            | ...                    | LICENSE              |
+   | Primary Language   | ...                    | (from LOC phase)     |
+   | Total Commits      | ...                    | git                  |
+   | Contributors       | ...                    | git shortlog         |
+   | Last Commit        | ...                    | git log              |
+
+**Phase 1 Completion Marker:** "PHASE 1 COMPLETE — Repo identified as [NAME] v[VER]. Git: [YES/NO]. Size: [X] MB. Commits: [N]."
+
+---
+
+## PHASE 2: COMPLETE FILESYSTEM INVENTORY & DIRECTORY TREE
+
+**Objective:** Map every file and directory with counts, sizes, and categorization.
+
+**Mandatory Commands & Actions:**
+1. Full recursive tree (fallback if `tree` absent):
+   ```
+   find . -print | sort | sed 's;[^/]*/;|____;g;s;____|; |;g' | head -200
+   ```
+   (Run with increased limit if needed; note truncation.)
+2. Directory & file counts:
+   - `find . -type d | wc -l` → Total directories
+   - `find . -type f | wc -l` → Total files
+   - `find . -type l | wc -l` → Symlinks
+3. Size breakdown:
+   - `du -sh * | sort -h` (top-level)
+   - `du -sh --exclude=.git .` 
+4. **Extension-based categorization** (run for each major type):
+   ```
+   find . -type f | sed 's/.*\.//' | sort | uniq -c | sort -nr | head -40
+   ```
+   Produce table:
+   | Extension | Count | Total Size (approx via `du`) | Category |
+   |-----------|-------|------------------------------|----------|
+   | .py       | 142   | 2.3 MB                       | Source   |
+   | .js       | 87    | ...                          | ...      |
+   | .md       | 23    | ...                          | Docs     |
+   | ...       | ...   | ...                          | ...      |
+5. Ignore patterns & build artifacts:
+   - Read `.gitignore`, `.dockerignore`, `.eslintignore`, `.prettierignore`
+   - List excluded paths: `cat .gitignore | grep -v '^#' | grep -v '^$'`
+   - Identify large build dirs: `find . -type d \( -name node_modules -o -name .venv -o -name target -o -name build -o -name dist \) | head -20`
+6. Special file discovery:
+   - `find . -name "Dockerfile*" -o -name "docker-compose*.yml" -o -name "Makefile" -o -name "*.mk"`
+   - `find . -name "*.env*" -o -name ".env*" | head -30`
+   - `find . -name "README*" -o -name "CONTRIBUTING*" -o -name "CHANGELOG*" -o -name "SECURITY*"`
+
+**Phase 2 Completion Marker:** "PHASE 2 COMPLETE — [N] dirs, [M] files, [P] symlinks. Largest extension: .[EXT] ([C] files). Ignored patterns: [list top 5]."
+
+---
+
+## PHASE 3: EXHAUSTIVE LINES OF CODE (LOC) ANALYSIS — CORE METRIC
+
+**Objective:** Deliver **precise, multi-dimensional LOC counts**. This is the most critical phase.
+
+**Mandatory LOC Protocol (No Shortcuts):**
+Since `cloc` is typically unavailable, **MUST** use custom Python counter script for accuracy.
+
+**Step 3.1: Deploy Universal LOC Counter Script**
+Create and execute the following Python script (save as `/tmp/loc_counter.py`):
+
+```python
+#!/usr/bin/env python3
+import os
+import sys
+from collections import defaultdict
+import re
+
+# Language comment patterns (extend as needed)
+COMMENT_PATTERNS = {
+    'py': (r'^\s*#', r'^\s*"""', r'^\s*\'\'\''),
+    'js': (r'^\s*//', r'^\s*/\*', r'^\s*\*'),
+    'ts': (r'^\s*//', r'^\s*/\*'),
+    'go': (r'^\s*//', r'^\s*/\*'),
+    'java': (r'^\s*//', r'^\s*/\*'),
+    'c': (r'^\s*//', r'^\s*/\*'),
+    'cpp': (r'^\s*//', r'^\s*/\*'),
+    'rs': (r'^\s*//', r'^\s*/\*'),
+    'rb': (r'^\s*#'),
+    'php': (r'^\s*//', r'^\s*#', r'^\s*/\*'),
+    'sh': (r'^\s*#'),
+    'yaml': (r'^\s*#'),
+    'yml': (r'^\s*#'),
+    'json': (),  # no comments
+    'toml': (r'^\s*#'),
+    'md': (),    # treat as docs, not code
+}
+
+def is_comment(line, lang):
+    patterns = COMMENT_PATTERNS.get(lang, ())
+    for p in patterns:
+        if re.match(p, line):
+            return True
+    return False
+
+def count_loc(filepath):
+    """
+    v2.1 Enhanced: Multi-encoding fallback to handle UTF-16, Windows-1252, Latin-1, etc.
+    Falls back gracefully and logs encoding used for suspicious files.
+    """
+    encodings_to_try = ['utf-8', 'utf-16', 'windows-1252', 'latin-1', 'cp1252']
+    lines = None
+    used_encoding = None
+    for enc in encodings_to_try:
+        try:
+            with open(filepath, 'r', encoding=enc, errors='strict') as f:
+                lines = f.readlines()
+                used_encoding = enc
+                break
+        except (UnicodeDecodeError, UnicodeError):
+            continue
+    if lines is None:
+        # Final fallback with ignore (rare)
+        try:
+            with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                lines = f.readlines()
+                used_encoding = 'utf-8-ignore'
+        except:
+            return 0, 0, 0, 0, 'error'
+    total = len(lines)
+    blank = sum(1 for l in lines if l.strip() == '')
+    lang = os.path.splitext(filepath)[1][1:].lower()
+    if lang == '': lang = 'unknown'
+    comments = sum(1 for l in lines if is_comment(l, lang))
+    source = total - blank - comments
+    # Optional: print suspicious encoding for manual review (comment out in prod if too verbose)
+    if used_encoding and used_encoding != 'utf-8':
+        print(f"  [ENC] {filepath}: used {used_encoding}")
+    return total, source, comments, blank, lang
+
+# Walk and aggregate
+stats = defaultdict(lambda: {'files': 0, 'total': 0, 'source': 0, 'comments': 0, 'blank': 0})
+dir_stats = defaultdict(lambda: {'files': 0, 'total': 0, 'source': 0})
+
+root = '.'
+for dirpath, dirnames, filenames in os.walk(root):
+    # Skip common build/venv dirs
+    if any(x in dirpath for x in ['.git', 'node_modules', '.venv', 'venv', 'target', 'build', 'dist', '__pycache__']):
+        continue
+    for fname in filenames:
+        fpath = os.path.join(dirpath, fname)
+        ext = os.path.splitext(fname)[1][1:].lower()
+        if ext in ['py', 'js', 'ts', 'jsx', 'tsx', 'go', 'java', 'c', 'cpp', 'h', 'hpp', 'rs', 'rb', 'php', 'sh', 'bash', 'yaml', 'yml', 'toml', 'json', 'md', 'txt', 'rst']:
+            t, s, c, b, lang = count_loc(fpath)
+            stats[lang]['files'] += 1
+            stats[lang]['total'] += t
+            stats[lang]['source'] += s
+            stats[lang]['comments'] += c
+            stats[lang]['blank'] += b
+            # Directory aggregation (top 2 levels)
+            rel_dir = os.path.relpath(dirpath, root)
+            top_dir = rel_dir.split(os.sep)[0] if rel_dir != '.' else 'root'
+            dir_stats[top_dir]['files'] += 1
+            dir_stats[top_dir]['total'] += t
+            dir_stats[top_dir]['source'] += s
+
+# Output grand totals
+grand_total = sum(v['total'] for v in stats.values())
+grand_source = sum(v['source'] for v in stats.values())
+print("=== GLOBAL LOC SUMMARY ===")
+print(f"Total Files Analyzed: {sum(v['files'] for v in stats.values())}")
+print(f"Grand Total Lines: {grand_total}")
+print(f"Source LOC (excl. blank+comment): {grand_source}")
+print(f"Comment LOC: {sum(v['comments'] for v in stats.values())}")
+print(f"Blank LOC: {sum(v['blank'] for v in stats.values())}")
+print("\n=== BY LANGUAGE ===")
+for lang in sorted(stats, key=lambda x: -stats[x]['source']):
+    v = stats[lang]
+    print(f"{lang:8} | Files: {v['files']:5} | Total: {v['total']:7} | Source: {v['source']:7} | Comments: {v['comments']:6} | Blank: {v['blank']:6}")
+
+print("\n=== BY TOP-LEVEL DIRECTORY ===")
+for d in sorted(dir_stats, key=lambda x: -dir_stats[x]['source']):
+    v = dir_stats[d]
+    print(f"{d:20} | Files: {v['files']:5} | Total: {v['total']:7} | Source: {v['source']:7}")
+```
+
+**Execution:**
+- `python3 /tmp/loc_counter.py > /tmp/loc_report.txt 2>&1 && cat /tmp/loc_report.txt`
+
+**Step 3.2: Manual Verification & Edge Cases**
+- For top 10 largest source files: `find . -type f \( -name "*.py" -o -name "*.js" ... \) -exec wc -l {} + | sort -nr | head -15`
+- Minified/generated detection: `grep -l "minified\|generated by\|DO NOT EDIT" $(find . -name "*.js" -o -name "*.ts") | head -10`
+- Per-file LOC for critical files (entry points, core modules).
+
+**Step 3.3: LOC Tables in Final Report**
+Include at minimum:
+- Global summary table
+- Language breakdown table (sorted by source LOC descending)
+- Top 5 directories by source LOC
+- Top 10 files by source LOC (with paths)
+
+**Phase 3 Completion Marker:** "PHASE 3 COMPLETE — Grand Total: [N] lines ([S] source LOC). Dominant language: [LANG] ([X]% of source). Top dir: [DIR] with [Y] source LOC."
+
+---
+
+## PHASE 4: DEPENDENCY & PACKAGE ECOSYSTEM ANALYSIS
+
+**Objective:** Map the complete dependency graph, versions, and scripts.
+
+**Actions:**
+1. **Manifest Inventory & Parsing:**
+   - `find . -name "package.json" -o -name "requirements*.txt" -o -name "pyproject.toml" -o -name "go.mod" -o -name "Cargo.toml" -o -name "pom.xml" -o -name "build.gradle*" -o -name "Gemfile" -o -name "composer.json" | head -30`
+2. For each manifest found:
+   - `cat [file] | head -100` (full for small, summarize large)
+   - Extract: name, version, dependencies (runtime + dev), scripts/entrypoints, engines/requires.
+3. Lockfile analysis (if present):
+   - `package-lock.json` or `yarn.lock` → count direct vs total packages (use `jq` or python: `python -c "import json; d=json.load(open('package-lock.json')); print(len(d.get('packages',{})))"`)
+   - `poetry.lock`, `Cargo.lock`, `go.sum`
+4. Virtual environment / cache size (note only):
+   - `du -sh node_modules 2>/dev/null || echo "No node_modules"`
+   - `du -sh .venv venv 2>/dev/null || echo "No venv"`
+5. **Dependency Summary Table:**
+   | Ecosystem | Manifest          | Direct Deps | Dev Deps | Lockfile Present | Total Packages (est.) |
+   |-----------|-------------------|-------------|----------|------------------|-----------------------|
+   | Node.js   | package.json      | 45          | 12       | YES              | 1240                  |
+   | Python    | pyproject.toml    | 8           | 5        | YES (poetry)     | 67                    |
+   | ...       | ...               | ...         | ...      | ...              | ...                   |
+
+**Phase 4 Completion Marker:** "PHASE 4 COMPLETE — [N] ecosystems detected. Heaviest: [ECOSYSTEM] with [X] direct deps."
+
+---
+
+## PHASE 5: DOCUMENTATION, CONFIGURATION & ENVIRONMENT AUDIT
+
+**Actions:**
+1. **Primary Docs:**
+   - `cat README.md 2>/dev/null | head -150` (or .rst, README.txt)
+   - Extract: description, features list, install steps, usage examples, architecture diagram references, badges.
+2. Secondary docs:
+   - `find docs/ -type f | head -20` then `cat` key ones.
+   - CHANGELOG.md (last 3 versions), CONTRIBUTING.md, SECURITY.md, CODE_OF_CONDUCT.md
+3. Config files (read & summarize):
+   - `cat .editorconfig 2>/dev/null`
+   - `cat Makefile` (targets)
+   - `cat docker-compose*.yml | head -80`
+   - `cat Dockerfile* | head -60` (multi-stage detection)
+   - `.github/workflows/` : list files then summarize each job/trigger
+   - `cat pyrightconfig.json`, `tsconfig.json`, `.eslintrc*`, `prettier.config.js` etc.
+4. Environment & secrets hygiene:
+   - Confirm `.env` is gitignored (cross-check with .gitignore)
+   - `grep -r "sk-[a-zA-Z0-9]\{20,\}" . --include="*.py" --include="*.js" | head -5` (example secret pattern — adapt)
+   - List all `*.env*` and `config/*` files.
+
+**Phase 5 Completion Marker:** "PHASE 5 COMPLETE — README quality: [EXCELLENT/GOOD/POOR]. Docs files: [N]. CI workflows: [M]. Secret scan: [0/positive findings]."
+
+---
+
+## PHASE 6: SOURCE CODE ARCHITECTURE & COMPONENT DEEP DIVE
+
+**Objective:** Understand structure, entry points, data flow, and design patterns.
+
+**Actions:**
+1. **Entry Points Identification:**
+   - `find . -name "main.py" -o -name "app.py" -o -name "server.js" -o -name "index.js" -o -name "Program.cs" -o -name "main.go" | head -20`
+   - Read top 3 fully (or first 150 lines).
+2. **Module Structure Mapping:**
+   - For each top-level source dir (`src/`, `app/`, `lib/`, `core/`, `pkg/`):
+     - `ls -la [dir]/`
+     - Read `__init__.py` / `index.js` / `mod.rs` etc.
+     - List submodules and responsibilities.
+3. **Code Pattern Search (grep-based):**
+   - Classes: `grep -r "class " --include="*.py" | head -30`
+   - Functions/defs: language-specific
+   - Routes/APIs: `grep -rE "@(app|router)\.(get|post|route)|app\.(get|post)" --include="*.py" --include="*.js"`
+   - Imports graph sample: `grep -r "^import \|^from " --include="*.py" | head -50`
+4. **Architecture Classification:**
+   - Based on folders + code: Monolith / Layered / Microservices / Hexagonal / Plugin-based / etc.
+   - Key components summary (1 paragraph each for top 5-7 modules).
+5. **Data Models & Schemas:**
+   - Locate models: `models.py`, `schema.py`, `entities/`, DB migrations.
+   - Sample entity definitions.
+
+**Phase 6 Completion Marker:** "PHASE 6 COMPLETE — Architecture: [STYLE]. Entry points: [list]. Core modules analyzed: [N]. API endpoints found: [M]."
+
+---
+
+## PHASE 7: TESTING, QUALITY ASSURANCE & COVERAGE
+
+**Actions:**
+1. Test discovery:
+   - `find . -type d \( -name "test*" -o -name "*_test" -o -name "spec" \) | sort`
+   - `find . -name "test_*.py" -o -name "*_test.py" -o -name "*.test.js" -o -name "*.spec.ts" | wc -l`
+2. Test framework identification:
+   - `grep -l "pytest\|unittest\|jest\|mocha\|JUnit\|RSpec" $(find . -name "package.json" -o -name "pyproject.toml" -o -name "go.mod")`
+   - Read `conftest.py`, `jest.config.js`, `pytest.ini`
+3. Test metrics:
+   - Total test files & test LOC (reuse Phase 3 counter, filter test dirs)
+   - Test-to-prod LOC ratio
+4. Coverage & reports:
+   - `ls -la htmlcov/ coverage/ .coverage* 2>/dev/null`
+   - If present, `cat coverage.xml | head -20` or summarize %.
+5. CI test integration (cross-ref Phase 5).
+
+**Phase 7 Completion Marker:** "PHASE 7 COMPLETE — Test files: [N] ([X]% of total source files). Test LOC: [Y]. Framework: [FW]. Coverage: [Z]% (or 'not reported')."
+
+---
+
+## PHASE 8: BUILD, CI/CD, DEPLOYMENT & OPERATIONS
+
+**Actions:**
+1. Build system:
+   - Read `Makefile`, `justfile`, `Taskfile.yml`, `build.gradle`, `CMakeLists.txt`
+   - List all make targets or equivalent.
+2. CI/CD pipelines:
+   - `.github/workflows/` full inventory + job summary for each.
+   - Other: `.gitlab-ci.yml`, `azure-pipelines.yml`, `Jenkinsfile`, `circle.yml`
+3. Container & orchestration:
+   - Full `Dockerfile` analysis (base image, stages, COPY/ADD, CMD/ENTRYPOINT)
+   - `docker-compose.yml` services, volumes, networks.
+   - `k8s/`, `helm/`, `deploy/` folders.
+4. Scripts & automation:
+   - `ls scripts/ bin/ tools/` 
+   - Summarize purpose of key scripts.
+
+**Phase 8 Completion Marker:** "PHASE 8 COMPLETE — Build system: [MAKE/GRADLE/etc.]. CI providers: [list]. Containerized: [YES/NO]. Orchestration: [K8s/None]."
+
+---
+
+## PHASE 9: CODE QUALITY, LINTING, STATIC ANALYSIS & TECHNICAL DEBT
+
+**Actions:**
+1. Linter / formatter configs:
+   - Read `.eslintrc*`, `.pylintrc`, `pyproject.toml` [tool.*], `.golangci.yml`, `rustfmt.toml`, etc.
+   - Note enabled rules, severity.
+2. Technical debt markers:
+   ```
+   grep -rnE "TODO|FIXME|HACK|XXX|BUG|OPTIMIZE|DEPRECATED|WORKAROUND" \
+     --include="*.py" --include="*.js" --include="*.ts" --include="*.go" \
+     --include="*.java" --include="*.rs" | head -100
+   ```
+   - Count per language/dir. Categorize (e.g., 23 TODOs in core/auth.py).
+3. Run available linters (if binaries present):
+   - `python -m pylint --disable=all --enable=error [core files] 2>&1 | tail -20` or similar.
+4. Complexity hotspots (manual or tool):
+   - Longest functions (via `grep -c` or python AST if advanced).
+
+**Phase 9 Completion Marker:** "PHASE 9 COMPLETE — Linters configured: [list]. Debt markers found: [N] (TODO:[A], FIXME:[B]). Top debt file: [PATH] ([C] markers)."
+
+---
+
+## PHASE 10: SECURITY, SECRETS & COMPLIANCE SCAN
+
+**Actions:**
+1. Hardcoded secrets scan (multiple patterns):
+   ```
+   grep -rnE "(api[_-]?key|secret|password|token|private[_-]?key|auth[_-]?token)\s*[:=]\s*['\"][^'\"]{8,}" \
+     --include="*.py" --include="*.js" --include="*.env*" 2>/dev/null | grep -vE "(example|sample|test|dummy)" | head -20
+   ```
+2. Common vulnerabilities patterns:
+   - SQL: `grep -rn "execute\(" --include="*.py" | head -10`
+   - Eval/exec: `grep -rnE "\beval\(|\bexec\(" --include="*.py"`
+   - Unsafe deserialization, etc.
+3. License compliance:
+   - Check source file headers for SPDX or copyright notices (sample 20 files).
+4. .env hygiene & git history secrets (if git):
+   - `git log -S "password" --oneline --all | head -5`
+
+**Phase 10 Completion Marker:** "PHASE 10 COMPLETE — Secrets findings: [0 / POSITIVE - list redacted]. Vulnerability patterns: [N]. License headers present in [X]% of sampled files."
+
+---
+
+## PHASE 11: GIT HISTORY, COLLABORATION & EVOLUTION INSIGHTS
+
+**Actions:**
+1. Advanced git stats:
+   - `git log --pretty=format:%ad --date=iso | sort | uniq -c | tail -12` (commit cadence)
+   - Hot files: `git log --pretty=format: --name-only --all | sort | uniq -c | sort -nr | head -25`
+   - Blame sample on core file: `git blame -L 1,50 core/module.py | head -10`
+2. Release history:
+   - `git tag --sort=-version:refname | head -10`
+3. Branch strategy:
+   - `git branch -a --list '*feature*' '*release*' '*hotfix*' | head -15`
+
+**Phase 11 Completion Marker:** "PHASE 11 COMPLETE — Total commits: [N]. Avg commits/month: [X]. Hottest file: [PATH] ([C] changes). Releases: [M]."
+
+---
+
+## PHASE 12: SYNTHESIS, REPORTING & RECOMMENDATIONS
+
+**Objective:** Consolidate ALL data into actionable intelligence.
+
+**Mandatory Report Structure (in final .md):**
+1. **Executive Summary** (1 page max)
+2. **Repository Metadata & Health Score** (1-10 with justification)
+3. **LOC Dashboard** (all tables from Phase 3 + charts in text)
+4. **Technology Stack & Dependencies** (Phase 4 + 5)
+5. **Architecture & Code Structure** (Phase 6)
+6. **Testing & Quality Metrics** (Phase 7 + 9)
+7. **DevOps & Deployment** (Phase 8)
+8. **Security & Compliance Posture** (Phase 10)
+9. **Evolution & Collaboration** (Phase 11)
+10. **Strengths** (bullet list with evidence)
+11. **Risks & Technical Debt** (prioritized, with file refs)
+12. **Prioritized Recommendations** (Quick wins / Medium / Strategic — each with effort estimate & impact)
+13. **Appendix**: Full command outputs, raw LOC CSV, file inventory excerpts, debt marker list.
+
+**Final Deliverable Rules:**
+- Save as: `/home/workdir/artifacts/thorough_repo_analysis_[sanitized_repo_name]_[YYYYMMDD_HHMM].md`
+- Include this directive version and all phase markers.
+- End with: "ANALYSIS COMPLETE. All [12] phases executed. Total findings: [N]. Report generated at [timestamp]."
+
+---
+
+**AGENT COMPLIANCE OATH (Internal):**
+I, the executing agent, swear to treat this directive as law. I will not summarize, skip, hallucinate metrics, or produce a superficial report. The code base deserves — and will receive — a forensic-level examination from the first byte of the root directory to the last line of the deepest nested file, with LOC counts as the immutable foundation.
+
+---
+
+## CHAT INTERFACE EXECUTION PROTOCOL (v2.1 — Critical for Token/Context Management)
+
+**This section is MANDATORY when the analysis is performed inside a chat-based interface (e.g., this conversation) rather than a full agentic runtime with persistent terminal.**
+
+### 1. The Execution Gap
+The AI cannot directly execute bash/Python commands in most chat interfaces. **You (the human) must act as the bridge:**
+- AI outputs the exact command(s) for the current phase.
+- You copy, run in your local terminal (or sandbox), and paste **only the relevant stdout/stderr** back.
+- AI then parses the output and proceeds.
+
+**Rule:** Never let the AI "pretend" it ran commands. Demand real output.
+
+### 2. Phase-by-Phase Pausing (Token Limit Protection)
+Chat models have strict per-response token limits (~4k–8k). A full 12-phase report will explode the context.
+
+**Mandatory Protocol:**
+- After completing each phase (including the Phase X Completion Marker), the agent **MUST pause** and output:
+  > **PAUSE — Phase X complete. Ready for your confirmation before Phase X+1. Current token estimate: [low/medium/high].**
+- You reply with: "Proceed to Phase X+1" or "Generate only the LOC tables from Phase 3" (for heavy phases).
+- **Never** allow the agent to generate the entire Phase 12 report in one response. Instruct: "Output Phase 12 section-by-section: first the Executive Summary, then wait."
+
+### 3. Terminal Output Truncation Rules
+Heavy commands (LOC script, full tree, recursive grep) can produce 10k+ lines.
+
+**Mandatory Safeguards (already partially in v2.1 Robustness section):**
+- All long commands **MUST** use redirection: `python3 /tmp/loc_counter.py > /tmp/loc_report.txt 2>&1`
+- Feed the AI **only summaries**:
+  - `head -80 /tmp/loc_report.txt` (global + language tables)
+  - `grep -E "===|Source LOC|Total Files" /tmp/loc_report.txt`
+  - For debt markers: `grep -c "TODO\|FIXME" /tmp/debt_scan.txt` instead of full list
+- If output still too large: `wc -l /tmp/xxx.txt` + `head -30` + `tail -20`
+
+**Golden Rule:** The agent should never receive >400 lines of raw terminal output in a single message. Summarize or section it.
+
+### 4. Context Decay Prevention
+As the conversation lengthens, the model may "forget" strict rules (e.g., "do not summarize LOC", "use source LOC only").
+
+**Remediation Protocol:**
+- If the agent starts summarizing or skipping evidence around Phase 7–9, immediately reply:
+  > "Remember Directive AGENT-DIR-RA-001 v2.1: Maintain full LOC precision (source vs comment vs blank), cite exact file paths + line numbers, and do not summarize any phase output. Re-read the Robustness Safeguards section."
+- You may need to re-paste key excerpts of the directive mid-analysis.
+
+### 5. Recommended Chat Workflow for Full Forensic Report
+1. Start with Phases 1–3 (Metadata + Filesystem + LOC) — these are the factual foundation.
+2. Pause after Phase 3. Ask AI to produce only the LOC tables in Markdown.
+3. Proceed with Phases 4–7 (Dependencies → Architecture), feeding summarized outputs.
+4. After Phase 7, request "Draft only the Test Coverage subsection of Phase 12".
+5. Continue incrementally until all 12 phases + full report are assembled across multiple turns.
+6. Final step: "Now compile the complete Phase 12 Synthesis using all previous phase markers and raw data provided."
+
+This phased, human-in-the-loop approach guarantees you receive a **true forensic-level report** without context overflow, hallucinations, or agent fatigue.
+
+---
+
+**END OF DIRECTIVE (v2.1 — Bulletproof Edition)**
+
+*This protocol now guarantees 100% coverage, edge-case resilience, and chat-interface practicality while remaining a masterclass in deterministic, evidence-based repository forensics. Suitable for audits, due diligence, onboarding, or AI-assisted modernization in any environment — from high-end servers to resource-constrained mobile dev setups.*
