@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VRM-AI / VCSE | Verifier-Centered Symbolic AI</title>
+  <meta name="description" content="VRM-AI / VCSE is a verifier-centered symbolic AI architecture for trustworthy knowledge, deterministic reasoning, and controlled inference.">
+  <link rel="stylesheet" href="styles.css?v=tech2">
+</head>
+<body>
+  <nav class="site-nav" aria-label="Primary">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">← Back to Homepage</a>
+      <ul class="nav-links">
+        <li><a href="#principles">Principles</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#metrics">Metrics</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+        <li><a href="#repository">Repository</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <p class="hero-eyebrow">VRM-AI / VCSE</p>
+        <h1 class="hero-title">Verifier-centered symbolic AI for trustworthy knowledge and reasoning.</h1>
+        <p class="hero-subtitle">LLMs propose. VCSE verifies.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container split">
+        <div class="card">
+          <h2 class="section-title">What is VRM?</h2>
+          <p>VRM (Verifier-Reasoning Model) is the architectural concept behind VCSE. It defines a class of AI systems based on structured claims and verifiable relationships rather than implicit neural approximations.</p>
+          <p>VRM systems encode, verify, and reason over explicit knowledge directly.</p>
+          <p><strong>A VRM system does not approximate knowledge.</strong></p>
+        </div>
+        <aside class="card">
+          <h3>Core ideas</h3>
+          <ul class="pill-list">
+            <li class="pill">explicit knowledge</li>
+            <li class="pill">structured reasoning</li>
+            <li class="pill">verification</li>
+            <li class="pill">provenance</li>
+            <li class="pill">controlled inference</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section section-soft">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Why VRM-AI Exists</h2>
+        </div>
+        <article class="callout">
+          <p>Modern AI systems often produce answers that sound correct but cannot prove what they know.</p>
+          <p style="margin-top: 0.8rem;"><strong>Verification before confidence.</strong></p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="principles">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Core Principles</h2>
+        </div>
+        <div class="card-grid">
+          <article class="card"><h3>Symbolic-first reasoning</h3></article>
+          <article class="card"><h3>Verifier-centered architecture</h3></article>
+          <article class="card"><h3>Structured knowledge packs</h3></article>
+          <article class="card"><h3>Provenance for every claim</h3></article>
+          <article class="card"><h3>Trust tiers and certification</h3></article>
+          <article class="card"><h3>Deterministic inference</h3></article>
+          <article class="card"><h3>Controlled knowledge promotion</h3></article>
+          <article class="card"><h3>No hallucination by design</h3></article>
+          <article class="card"><h3>JSONL as canonical audit format</h3></article>
+          <article class="card"><h3>SQLite runtime stores</h3></article>
+          <article class="card"><h3>CPU-first execution model</h3></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-soft" id="architecture">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Architecture</h2>
+          <p class="section-copy">Six verifier-centered layers define VCSE behavior and governance.</p>
+        </div>
+        <div class="card-grid">
+          <article class="card">
+            <h3>1. Knowledge Layer</h3>
+            <ul class="kv-list">
+              <li>claims</li>
+              <li>provenance</li>
+              <li>packs</li>
+              <li>lifecycle states</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>2. Verification Layer</h3>
+            <ul class="kv-list">
+              <li>verifier stack</li>
+              <li>trust reports</li>
+              <li>contradiction checks</li>
+              <li>false-verified prevention</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>3. Inference Layer</h3>
+            <ul class="kv-list">
+              <li>inverse inference</li>
+              <li>transitive inference</li>
+              <li>explanations</li>
+              <li>stability tracking</li>
+              <li>controlled promotion</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>4. Runtime Layer</h3>
+            <ul class="kv-list">
+              <li>SQLite runtime store</li>
+              <li>incremental compilation</li>
+              <li>shard-aware query planning</li>
+              <li>runtime metrics</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>5. Pipeline Layer</h3>
+            <ul class="kv-list">
+              <li>source adapters</li>
+              <li>domain specs</li>
+              <li>knowledge compiler</li>
+              <li>automated pack pipelines</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>6. Governance Layer</h3>
+            <ul class="kv-list">
+              <li>candidate packs</li>
+              <li>certification</li>
+              <li>controlled merge</li>
+              <li>snapshots</li>
+              <li>future conflict detection</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="metrics">
+      <div class="container stack">
+        <article class="card">
+          <h2 class="section-title">Current Capabilities</h2>
+          <ul class="kv-list" style="margin-top: 0.85rem;">
+            <li>deterministic knowledge ingestion</li>
+            <li>source adapters for JSON, JSONL, CSV</li>
+            <li>domain specifications</li>
+            <li>knowledge compiler</li>
+            <li>candidate pack generation</li>
+            <li>pack validation and review</li>
+            <li>inference explanation</li>
+            <li>promotion of stable inferred claims</li>
+            <li>certification workflow</li>
+            <li>controlled certified-pack merge</li>
+            <li>SQLite runtime stores</li>
+            <li>incremental store compilation</li>
+            <li>shard-aware planned execution</li>
+            <li>automated pack ecosystem</li>
+            <li>gauntlet validation</li>
+          </ul>
+        </article>
+        <article class="card feature-card">
+          <h2 class="section-title">Metrics</h2>
+          <div class="metric-grid" style="margin-top: 1rem;">
+            <div class="metric-card"><p class="metric-value">641</p><p class="metric-label">tests passing</p></div>
+            <div class="metric-card"><p class="metric-value">Pass</p><p class="metric-label">gauntlet status</p></div>
+            <div class="metric-card"><p class="metric-value">0</p><p class="metric-label">false_verified_count</p></div>
+            <div class="metric-card"><p class="metric-value">1.0</p><p class="metric-label">coverage_rate (benchmark set)</p></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section-soft">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">VCSE vs LLMs</h2>
+        </div>
+        <div class="comparison-grid">
+          <article class="card">
+            <h3>LLMs</h3>
+            <ul class="kv-list" style="margin-top: 0.75rem;">
+              <li>probabilistic</li>
+              <li>neural weights</li>
+              <li>strong language ability</li>
+              <li>hallucination risk</li>
+              <li>implicit knowledge</li>
+            </ul>
+          </article>
+          <article class="card feature-card">
+            <h3>VCSE</h3>
+            <ul class="kv-list" style="margin-top: 0.75rem;">
+              <li>symbolic</li>
+              <li>explicit claims</li>
+              <li>verifier-centered</li>
+              <li>provenance-backed</li>
+              <li>deterministic where required</li>
+              <li>refuses unsupported claims</li>
+              <li>inspectable knowledge</li>
+            </ul>
+          </article>
+        </div>
+        <article class="callout" style="margin-top: 1rem;">
+          <p><strong>Conclusion:</strong> VCSE is not a replacement for LLMs. It is a complementary system designed to provide reliability and verification.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="roadmap">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Roadmap</h2>
+        </div>
+        <div class="timeline">
+          <article class="timeline-card"><h4>Completed: v3.x</h4><p>inference + coverage</p></article>
+          <article class="timeline-card"><h4>Completed: v4.x</h4><p>promotion, certification, runtime store, sharding, compiler, adapters</p></article>
+          <article class="timeline-card"><h4>Completed: v5.0</h4><p>automated pack ecosystem</p></article>
+          <article class="timeline-card"><h4>Completed: v5.1</h4><p>Conflict Detection + Entity Canonicalization</p></article>
+          <article class="timeline-card"><h4>Next: v5.2</h4><p>Autonomous Ingest Orchestrator</p></article>
+          <article class="timeline-card"><h4>Next: v5.3</h4><p>Schema Inference + Mapping Proposal</p></article>
+          <article class="timeline-card"><h4>Next: v5.4</h4><p>Cross-Pack Reasoning + Global Consistency</p></article>
+          <article class="timeline-card"><h4>Next: v5.5</h4><p>Policy-Gated Auto Certification</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-soft">
+      <div class="container split">
+        <article class="card">
+          <h2 class="section-title">Production Hardening</h2>
+          <ul class="kv-list" style="margin-top: 0.85rem;">
+            <li>dependency locking</li>
+            <li>CLI modularization</li>
+            <li>coverage increase</li>
+            <li>async API improvements</li>
+            <li>expanded documentation and examples</li>
+          </ul>
+        </article>
+        <article class="card feature-card">
+          <h2 class="section-title">Immediate Focus: v5.2</h2>
+          <p><strong>Autonomous Ingest Orchestrator</strong></p>
+          <p>Required to safely scale ingestion throughput while maintaining verification guarantees, policy controls, and operational traceability.</p>
+          <div class="callout">
+            <p><strong>Principle:</strong> Never automate a step until the system can detect when it is wrong.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="repository">
+      <div class="container">
+        <article class="card feature-card">
+          <h2 class="section-title">VCSE — Verifier-Centered Symbolic Engine</h2>
+          <p data-project-desc="vcse">VCSE — a Verified Reasoning Model (VRM) runtime.</p>
+          <p class="project-meta" data-project-meta="vcse" hidden></p>
+          <div class="hero-actions" style="justify-content: flex-start; margin-top: 1.1rem;">
+            <a class="btn btn-primary" href="https://github.com/VRM-AI/vcse">GitHub</a>
+            <a class="btn btn-secondary" href="mailto:velarium.ai@gmail.com">Contact Email</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>Todd Eddings / VelariumAI / VRM-AI</span>
+      <div class="footer-links">
+        <a href="index.html">Homepage</a>
+        <a href="https://github.com/velariumai">GitHub</a>
+      </div>
+    </div>
+  </footer>
+  <script src="site-data.js"></script>
+</body>
+</html>
