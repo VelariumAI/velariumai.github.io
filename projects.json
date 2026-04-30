@@ -53,7 +53,7 @@
       "repo": "VRM-AI/vcse",
       "name": "VCSE",
       "url": "https://github.com/VRM-AI/vcse",
-      "description": "VCSE \u2014 a Verified Reasoning Model (VRM) runtime.",
+      "description": "VCSE (Verifier-Centered Symbolic Engine) is the verification and reasoning engine for Correctness Models (CMs).",
       "latest_release": "v5.0.0",
       "updated_at": "2026-04-29T22:49:42Z"
     }

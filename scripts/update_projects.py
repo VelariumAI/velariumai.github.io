@@ -46,7 +46,8 @@ PROJECTS = {
         "repo": "VRM-AI/vcse",
         "name": "VCSE",
         "url": "https://github.com/VRM-AI/vcse",
-        "fallback_description": "VCSE — a Verified Reasoning Model (VRM) runtime.",
+        "fallback_description": "VCSE (Verifier-Centered Symbolic Engine) is the verification and reasoning engine for Correctness Models (CMs).",
+        "canonical_description": "VCSE (Verifier-Centered Symbolic Engine) is the verification and reasoning engine for Correctness Models (CMs).",
     },
 }
 
@@ -80,11 +81,15 @@ def main():
     projects_out = {}
     for key, cfg in PROJECTS.items():
         repo_data = fetch_json(f"https://api.github.com/repos/{cfg['repo']}", token)
+        description = repo_data.get("description") or cfg["fallback_description"]
+        if "canonical_description" in cfg:
+            description = cfg["canonical_description"]
+
         projects_out[key] = {
             "repo": cfg["repo"],
             "name": cfg["name"],
             "url": cfg["url"],
-            "description": repo_data.get("description") or cfg["fallback_description"],
+            "description": description,
             "latest_release": get_latest_release_tag(cfg["repo"], token),
             "updated_at": repo_data.get("updated_at"),
         }
