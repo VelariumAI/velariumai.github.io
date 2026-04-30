@@ -1,0 +1,481 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: #fff;
+    font-size: 16px;
+}
+
+main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* Typography */
+h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #000;
+}
+
+h2 {
+    font-size: 1.875rem;
+    font-weight: 600;
+    margin: 3rem 0 1rem 0;
+    color: #000;
+}
+
+h3 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin: 1rem 0 0.5rem 0;
+    color: #444;
+}
+
+h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1rem 0 0.5rem 0;
+    color: #444;
+}
+
+p {
+    margin-bottom: 1rem;
+}
+
+/* Hero section */
+.hero {
+    text-align: center;
+    padding: 4rem 0 6rem 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.hero h1 {
+    margin-bottom: 0.5rem;
+}
+
+.tagline {
+    font-size: 1.125rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.titles {
+    margin-bottom: 2rem;
+}
+
+.titles p {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.hero .description {
+    font-size: 1.125rem;
+    color: #444;
+    margin-bottom: 2.5rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Buttons */
+.buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 2px solid #2563eb;
+    background: #2563eb;
+    color: #fff;
+    display: inline-block;
+}
+
+.btn:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #2563eb;
+}
+
+.btn-secondary:hover {
+    background: #f8fafc;
+}
+
+/* Sections */
+section {
+    padding: 3rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+section:last-child {
+    border-bottom: none;
+}
+
+/* Overview */
+.overview {
+    font-size: 1.125rem;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.overview ul {
+    list-style: none;
+    text-align: left;
+    margin-top: 1.5rem;
+}
+
+.overview li {
+    margin-bottom: 0.5rem;
+    padding-left: 1rem;
+}
+
+/* Project sections */
+.project {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.focus-list, .key-ideas, .approach, .project-links {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 4px;
+    margin: 1.5rem 0;
+}
+
+.focus-list ul, .key-ideas ul, .approach ul, .project-links ul {
+    list-style: disc;
+    margin-left: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.focus-list li, .key-ideas li, .approach li, .project-links li {
+    margin-bottom: 0.5rem;
+}
+
+.project-links a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.project-links a:hover {
+    text-decoration: underline;
+}
+
+.status {
+    font-style: italic;
+    color: #666;
+    margin-top: 1.5rem;
+}
+
+.note {
+    background: #fef3c7;
+    padding: 1rem;
+    border-radius: 4px;
+    border-left: 4px solid #f59e0b;
+    margin-top: 1.5rem;
+}
+
+/* Work section */
+.work {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.project-card {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.project-card h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #000;
+}
+
+.project-card .btn {
+    margin-top: 1rem;
+}
+
+/* About and Contact */
+.about, .contact {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.contact a {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.contact a:hover {
+    text-decoration: underline;
+}
+
+/* VRM Page Styles */
+.nav {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.nav a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.nav a:hover {
+    text-decoration: underline;
+}
+
+.page-header {
+    text-align: center;
+    padding: 3rem 0 2rem 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    color: #666;
+    margin-bottom: 0;
+}
+
+.principle {
+    text-align: center;
+    font-size: 1.25rem;
+    color: #2563eb;
+    margin: 1.5rem 0;
+}
+
+.goal-box, .practice-box, .principle-box, .positioning-box {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 4px;
+    margin: 1.5rem 0;
+    border-left: 4px solid #2563eb;
+}
+
+.principle-list {
+    list-style: disc;
+    margin-left: 1.5rem;
+    columns: 2;
+    column-gap: 2rem;
+}
+
+.principle-list li {
+    margin-bottom: 0.5rem;
+    break-inside: avoid;
+}
+
+.layer {
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+    border-left: 3px solid #2563eb;
+}
+
+.layer h4 {
+    margin-top: 0;
+    color: #2563eb;
+}
+
+.layer ul {
+    list-style: disc;
+    margin-left: 1.5rem;
+    margin-bottom: 0;
+}
+
+.layer li {
+    margin-bottom: 0.25rem;
+}
+
+.metrics {
+    background: #f0fdf4;
+    padding: 1rem;
+    border-radius: 4px;
+    border-left: 4px solid #22c55e;
+    margin-top: 1.5rem;
+}
+
+.metrics h3 {
+    margin-top: 0;
+    color: #16a34a;
+}
+
+.comparison-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: 1.5rem 0;
+}
+
+.comparison-col {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 4px;
+}
+
+.comparison-col h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #2563eb;
+}
+
+.comparison-col ul {
+    list-style: disc;
+    margin-left: 1.5rem;
+}
+
+.comparison-col li {
+    margin-bottom: 0.5rem;
+}
+
+.conclusion {
+    text-align: center;
+    font-weight: 600;
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #fef3c7;
+    border-radius: 4px;
+}
+
+.roadmap-section {
+    margin: 1.5rem 0;
+}
+
+.roadmap-section h3 {
+    color: #2563eb;
+    margin-bottom: 0.5rem;
+}
+
+.roadmap-section ul {
+    list-style: disc;
+    margin-left: 1.5rem;
+}
+
+.roadmap-section li {
+    margin-bottom: 0.5rem;
+}
+
+.repo-card {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+}
+
+.repo-card h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #000;
+}
+
+.repo-card .btn {
+    margin-top: 1rem;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    main {
+        padding: 1rem 0.5rem;
+    }
+
+    h1 {
+        font-size: 2.25rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .hero {
+        padding: 2rem 0 3rem 0;
+    }
+
+    .buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn {
+        width: 200px;
+        text-align: center;
+    }
+
+    section {
+        padding: 2rem 0;
+    }
+
+    .focus-list, .key-ideas, .approach, .project-links, .project-card, .goal-box, .practice-box, .principle-box, .positioning-box, .layer, .metrics, .comparison-col, .repo-card {
+        margin: 1rem -0.5rem;
+        border-radius: 0;
+        padding: 1rem;
+    }
+
+    .principle-list {
+        columns: 1;
+    }
+
+    .comparison-table {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+    }
+
+    .page-header {
+        padding: 2rem 0 1rem 0;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.875rem;
+    }
+
+    .tagline {
+        font-size: 1rem;
+    }
+
+    .hero .description {
+        font-size: 1rem;
+    }
+
+    .overview {
+        font-size: 1rem;
+    }
+}

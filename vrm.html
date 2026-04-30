@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VRM-AI / VCSE - Verifier-Centered Symbolic AI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="nav">
+        <a href="index.html">← Back to Homepage</a>
+    </nav>
+
+    <main>
+        <header class="page-header">
+            <h1>VRM-AI / VCSE</h1>
+            <p class="subtitle">Verifier-Centered Symbolic AI for trustworthy knowledge and reasoning.</p>
+        </header>
+
+        <section class="concept">
+            <h2>What is VRM?</h2>
+            <p>VRM (Verifier-Reasoning Model) is the architectural concept behind VCSE.</p>
+            <p>It defines a class of AI systems built around:</p>
+            <ul>
+                <li>explicit knowledge</li>
+                <li>structured reasoning</li>
+                <li>verification</li>
+                <li>provenance</li>
+                <li>controlled inference</li>
+            </ul>
+            <p>Instead of learning behavior from large neural weight matrices, VRM systems operate on structured claims and verifiable relationships.</p>
+            <p><strong>A VRM system does not approximate knowledge.</strong></p>
+            <p>It encodes, verifies, and reasons over it directly.</p>
+        </section>
+
+        <section class="overview">
+            <h2>What is VRM-AI?</h2>
+            <p>VRM-AI is a symbolic AI architecture focused on verifiable knowledge, deterministic reasoning, provenance, and controlled inference.</p>
+            <p>Its core implementation is VCSE — the Verifier-Centered Symbolic Engine.</p>
+            <p>VCSE is not an LLM wrapper and not a generic agent framework. It is a verifier-centered symbolic engine designed to serve as a trusted reasoning and knowledge layer for future AI systems.</p>
+        </section>
+
+        <section class="rationale">
+            <h2>Why VRM-AI Exists</h2>
+            <p>Modern AI systems often produce answers that sound correct but cannot prove what they know.</p>
+            <p>VRM-AI is built around a different principle:</p>
+            <p class="principle"><strong>Verification before confidence.</strong></p>
+            <p>Instead of relying on probabilistic guesses, VCSE works with structured claims, provenance, trust tiers, controlled inference, and explicit validation.</p>
+            <div class="goal-box">
+                <h3>Goal:</h3>
+                <p>Build AI systems that can:</p>
+                <ul>
+                    <li>explain what they know</li>
+                    <li>show where knowledge came from</li>
+                    <li>refuse unsupported claims</li>
+                    <li>detect contradiction</li>
+                    <li>evolve knowledge safely</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="principles">
+            <h2>Core Principles</h2>
+            <ul class="principle-list">
+                <li>Symbolic-first reasoning</li>
+                <li>Verifier-centered architecture</li>
+                <li>Structured knowledge packs</li>
+                <li>Provenance for every claim</li>
+                <li>Trust tiers and certification</li>
+                <li>Deterministic inference</li>
+                <li>Controlled knowledge promotion</li>
+                <li>No hallucination by design</li>
+                <li>JSONL as canonical audit format</li>
+                <li>SQLite runtime stores for speed</li>
+                <li>CPU-first execution model</li>
+            </ul>
+        </section>
+
+        <section class="constraints">
+            <h2>Architectural Constraints</h2>
+            <p>Modern large language models require:</p>
+            <ul>
+                <li>large GPU clusters</li>
+                <li>high memory bandwidth</li>
+                <li>significant energy consumption</li>
+                <li>expensive infrastructure to run reliably at scale</li>
+            </ul>
+            <p>These systems optimize for:</p>
+            <ul>
+                <li>generalization</li>
+                <li>language fluency</li>
+                <li>pattern matching across large corpora</li>
+            </ul>
+            <p>VRM systems optimize for a different set of constraints:</p>
+            <ul>
+                <li>CPU-first execution</li>
+                <li>low memory footprint per query</li>
+                <li>deterministic operations</li>
+                <li>structured data access instead of dense vector search</li>
+            </ul>
+            <p>This allows:</p>
+            <ul>
+                <li>lower operational cost</li>
+                <li>simpler deployment environments</li>
+                <li>easier reproducibility</li>
+                <li>reduced infrastructure complexity</li>
+            </ul>
+        </section>
+
+        <section class="tradeoff">
+            <h2>Strategic Tradeoff</h2>
+            <p>VRM systems do not attempt to replace language models.</p>
+            <p>They optimize for:</p>
+            <ul>
+                <li>correctness over fluency</li>
+                <li>verification over approximation</li>
+                <li>structure over scale</li>
+            </ul>
+            <div class="practice-box">
+                <h3>In practice:</h3>
+                <p>LLMs generate or propose.<br>VRM systems verify, structure, and persist knowledge.</p>
+            </div>
+        </section>
+
+        <section class="architecture">
+            <h2>VCSE Architecture</h2>
+            <p>VCSE is built as a layered system:</p>
+            <div class="layer">
+                <h4>1. Knowledge Layer</h4>
+                <ul>
+                    <li>claims</li>
+                    <li>provenance</li>
+                    <li>packs</li>
+                    <li>lifecycle states</li>
+                </ul>
+            </div>
+            <div class="layer">
+                <h4>2. Verification Layer</h4>
+                <ul>
+                    <li>verifier stack</li>
+                    <li>trust reports</li>
+                    <li>contradiction checks</li>
+                    <li>false-verified prevention</li>
+                </ul>
+            </div>
+            <div class="layer">
+                <h4>3. Inference Layer</h4>
+                <ul>
+                    <li>inverse inference</li>
+                    <li>transitive inference</li>
+                    <li>explanations</li>
+                    <li>stability tracking</li>
+                    <li>controlled promotion</li>
+                </ul>
+            </div>
+            <div class="layer">
+                <h4>4. Runtime Layer</h4>
+                <ul>
+                    <li>SQLite runtime store</li>
+                    <li>incremental compilation</li>
+                    <li>shard-aware query planning</li>
+                    <li>runtime metrics</li>
+                </ul>
+            </div>
+            <div class="layer">
+                <h4>5. Pipeline Layer</h4>
+                <ul>
+                    <li>source adapters</li>
+                    <li>domain specs</li>
+                    <li>knowledge compiler</li>
+                    <li>automated pack pipelines</li>
+                </ul>
+            </div>
+            <div class="layer">
+                <h4>6. Governance Layer</h4>
+                <ul>
+                    <li>candidate packs</li>
+                    <li>certification</li>
+                    <li>controlled merge</li>
+                    <li>snapshots</li>
+                    <li>future conflict detection</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="capabilities">
+            <h2>Current Capabilities</h2>
+            <p>As of v5.0.0, VCSE supports:</p>
+            <ul>
+                <li>deterministic knowledge ingestion</li>
+                <li>source adapters for JSON, JSONL, CSV</li>
+                <li>domain specifications</li>
+                <li>knowledge compiler</li>
+                <li>candidate pack generation</li>
+                <li>pack validation and review</li>
+                <li>inference explanation</li>
+                <li>promotion of stable inferred claims</li>
+                <li>certification workflow</li>
+                <li>controlled certified-pack merge</li>
+                <li>SQLite runtime stores</li>
+                <li>incremental store compilation</li>
+                <li>shard-aware planned execution</li>
+                <li>automated pack ecosystem</li>
+                <li>gauntlet validation</li>
+            </ul>
+            <div class="metrics">
+                <h3>Metrics:</h3>
+                <ul>
+                    <li>641 tests passing</li>
+                    <li>gauntlet passing</li>
+                    <li>false_verified_count = 0</li>
+                    <li>coverage_rate = 1.0 on current benchmark set</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="comparison">
+            <h2>VCSE vs LLMs</h2>
+            <div class="comparison-table">
+                <div class="comparison-col">
+                    <h3>LLMs:</h3>
+                    <ul>
+                        <li>probabilistic</li>
+                        <li>neural weights</li>
+                        <li>strong language ability</li>
+                        <li>hallucination risk</li>
+                        <li>implicit knowledge</li>
+                    </ul>
+                </div>
+                <div class="comparison-col">
+                    <h3>VCSE:</h3>
+                    <ul>
+                        <li>symbolic</li>
+                        <li>explicit claims</li>
+                        <li>verifier-centered</li>
+                        <li>provenance-backed</li>
+                        <li>deterministic where required</li>
+                        <li>refuses unsupported claims</li>
+                        <li>inspectable knowledge</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="conclusion"><strong>Conclusion:</strong> VCSE is not a replacement for LLMs. It is a complementary system designed to provide reliability and verification.</p>
+        </section>
+
+        <section class="positioning">
+            <h2>Strategic Positioning</h2>
+            <p>VCSE is best understood as the symbolic verification backend for reliable AI systems.</p>
+            <p>It complements:</p>
+            <ul>
+                <li>LLM-based applications</li>
+                <li>agent frameworks</li>
+                <li>neuro-symbolic systems</li>
+                <li>compliance pipelines</li>
+                <li>structured knowledge systems</li>
+            </ul>
+            <div class="positioning-box">
+                <h3>Positioning:</h3>
+                <p>LLMs propose.<br>VCSE verifies.</p>
+            </div>
+        </section>
+
+        <section class="roadmap">
+            <h2>Locked Roadmap</h2>
+            <div class="roadmap-section">
+                <h3>Completed:</h3>
+                <ul>
+                    <li>v3.x — inference + coverage</li>
+                    <li>v4.x — promotion, certification, runtime store, sharding, compiler, adapters</li>
+                    <li>v5.0 — automated pack ecosystem</li>
+                </ul>
+            </div>
+            <div class="roadmap-section">
+                <h3>Next:</h3>
+                <ul>
+                    <li>v5.1 — Conflict Detection + Entity Canonicalization</li>
+                    <li>v5.2 — Autonomous Ingest Orchestrator</li>
+                    <li>v5.3 — Schema Inference + Mapping Proposal</li>
+                    <li>v5.4 — Cross-Pack Reasoning + Global Consistency</li>
+                    <li>v5.5 — Policy-Gated Auto Certification</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="hardening">
+            <h2>Production Hardening</h2>
+            <p>Parallel improvements identified in analysis:</p>
+            <ul>
+                <li>dependency locking (poetry.lock)</li>
+                <li>CLI modularization</li>
+                <li>coverage increase (70% → 80%)</li>
+                <li>async API improvements</li>
+                <li>expanded documentation and examples</li>
+            </ul>
+            <p>These improve usability and stability without changing core architecture.</p>
+        </section>
+
+        <section class="focus">
+            <h2>Immediate Focus</h2>
+            <p><strong>Next priority: v5.1</strong></p>
+            <p>Conflict Detection + Entity Canonicalization</p>
+            <p>Required to safely scale ingestion and prevent:</p>
+            <ul>
+                <li>duplicate entities</li>
+                <li>alias mismatches</li>
+                <li>conflicting claims</li>
+                <li>silent data corruption</li>
+            </ul>
+            <div class="principle-box">
+                <h3>Principle:</h3>
+                <p>Never automate a step until the system can detect when it is wrong.</p>
+            </div>
+        </section>
+
+        <section class="repository">
+            <h2>Repository</h2>
+            <div class="repo-card">
+                <h3>VCSE — Verifier-Centered Symbolic Engine</h3>
+                <p>Symbolic reasoning and knowledge verification engine with structured packs, inference, certification, runtime stores, and automated pipelines.</p>
+                <a href="https://github.com/VRM-AI/vcse" class="btn">GitHub</a>
+            </div>
+        </section>
+
+        <section class="contact">
+            <h2>Contact</h2>
+            <p><strong>Todd Eddings</strong><br>
+            Email: <a href="mailto:velarium.ai@gmail.com">velarium.ai@gmail.com</a></p>
+            <p><a href="https://github.com/velariumai">GitHub</a> | <a href="index.html">Homepage</a></p>
+        </section>
+    </main>
+</body>
+</html>
