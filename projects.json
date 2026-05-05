@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-05T03:49:35Z",
+  "generated_at": "2026-05-05T14:23:31Z",
   "projects": {
     "pdv": {
       "repo": "VelariumAI/pdv",
@@ -54,8 +54,8 @@
       "name": "VCSE",
       "url": "https://github.com/VRM-AI/vcse",
       "description": "VCSE (Verifier-Centered Symbolic Engine) is the verification and reasoning engine for Correctness Models (CMs).",
-      "latest_release": "v6.10.1",
-      "updated_at": "2026-05-04T07:08:23Z"
+      "latest_release": "v6.11.0",
+      "updated_at": "2026-05-05T14:21:12Z"
     }
   }
 }
