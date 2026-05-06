@@ -1,0 +1,178 @@
+{
+  "project_id": "vcse",
+  "project_name": "VCSE",
+  "project_full_name": "Verification and Reasoning Engine for Correctness Models",
+  "organization": "VRM-AI",
+  "repo": "VRM-AI/vcse",
+  "public_url": "https://github.com/VRM-AI/vcse",
+  "current_version": "6.15.0",
+  "latest_release_tag": "v6.15.0",
+  "latest_release_url": "https://github.com/VRM-AI/vcse/releases/tag/v6.15.0",
+  "latest_validated_release": {
+    "version": "6.15.0",
+    "tag": "v6.15.0",
+    "title": "Ledger Event Taxonomy",
+    "release_url": "https://github.com/VRM-AI/vcse/releases/tag/v6.15.0"
+  },
+  "validation": {
+    "pytest": {
+      "status": "PASSED",
+      "passed": 1222,
+      "failed": 0,
+      "warnings": 82
+    },
+    "gauntlet": {
+      "status": "PASSED",
+      "total": 158,
+      "passed": 158,
+      "failed": 0,
+      "false_verified_count": 0
+    },
+    "git_status_at_release": "clean"
+  },
+  "capabilities": [
+    {
+      "version": "6.0.0",
+      "title": "CMCF canonical foundation",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.1.0",
+      "title": "universal source intake",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.2.0",
+      "title": "configurable trust profiles + retroactive trust evaluation",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.3.0",
+      "title": ".csrf compiled runtime layer",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.4.0",
+      "title": "proof index",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.5.0",
+      "title": "conflict workflows",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.5.1",
+      "title": "verifier NO_PROOF enforcement",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.5.2",
+      "title": "unconditional T4/T5 proof gate",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.6.0",
+      "title": "policy execution layer",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.7.0",
+      "title": "signing and authenticity",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.8.0",
+      "title": "signed pack distribution lifecycle",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.9.0",
+      "title": "runtime hardening + performance infrastructure",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.10.1",
+      "title": "API/server hardening + unified error contract",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.11.0",
+      "title": "reason service + functional API /reason",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.12.0",
+      "title": "deterministic source-support contracts",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.13.0",
+      "title": "ontology governance foundation",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.14.0",
+      "title": "candidate proposal contract",
+      "status": "COMPLETE"
+    },
+    {
+      "version": "6.15.0",
+      "title": "ledger event taxonomy",
+      "status": "COMPLETE"
+    }
+  ],
+  "roadmap": {
+    "completed_through": "6.15.0",
+    "next": [
+      {
+        "version": "6.16.0",
+        "title": "Renderer Guard + Answer Verification",
+        "summary": "Prevent rendered/user-facing answers from exceeding validated material."
+      },
+      {
+        "version": "6.17.0",
+        "title": "Repair Contract Foundation",
+        "summary": "Represent failed VCSE outcomes as safe, non-authoritative repair requests."
+      },
+      {
+        "version": "6.18.0",
+        "title": "Integration Adapter Contracts",
+        "summary": "Define stable adapter boundaries for external systems that call VCSE."
+      },
+      {
+        "version": "6.19.0",
+        "title": "CLI De-Monolith",
+        "summary": "Split the large CLI entrypoint into focused command modules without behavior changes."
+      },
+      {
+        "version": "6.20.0",
+        "title": "Property-Based Testing",
+        "summary": "Add property-based tests for core invariants."
+      },
+      {
+        "version": "6.21.0",
+        "title": "Mutation Testing Baseline",
+        "summary": "Measure whether tests catch dangerous semantic mutations."
+      },
+      {
+        "version": "6.22.0",
+        "title": "Formal Spec Skeleton",
+        "summary": "Create a durable specification layer for VCSE invariants."
+      }
+    ]
+  },
+  "immediate_focus": {
+    "version": "6.16.0",
+    "title": "Renderer Guard + Answer Verification",
+    "summary": "Prevent rendered/user-facing answers from exceeding validated material."
+  },
+  "synced_at": "2026-05-06T20:55:01Z",
+  "latest_commit": {
+    "sha": "5f3a566b11e434b32db4d020065efaea117b6d9b",
+    "short_sha": "5f3a566",
+    "message": "chore: remove website files from vcse repo",
+    "url": "https://github.com/VRM-AI/vcse/commit/5f3a566b11e434b32db4d020065efaea117b6d9b",
+    "committed_at": "2026-05-06T20:53:48Z"
+  }
+}

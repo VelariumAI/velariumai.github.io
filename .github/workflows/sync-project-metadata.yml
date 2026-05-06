@@ -28,6 +28,10 @@ jobs:
         run: |
           python scripts/update_projects.py
 
+      - name: Sync VCSE comprehensive project status
+        run: |
+          python scripts/sync_project_status.py
+
       - name: Commit changes if any
         run: |
           if git diff --quiet; then
@@ -36,6 +40,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add projects.json
+          git add projects.json data/
           git commit -m "chore: sync project metadata"
           git push

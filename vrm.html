@@ -153,34 +153,51 @@
 
     <section class="section" id="metrics">
       <div class="container stack">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <article class="card">
+            <h2 class="section-title">Current Release</h2>
+            <p style="font-size:1.4rem;font-weight:700;" id="vcse-release-tag">v6.15.0</p>
+            <p id="vcse-release-title" style="color:var(--color-muted,#666);margin-top:0.2rem;">Ledger Event Taxonomy</p>
+            <a id="vcse-release-url" href="https://github.com/VRM-AI/vcse/releases/tag/v6.15.0" style="font-size:0.85rem;display:inline-block;margin-top:0.5rem;">View release →</a>
+          </article>
+          <article class="card">
+            <h2 class="section-title">Latest Commit</h2>
+            <a id="vcse-commit-sha" href="#" style="font-family:monospace;font-size:0.9rem;"></a>
+            <p id="vcse-commit-msg" style="margin-top:0.3rem;font-size:0.875rem;"></p>
+            <p id="vcse-commit-meta" style="font-size:0.75rem;color:var(--color-muted,#666);margin-top:0.15rem;"></p>
+          </article>
+        </div>
+        <article class="card feature-card">
+          <h2 class="section-title">Validation Metrics</h2>
+          <div class="metric-grid" style="margin-top: 1rem;">
+            <div class="metric-card"><p class="metric-value" id="vcse-m-pytest">1222</p><p class="metric-label">pytest passed</p></div>
+            <div class="metric-card"><p class="metric-value" id="vcse-m-gauntlet">158/158</p><p class="metric-label">gauntlet passed</p></div>
+            <div class="metric-card"><p class="metric-value" id="vcse-m-fvc">0</p><p class="metric-label">false_verified_count</p></div>
+            <div class="metric-card"><p class="metric-value" id="vcse-m-warns">82</p><p class="metric-label">warnings</p></div>
+          </div>
+        </article>
         <article class="card">
           <h2 class="section-title">Current Capabilities</h2>
-          <ul class="kv-list" style="margin-top: 0.85rem;">
-            <li>deterministic knowledge ingestion</li>
-            <li>source adapters for JSON, JSONL, CSV</li>
-            <li>domain specifications</li>
-            <li>knowledge compiler</li>
-            <li>candidate pack generation</li>
-            <li>pack validation and review</li>
-            <li>inference explanation</li>
-            <li>promotion of stable inferred claims</li>
-            <li>certification workflow</li>
-            <li>controlled certified-pack merge</li>
-            <li>SQLite runtime stores</li>
-            <li>incremental store compilation</li>
-            <li>shard-aware planned execution</li>
-            <li>automated pack ecosystem</li>
-            <li>gauntlet validation</li>
+          <ul class="kv-list" id="vcse-capabilities-list" style="margin-top: 0.85rem;">
+            <li>6.0.0 — CMCF canonical foundation</li>
+            <li>6.1.0 — universal source intake</li>
+            <li>6.2.0 — configurable trust profiles + retroactive trust evaluation</li>
+            <li>6.3.0 — .csrf compiled runtime layer</li>
+            <li>6.4.0 — proof index</li>
+            <li>6.5.0 — conflict workflows</li>
+            <li>6.5.1 — verifier NO_PROOF enforcement</li>
+            <li>6.5.2 — unconditional T4/T5 proof gate</li>
+            <li>6.6.0 — policy execution layer</li>
+            <li>6.7.0 — signing and authenticity</li>
+            <li>6.8.0 — signed pack distribution lifecycle</li>
+            <li>6.9.0 — runtime hardening + performance infrastructure</li>
+            <li>6.10.1 — API/server hardening + unified error contract</li>
+            <li>6.11.0 — reason service + functional API /reason</li>
+            <li>6.12.0 — deterministic source-support contracts</li>
+            <li>6.13.0 — ontology governance foundation</li>
+            <li>6.14.0 — candidate proposal contract</li>
+            <li>6.15.0 — ledger event taxonomy</li>
           </ul>
-        </article>
-        <article class="card feature-card">
-          <h2 class="section-title">Metrics</h2>
-          <div class="metric-grid" style="margin-top: 1rem;">
-            <div class="metric-card"><p class="metric-value">641</p><p class="metric-label">tests passing</p></div>
-            <div class="metric-card"><p class="metric-value">Pass</p><p class="metric-label">gauntlet status</p></div>
-            <div class="metric-card"><p class="metric-value">0</p><p class="metric-label">false_verified_count</p></div>
-            <div class="metric-card"><p class="metric-value">1.0</p><p class="metric-label">coverage_rate (benchmark set)</p></div>
-          </div>
         </article>
       </div>
     </section>
@@ -224,39 +241,26 @@
       <div class="container">
         <div class="section-header">
           <h2 class="section-title">Roadmap</h2>
+          <p class="section-copy" id="vcse-roadmap-completed">Completed through v6.15.0</p>
         </div>
-        <div class="timeline">
-          <article class="timeline-card"><h4>Completed: v3.x</h4><p>inference + coverage</p></article>
-          <article class="timeline-card"><h4>Completed: v4.x</h4><p>promotion, certification, runtime store, sharding, compiler, adapters</p></article>
-          <article class="timeline-card"><h4>Completed: v5.0</h4><p>automated pack ecosystem</p></article>
-          <article class="timeline-card"><h4>Completed: v5.1</h4><p>Conflict Detection + Entity Canonicalization</p></article>
-          <article class="timeline-card"><h4>Next: v5.2</h4><p>Autonomous Ingest Orchestrator</p></article>
-          <article class="timeline-card"><h4>Next: v5.3</h4><p>Schema Inference + Mapping Proposal</p></article>
-          <article class="timeline-card"><h4>Next: v5.4</h4><p>Cross-Pack Reasoning + Global Consistency</p></article>
-          <article class="timeline-card"><h4>Next: v5.5</h4><p>Policy-Gated Auto Certification</p></article>
+        <div class="timeline" id="vcse-roadmap">
+          <article class="timeline-card"><h4>Next: v6.16.0</h4><p>Renderer Guard + Answer Verification</p></article>
+          <article class="timeline-card"><h4>Next: v6.17.0</h4><p>Repair Contract Foundation</p></article>
+          <article class="timeline-card"><h4>Next: v6.18.0</h4><p>Integration Adapter Contracts</p></article>
+          <article class="timeline-card"><h4>Next: v6.19.0</h4><p>CLI De-Monolith</p></article>
+          <article class="timeline-card"><h4>Next: v6.20.0</h4><p>Property-Based Testing</p></article>
+          <article class="timeline-card"><h4>Next: v6.21.0</h4><p>Mutation Testing Baseline</p></article>
+          <article class="timeline-card"><h4>Next: v6.22.0</h4><p>Formal Spec Skeleton</p></article>
         </div>
       </div>
     </section>
 
     <section class="section section-soft">
-      <div class="container split">
-        <article class="card">
-          <h2 class="section-title">Production Hardening</h2>
-          <ul class="kv-list" style="margin-top: 0.85rem;">
-            <li>dependency locking</li>
-            <li>CLI modularization</li>
-            <li>coverage increase</li>
-            <li>async API improvements</li>
-            <li>expanded documentation and examples</li>
-          </ul>
-        </article>
+      <div class="container">
         <article class="card feature-card">
-          <h2 class="section-title">Immediate Focus: v5.2</h2>
-          <p><strong>Autonomous Ingest Orchestrator</strong></p>
-          <p>Required to safely scale ingestion throughput while maintaining verification guarantees, policy controls, and operational traceability.</p>
-          <div class="callout">
-            <p><strong>Principle:</strong> Never automate a step until the system can detect when it is wrong.</p>
-          </div>
+          <h2 class="section-title" id="vcse-focus-heading">Immediate Focus: v6.16.0</h2>
+          <p id="vcse-focus-title"><strong>Renderer Guard + Answer Verification</strong></p>
+          <p id="vcse-focus-summary">Prevent rendered/user-facing answers from exceeding validated material.</p>
         </article>
       </div>
     </section>
@@ -286,5 +290,88 @@
     </div>
   </footer>
   <script src="site-data.js"></script>
+  <script>
+    (async function () {
+      function setText(id, val) { var el = document.getElementById(id); if (el && val != null) el.textContent = val; }
+      function setHref(id, href) { var el = document.getElementById(id); if (el && href) el.href = href; }
+
+      try {
+        var res = await fetch("data/projects/vcse.json", { cache: "no-store" });
+        if (!res.ok) return;
+        var p = await res.json();
+
+        setText("vcse-release-tag", p.latest_release_tag || p.current_version);
+        setText("vcse-release-title", p.latest_validated_release && p.latest_validated_release.title || "");
+        setHref("vcse-release-url", p.latest_release_url);
+        var relEl = document.getElementById("vcse-release-url");
+        if (relEl && p.latest_release_url) relEl.textContent = "View release →";
+
+        var c = p.latest_commit;
+        if (c) {
+          var shaEl = document.getElementById("vcse-commit-sha");
+          if (shaEl) { shaEl.textContent = c.short_sha; shaEl.href = c.url || "#"; }
+          setText("vcse-commit-msg", c.message);
+          if (c.committed_at) {
+            setText("vcse-commit-meta", new Date(c.committed_at).toLocaleString());
+          }
+        }
+
+        var v = p.validation || {};
+        var pt = v.pytest || {};
+        var g = v.gauntlet || {};
+        if (pt.passed != null) setText("vcse-m-pytest", pt.passed);
+        if (g.passed != null && g.total != null) setText("vcse-m-gauntlet", g.passed + "/" + g.total);
+        if (g.false_verified_count != null) setText("vcse-m-fvc", g.false_verified_count);
+        if (pt.warnings != null) setText("vcse-m-warns", pt.warnings);
+
+        var caps = p.capabilities;
+        if (caps && caps.length) {
+          var capList = document.getElementById("vcse-capabilities-list");
+          if (capList) {
+            capList.innerHTML = "";
+            caps.forEach(function (cap) {
+              var li = document.createElement("li");
+              li.textContent = cap.version + " \u2014 " + cap.title;
+              capList.appendChild(li);
+            });
+          }
+        }
+
+        var f = p.immediate_focus;
+        if (f) {
+          setText("vcse-focus-heading", "Immediate Focus: " + f.version);
+          setText("vcse-focus-title", f.title);
+          setText("vcse-focus-summary", f.summary || "");
+        }
+
+        var roadmap = p.roadmap;
+        if (roadmap) {
+          if (roadmap.completed_through) {
+            setText("vcse-roadmap-completed", "Completed through v" + roadmap.completed_through);
+          }
+          if (roadmap.next && roadmap.next.length) {
+            var roadEl = document.getElementById("vcse-roadmap");
+            if (roadEl) {
+              roadEl.innerHTML = "";
+              roadmap.next.forEach(function (item) {
+                var art = document.createElement("article");
+                art.className = "timeline-card";
+                art.innerHTML = "<h4>Next: " + item.version + "</h4><p>" + item.title + "</p>";
+                if (item.summary) {
+                  var small = document.createElement("p");
+                  small.style.fontSize = "0.8rem";
+                  small.style.color = "var(--color-muted,#666)";
+                  small.style.marginTop = "0.2rem";
+                  small.textContent = item.summary;
+                  art.appendChild(small);
+                }
+                roadEl.appendChild(art);
+              });
+            }
+          }
+        }
+      } catch (e) { /* keep static fallback */ }
+    })();
+  </script>
 </body>
 </html>
