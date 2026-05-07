@@ -6,14 +6,15 @@
     "organization": "VRM-AI",
     "repo": "VRM-AI/vcse",
     "public_url": "https://github.com/VRM-AI/vcse",
-    "current_version": "6.16.0",
-    "latest_release_tag": "v6.16.0",
-    "latest_release_url": "https://github.com/VRM-AI/vcse/releases/tag/v6.16.0",
+    "current_version": "0.0.616rc1",
+    "latest_release_tag": "v0.0.616rc1",
+    "latest_release_url": "https://github.com/VRM-AI/vcse/releases/tag/v0.0.616rc1",
     "latest_validated_release": {
-      "version": "6.16.0",
-      "tag": "v6.16.0",
-      "title": "Renderer Guard + Answer Verification",
-      "release_url": "https://github.com/VRM-AI/vcse/releases/tag/v6.16.0"
+      "version": "0.0.616rc1",
+      "tag": "v0.0.616rc1",
+      "title": "Public rebaseline release for VCSE",
+      "release_url": "https://github.com/VRM-AI/vcse/releases/tag/v0.0.616rc1",
+      "intended_public_version": "0.0.616rc1"
     },
     "validation": {
       "pytest": {
@@ -124,57 +125,66 @@
       },
       {
         "version": "6.16.0",
+        "public_version": "0.0.616rc1",
         "title": "renderer guard + answer verification",
         "status": "COMPLETE"
       }
     ],
     "roadmap": {
-      "completed_through": "6.16.0",
+      "completed_through_internal": "6.16.0",
+      "completed_through_public": "0.0.616rc1",
       "next": [
         {
-          "version": "6.17.0",
+          "public_version": "0.0.617rc1",
+          "internal_milestone": "6.17.0",
           "title": "Repair Contract Foundation",
           "summary": "Represent failed VCSE outcomes as safe, non-authoritative repair requests."
         },
         {
-          "version": "6.18.0",
+          "public_version": "0.0.618rc1",
+          "internal_milestone": "6.18.0",
           "title": "Integration Adapter Contracts",
           "summary": "Define stable adapter boundaries for external systems that call VCSE."
         },
         {
-          "version": "6.19.0",
+          "public_version": "0.0.619rc1",
+          "internal_milestone": "6.19.0",
           "title": "CLI De-Monolith",
           "summary": "Split the large CLI entrypoint into focused command modules without behavior changes."
         },
         {
-          "version": "6.20.0",
+          "public_version": "0.0.620rc1",
+          "internal_milestone": "6.20.0",
           "title": "Property-Based Testing",
           "summary": "Add property-based tests for core invariants."
         },
         {
-          "version": "6.21.0",
+          "public_version": "0.0.621rc1",
+          "internal_milestone": "6.21.0",
           "title": "Mutation Testing Baseline",
           "summary": "Measure whether tests catch dangerous semantic mutations."
         },
         {
-          "version": "6.22.0",
+          "public_version": "0.0.622rc1",
+          "internal_milestone": "6.22.0",
           "title": "Formal Spec Skeleton",
           "summary": "Create a durable specification layer for VCSE invariants."
         }
       ]
     },
     "immediate_focus": {
-      "version": "6.17.0",
+      "public_version": "0.0.617rc1",
+      "internal_milestone": "6.17.0",
       "title": "Repair Contract Foundation",
       "summary": "Represent failed VCSE outcomes as safe, non-authoritative repair requests."
     },
-    "synced_at": "2026-05-07T05:46:42Z",
+    "synced_at": "2026-05-07T14:49:53Z",
     "latest_commit": {
-      "sha": "d079f8ca65342186265487724bb7b40549166675",
-      "short_sha": "d079f8c",
-      "message": "chore: update .velarium/status.json for v6.16.0 release",
-      "url": "https://github.com/VRM-AI/vcse/commit/d079f8ca65342186265487724bb7b40549166675",
-      "committed_at": "2026-05-07T05:45:02Z"
+      "sha": "d3f4d0cbcaf6b40803a0d6e7706b108de8bcdbf2",
+      "short_sha": "d3f4d0c",
+      "message": "docs: mark v0.0.616rc1 GitHub release distribution",
+      "url": "https://github.com/VRM-AI/vcse/commit/d3f4d0cbcaf6b40803a0d6e7706b108de8bcdbf2",
+      "committed_at": "2026-05-07T07:14:31Z"
     }
   }
 ]
