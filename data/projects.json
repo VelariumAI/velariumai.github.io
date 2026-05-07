@@ -7,18 +7,18 @@
     "repo": "VRM-AI/vcse",
     "public_url": "https://github.com/VRM-AI/vcse",
     "current_version": "6.16.0",
-    "latest_release_tag": "v6.15.0",
-    "latest_release_url": "https://github.com/VRM-AI/vcse/releases/tag/v6.15.0",
+    "latest_release_tag": "v6.16.0",
+    "latest_release_url": "https://github.com/VRM-AI/vcse/releases/tag/v6.16.0",
     "latest_validated_release": {
-      "version": "6.15.0",
-      "tag": "v6.15.0",
-      "title": "Ledger Event Taxonomy",
-      "release_url": "https://github.com/VRM-AI/vcse/releases/tag/v6.15.0"
+      "version": "6.16.0",
+      "tag": "v6.16.0",
+      "title": "Renderer Guard + Answer Verification",
+      "release_url": "https://github.com/VRM-AI/vcse/releases/tag/v6.16.0"
     },
     "validation": {
       "pytest": {
         "status": "PASSED",
-        "passed": 1222,
+        "passed": 1264,
         "failed": 0,
         "warnings": 82
       },
@@ -168,13 +168,13 @@
       "title": "Repair Contract Foundation",
       "summary": "Represent failed VCSE outcomes as safe, non-authoritative repair requests."
     },
-    "synced_at": "2026-05-07T05:37:34Z",
+    "synced_at": "2026-05-07T05:46:42Z",
     "latest_commit": {
-      "sha": "bb1042ded50ab2ded828ee9e4c9d9f656fdce460",
-      "short_sha": "bb1042d",
-      "message": "chore: ignore local Claude Code artifacts",
-      "url": "https://github.com/VRM-AI/vcse/commit/bb1042ded50ab2ded828ee9e4c9d9f656fdce460",
-      "committed_at": "2026-05-07T05:33:01Z"
+      "sha": "d079f8ca65342186265487724bb7b40549166675",
+      "short_sha": "d079f8c",
+      "message": "chore: update .velarium/status.json for v6.16.0 release",
+      "url": "https://github.com/VRM-AI/vcse/commit/d079f8ca65342186265487724bb7b40549166675",
+      "committed_at": "2026-05-07T05:45:02Z"
     }
   }
 ]
