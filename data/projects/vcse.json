@@ -167,12 +167,12 @@
     "title": "Renderer Guard + Answer Verification",
     "summary": "Prevent rendered/user-facing answers from exceeding validated material."
   },
-  "synced_at": "2026-05-06T20:55:01Z",
+  "synced_at": "2026-05-07T04:04:30Z",
   "latest_commit": {
-    "sha": "5f3a566b11e434b32db4d020065efaea117b6d9b",
-    "short_sha": "5f3a566",
-    "message": "chore: remove website files from vcse repo",
-    "url": "https://github.com/VRM-AI/vcse/commit/5f3a566b11e434b32db4d020065efaea117b6d9b",
-    "committed_at": "2026-05-06T20:53:48Z"
+    "sha": "22b78380d9084709b4ce31337b0008838386a484",
+    "short_sha": "22b7838",
+    "message": "chore: ignore local agent manifests",
+    "url": "https://github.com/VRM-AI/vcse/commit/22b78380d9084709b4ce31337b0008838386a484",
+    "committed_at": "2026-05-06T21:35:53Z"
   }
 }
