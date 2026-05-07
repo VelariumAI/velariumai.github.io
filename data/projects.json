@@ -6,7 +6,7 @@
     "organization": "VRM-AI",
     "repo": "VRM-AI/vcse",
     "public_url": "https://github.com/VRM-AI/vcse",
-    "current_version": "6.15.0",
+    "current_version": "6.16.0",
     "latest_release_tag": "v6.15.0",
     "latest_release_url": "https://github.com/VRM-AI/vcse/releases/tag/v6.15.0",
     "latest_validated_release": {
@@ -121,16 +121,16 @@
         "version": "6.15.0",
         "title": "ledger event taxonomy",
         "status": "COMPLETE"
+      },
+      {
+        "version": "6.16.0",
+        "title": "renderer guard + answer verification",
+        "status": "COMPLETE"
       }
     ],
     "roadmap": {
-      "completed_through": "6.15.0",
+      "completed_through": "6.16.0",
       "next": [
-        {
-          "version": "6.16.0",
-          "title": "Renderer Guard + Answer Verification",
-          "summary": "Prevent rendered/user-facing answers from exceeding validated material."
-        },
         {
           "version": "6.17.0",
           "title": "Repair Contract Foundation",
@@ -164,17 +164,17 @@
       ]
     },
     "immediate_focus": {
-      "version": "6.16.0",
-      "title": "Renderer Guard + Answer Verification",
-      "summary": "Prevent rendered/user-facing answers from exceeding validated material."
+      "version": "6.17.0",
+      "title": "Repair Contract Foundation",
+      "summary": "Represent failed VCSE outcomes as safe, non-authoritative repair requests."
     },
-    "synced_at": "2026-05-07T04:04:30Z",
+    "synced_at": "2026-05-07T05:37:34Z",
     "latest_commit": {
-      "sha": "22b78380d9084709b4ce31337b0008838386a484",
-      "short_sha": "22b7838",
-      "message": "chore: ignore local agent manifests",
-      "url": "https://github.com/VRM-AI/vcse/commit/22b78380d9084709b4ce31337b0008838386a484",
-      "committed_at": "2026-05-06T21:35:53Z"
+      "sha": "bb1042ded50ab2ded828ee9e4c9d9f656fdce460",
+      "short_sha": "bb1042d",
+      "message": "chore: ignore local Claude Code artifacts",
+      "url": "https://github.com/VRM-AI/vcse/commit/bb1042ded50ab2ded828ee9e4c9d9f656fdce460",
+      "committed_at": "2026-05-07T05:33:01Z"
     }
   }
 ]
