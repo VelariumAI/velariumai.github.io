@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-12T04:04:25Z",
+  "generated_at": "2026-05-12T14:49:09Z",
   "projects": {
     "pdv": {
       "repo": "VelariumAI/pdv",
@@ -47,7 +47,7 @@
       "url": "https://github.com/VelariumAI/gorkbot",
       "description": "Gorkbot is an AI-powered orchestration platform that unifies multiple large language models into a single terminal interface.",
       "latest_release": null,
-      "updated_at": "2026-05-12T03:06:49Z"
+      "updated_at": "2026-05-12T05:46:42Z"
     },
     "vcse": {
       "repo": "VRM-AI/vcse",
