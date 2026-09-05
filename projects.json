@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-04T16:20:04Z",
+  "generated_at": "2026-09-05T04:25:28Z",
   "projects": {
     "pdv": {
       "repo": "VelariumAI/pdv",
@@ -31,7 +31,7 @@
       "url": "https://github.com/VelariumAI/go-ddgs",
       "description": "DuckDuckGoSearch in Go",
       "latest_release": "v0.2.2",
-      "updated_at": "2026-04-07T05:42:14Z"
+      "updated_at": "2026-09-04T18:36:54Z"
     },
     "go-ddgs-stealth": {
       "repo": "VelariumAI/go-ddgs-stealth",
